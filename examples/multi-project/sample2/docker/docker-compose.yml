@@ -1,0 +1,6 @@
+sample2:
+  image: sample2:latest
+  environment:
+    JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+  ports:
+    - "0:5005"

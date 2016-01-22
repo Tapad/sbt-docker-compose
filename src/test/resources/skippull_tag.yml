@@ -1,0 +1,4 @@
+testservice:
+  image: testservice:latest<skipPull>
+  ports:
+    - "0:3000"

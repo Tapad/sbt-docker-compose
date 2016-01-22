@@ -1,0 +1,8 @@
+testservice1:
+  image: testservice1:latest
+  ports:
+    - "0:3000"
+testservice2:
+  image: testservice2:latest
+  ports:
+    - "0:3000"

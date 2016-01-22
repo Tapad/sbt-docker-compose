@@ -1,0 +1,4 @@
+testservice:
+  image: testservice:latest<localBuild>
+  ports:
+    - "0:3000"

@@ -1,0 +1,73 @@
+import com.tapad.docker.DockerComposePlugin._
+import com.tapad.docker._
+import org.mockito.Mockito._
+import org.scalatest.mock.MockitoSugar
+import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
+
+import scala._
+import scala.io._
+
+class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest with MockitoSugar {
+
+  test("Validate Docker instance name generation is random") {
+    val plugin = new DockerComposePluginLocal
+    val instanceName1 = plugin.generateInstanceName
+    val instanceName2 = plugin.generateInstanceName
+    assert(instanceName1 != instanceName2)
+  }
+
+  test("Validate containsArg function") {
+    val plugin = new DockerComposePluginLocal
+    assert(!plugin.containsArg(skipPullArg, Seq("")))
+    assert(!plugin.containsArg(skipPullArg, Seq(skipBuildArg)))
+    assert(plugin.containsArg(skipPullArg, Seq(skipPullArg)))
+    assert(plugin.containsArg(skipPullArg, Seq(skipPullArg, skipBuildArg)))
+  }
+
+  test("Validate timeout when getting running instance info") {
+    val serviceName = "service"
+    val instanceName = "instance"
+    val composeMock = spy(new DockerComposePluginLocal)
+    doReturn("").when(composeMock).getDockerContainerId(instanceName, serviceName)
+
+    val serviceInfo = ServiceInfo(serviceName, "image", "source", null)
+    val thrown = intercept[IllegalStateException] {
+      composeMock.populateServiceInfoForInstance(instanceName, List(serviceInfo), 0)
+    }
+
+    assert(thrown.getMessage === s"Cannot determine container Id for service: $serviceName")
+  }
+
+  test("Validate Docker container inspection populates ServiceInfo properly for various port formats") {
+    val serviceName = "service"
+    val instanceName = "instance"
+    val containerId = "123456"
+    val jsonStream = getClass.getResourceAsStream("docker_inspect.json")
+    val inspectJson = Source.fromInputStream(jsonStream).mkString
+    val composeMock = spy(new DockerComposePluginLocal)
+    doReturn(containerId).when(composeMock).getDockerContainerId(instanceName, serviceName)
+    doReturn(inspectJson).when(composeMock).getDockerContainerInfo(containerId)
+    doReturn(false).when(composeMock).isBoot2DockerEnvironment
+
+    val port1 = PortInfo("0", "3000/tcp", isDebug = false)
+    val port2 = PortInfo("0", "3001/udp", isDebug = false)
+    val port3 = PortInfo("0", "3002", isDebug = false)
+    val serviceInfo = ServiceInfo(serviceName, "image", "source", List(port1, port2, port3))
+    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance(instanceName, List(serviceInfo), 60)
+
+    assert(serviceInfoUpdated.size == 1)
+    val portInfo = serviceInfoUpdated.head.ports
+
+    assert(portInfo.size == 3)
+    assert(portInfo.exists(port => port.containerPort == "3000/tcp" && port.hostPort == "32803"))
+    assert(portInfo.exists(port => port.containerPort == "3001/udp" && port.hostPort == "32802"))
+    assert(portInfo.exists(port => port.containerPort == "3002" && port.hostPort == "32801"))
+  }
+}
+
+trait MockOutput extends PrintFormatting {
+  var messages: Seq[String] = Seq()
+
+  override def print(s: String) = messages = messages :+ s
+  override def printBold(s: String) = messages = messages :+ s
+}

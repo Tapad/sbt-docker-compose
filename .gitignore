@@ -1,0 +1,9 @@
+.DS_Store
+target/*
+.idea
+project/target/*
+project/project/*
+*~
+examples/*/project/*
+examples/*/target/*
+examples/multi-project/*/target/

@@ -1,0 +1,54 @@
+[
+  {
+    "NetworkSettings": {
+      "Bridge": "",
+      "SandboxID": "91b309a324b96e6043cfb9f198518f13347c3089d68cbc50440854c2d9fbf448",
+      "HairpinMode": false,
+      "LinkLocalIPv6Address": "",
+      "LinkLocalIPv6PrefixLen": 0,
+      "Ports": {
+        "3000/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "32803"
+          }
+        ],
+        "3001/udp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "32802"
+          }
+        ],
+        "3002/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "32801"
+          }
+        ]
+      },
+      "SandboxKey": "/var/run/docker/netns/91b309a324b9",
+      "SecondaryIPAddresses": null,
+      "SecondaryIPv6Addresses": null,
+      "EndpointID": "2b53fcedce895a0d3e7bdcb81d4d46bfb971e8b722b7b0435904f9b59e34bc2e",
+      "Gateway": "172.17.0.1",
+      "GlobalIPv6Address": "",
+      "GlobalIPv6PrefixLen": 0,
+      "IPAddress": "172.17.0.2",
+      "IPPrefixLen": 16,
+      "IPv6Gateway": "",
+      "MacAddress": "12:12:12:12:12:12",
+      "Networks": {
+        "bridge": {
+          "EndpointID": "2b53fcedce895a0d3e7bdcb81d4d46bfb971e8b722b7b0435904f9b59e34bc2e",
+          "Gateway": "172.17.0.1",
+          "IPAddress": "172.17.0.2",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "MacAddress": "12:12:12:12:12:12"
+        }
+      }
+    }
+  }
+]
