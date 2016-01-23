@@ -40,8 +40,8 @@ Steps to Enable and Configure the DockerComposePlugin
 
 There are several the projects under the 'examples' folder showing the final result of these steps.
 
-To Start a Docker Compose Instance for Testing / Debugging Locally
-------------------------------------------------------------------
+To Start a Docker Compose Instance for Testing / Debugging
+----------------------------------------------------------
 1) To start a new instance from the project with the Plugin enabled run:
 
     dockerComposeUp
@@ -147,10 +147,11 @@ In the 'examples' folder there are three different projects showing different us
     dockerComposeUp
 
 2) no-build: This project shows how sbt can be used to launch a docker-compose instances of existing images that are already published and do not need to be built.
+The docker-compose instance consists of WordPress connected to a MariaDB backend. Once the instance is started you can connect to the "Host:Port" for WordPress using a web browser.
 
     dockerComposeUp
 
-3) multi-project: This project shows how more advanced mutli-project builds are supported.
+3) multi-project: This project shows how more advanced multi-project builds are supported.
 From sbt you can build the Docker image and launch a running instance of a single project by executing:
 
     project sample1

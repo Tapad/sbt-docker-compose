@@ -1,29 +1,10 @@
 package com.tapad.docker
 
-import sbt._
-
-import scala.collection._
-
 /**
  * Set of helper functions for parsing Docker Compose "image:" values
  */
 trait ComposeCustomTagHelpers {
-  val useLocalBuildTag = "<localbuild>"
-  val skipPullTag = "<skippull>"
   val latestVersion = "latest"
-
-  /**
-   * Function that reads plug-in defined "<customTag>" fields from the Docker Compose file and performs some transformation on the Docker File based on the tag.
-   * The file after transformations are applied is what is used by Docker Compose to launch the instance. This function can be overridden in derived plug-ins to add
-   * additional tags pre-processing features.
-   * @param state The sbt state
-   * @param args Args passed to sbt command
-   * @param imageName The image name and tag to be processed for example "testimage:1.0.0<skipPull>" This plugin just removes the tags from the image name.
-   * @return The updated image value after any processing indicated by the custom tags
-   */
-  def processImageTag(implicit state: State, args: Seq[String], imageName: String): String = {
-    imageName.toLowerCase.replace(useLocalBuildTag, "").replace(skipPullTag, "")
-  }
 
   /**
    * Parses the image name to get the "tag" value
