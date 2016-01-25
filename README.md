@@ -142,16 +142,17 @@ Examples
 --------
 In the 'examples' folder there are three different projects showing different uses for the sbt-docker-compose plugin.
 
-1) basic: This project outlines a very basic example of how to enable the plugin on a simple application. From sbt run the following to compile the code, build a Docker image, and launch a Docker Compose instance.
+1) [**basic**] (examples/basic): This project outlines a very basic example of how to enable the plugin on a simple application. From sbt run the following to compile the code, build a Docker image, and launch a Docker Compose instance.
 
     dockerComposeUp
 
-2) no-build: This project shows how sbt can be used to launch a docker-compose instances of existing images that are already published and do not need to be built.
-The docker-compose instance consists of WordPress connected to a MariaDB backend. Once the instance is started you can connect to the "Host:Port" for WordPress using a web browser.
+2) [**no-build**] (examples/no-build): This project shows how sbt-docker-compose can be used to launch instances of images that are already published and do not need to be built locally.
+This example uses the official Redis image from Docker Hub. Once the instance is started Redis will be available on the displayed "Host:Port". The port is dynamically assigned so that multiple
+instances can be started.
 
     dockerComposeUp
 
-3) multi-project: This project shows how more advanced multi-project builds are supported.
+3) [**multi-project**] (examples/multi-project): This project shows how more advanced multi-project builds are supported.
 From sbt you can build the Docker image and launch a running instance of a single project by executing:
 
     project sample1
