@@ -2,7 +2,7 @@ name := "basic"
 
 version := "1.0.0"
 
-scalaVersion := "2.11.7"
+scalaVersion := "2.10.6"
 
 enablePlugins(DockerPlugin, DockerComposePlugin)
 

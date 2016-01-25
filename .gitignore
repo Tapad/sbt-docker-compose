@@ -1,9 +1,11 @@
+*~
 .DS_Store
-target/*
 .idea
+target/*
 project/target/*
 project/project/*
-*~
+project/license.sbt
+project/credentials.sbt
 examples/*/project/*
 examples/*/target/*
 examples/multi-project/*/target/
