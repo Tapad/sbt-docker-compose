@@ -139,7 +139,7 @@ In the ports section you will also need to expose the port value defined in the 
         - "0:5005"
 
 Once the container is started you can to attach to it remotely. The instance connection table will mark 'YES' in the 'IsDebug'
-column for any exposed ports that can be attached to with the debugger. See the [basic] (examples\basic\docker\docker-compose.yml) example for a project configured with debugging enabled.
+column for any exposed ports that can be attached to with the debugger. See the [basic] (examples/basic/docker/docker-compose.yml) example for a project configured with debugging enabled.
 
 Examples
 --------
