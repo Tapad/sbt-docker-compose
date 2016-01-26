@@ -17,7 +17,7 @@ Steps to Enable and Configure the DockerComposePlugin
 
     addSbtPlugin("com.tapad" % "sbt-docker-compose" % "0.0.1-SNAPSHOT")
    
-3) Enable the plugin on the Project you would like to test:
+3) Enable the plugin on the sbt projects you would like to test:
 
     enablePlugins(DockerComposePlugin)
 
@@ -38,7 +38,7 @@ Steps to Enable and Configure the DockerComposePlugin
     composeRemoveContainersOnShutdown := // True if a Docker Compose should remove containers when shutting down the compose instance. This defaults to True.
     composeContainerStartTimeoutSeconds := // The amount of time in seconds to wait for the containers in a Docker Compose instance to start. Defaults to 500 seconds.
 
-There are several the projects under the 'examples' folder showing the final result of these steps.
+There are several sample projects showing how to configure sbt-docker-compose that can be found in the [**examples**] (examples) folder.
 
 To Start a Docker Compose Instance for Testing / Debugging
 ----------------------------------------------------------
@@ -94,7 +94,7 @@ that can be used to connect to the instance. The 'Host:Port' column contains the
     | sample2 | 192.168.99.100:32974 | latest      | build        | 5005           | 54803f8a6938 | YES     |
     +---------+----------------------+-------------+--------------+----------------+--------------+---------+
 
-The Image Source can be one of the following:
+The 'Image Source' column can be one of the following:
 
 1) **defined**: The image tag is hardcoded in the compose file. For example:
 
@@ -112,15 +112,15 @@ The Image Source can be one of the following:
     
 Each running instance will also output the commands that can be used to:
 
-1) Stop the running instance. For example:
+1) **Stop the running instance.** For example:
     
     dockerComposeStop 449342
 
-2) Open a command shell to the container instance:
+2) **Open a command shell to the container instance:**
 
     docker exec -it <Container Id> bash
 
-3) View the standard out logging from the instance:
+3) **View the standard out logging from the instance:**
  
     docker-compose -p 449342 -f /tmp/compose-updated4937097142223953047.yml logs
     
@@ -135,7 +135,7 @@ In the ports section you will also need to expose the port value defined in the 
     ports:
         - "0:5005"
 
-Once the container is started you can to attach to it remotely. The instance connection table will mark 'YES' in the IsDebug
+Once the container is started you can to attach to it remotely. The instance connection table will mark 'YES' in the 'IsDebug'
 column for any exposed ports that can be attached to with the debugger.
 
 Examples
