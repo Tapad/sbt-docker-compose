@@ -7,21 +7,23 @@ sbt-docker-compose is an sbt plugin that integrates the functionality of [Docker
 This allows you to make code changes and with one sbt command start up a local running instance of your latest changes connected to all of its dependencies for live testing and debugging.
 This plugin is designed to be extended to allow for instances to be launched in non-local environments such as AWS and Mesos.
 
-Steps to Enable and Configure the DockerComposePlugin
------------------------------------------------------
+Steps to Enable and Configure sbt-docker-compose
+------------------------------------------------
 
-1) Configure your sbt project(s) to build a Docker images. By default sbt-docker-compose uses [sbt-docker plugin] (https://github.com/marcuslonnberg/sbt-docker).
+1) Configure your sbt project(s) to build Docker images. By default sbt-docker-compose uses [sbt-docker plugin] (https://github.com/marcuslonnberg/sbt-docker).
    It is possible use a different plugin to create Docker images however the "buildDockerImageTask" in the DockerComposePlugin would have to be updated.
 
 2) Add the sbt-docker-compose plugin to your projects plugins.sbt file:
 
     addSbtPlugin("com.tapad" % "sbt-docker-compose" % "0.0.1-SNAPSHOT")
+    
+   sbt-docker-compose is an auto-plugin which requires that sbt version 0.13.5 or higher be used.
    
 3) Enable the plugin on the sbt projects you would like to test:
 
     enablePlugins(DockerComposePlugin)
 
-4) Define a docker-compose.yml file which describes your component, its dependent images and the links between them.
+4) Define a [docker-compose.yml] (https://docs.docker.com/compose/compose-file/) file which describes your component, its dependent images and the links between them.
    The file can be located in one of three places with the precedence order:
    
    - Resources directory of the project
@@ -70,15 +72,16 @@ To Start a Docker Compose Instance for Testing / Debugging
     
 Instance information is persisted in a temporary file so that it will be available between restarts of an sbt session.
 
-Docker Compose File Info
-------------------------
+Docker Compose File Custom Tags
+-------------------------------
+Custom tags add the ability to pre-process the contents of the docker-compose.yml file and make modifications to it before using it to start your instance.
 There are two custom tags for images that this plugin supports: "\<localBuild\>" and "\<skipPull\>". Support for additional tags can be added by overriding the "processCustomTags" method.
 
 1) Define "\<skipPull\>" on a set of particular images in the docker-compose file that you want to use a local copy of instead of pulling the latest available from the Docker Registry.
 
     image: yourregistry.com/service:1.0.0<skipPull>
    
-2) Define "\<localBuild\>" to launch the locally built version of the image instead of pulling from the public Docker Registry. This is how associated images from multi-project builds should be tagged. See the "multi-project" example.
+2) Define "\<localBuild\>" to launch the locally built version of the image instead of pulling from the public Docker Registry. This is how associated images from multi-project builds should be tagged. See the [**multi-project**] (examples/multi-project) example.
    
     image: service:latest<localBuild>
     
@@ -94,7 +97,7 @@ that can be used to connect to the instance. The 'Host:Port' column contains the
     | sample2 | 192.168.99.100:32974 | latest      | build        | 5005           | 54803f8a6938 | YES     |
     +---------+----------------------+-------------+--------------+----------------+--------------+---------+
 
-The 'Image Source' column can be one of the following:
+The 'Image Source' column can be one of the following values:
 
 1) **defined**: The image tag is hardcoded in the compose file. For example:
 
@@ -136,11 +139,11 @@ In the ports section you will also need to expose the port value defined in the 
         - "0:5005"
 
 Once the container is started you can to attach to it remotely. The instance connection table will mark 'YES' in the 'IsDebug'
-column for any exposed ports that can be attached to with the debugger.
+column for any exposed ports that can be attached to with the debugger. See the [basic] (examples\basic\docker\docker-compose.yml) example for a project configured with debugging enabled.
 
 Examples
 --------
-In the 'examples' folder there are three different projects showing different uses for the sbt-docker-compose plugin.
+In the [**examples**] (examples) folder there are three different projects showing different uses for the sbt-docker-compose plugin.
 
 1) [**basic**] (examples/basic): This project outlines a very basic example of how to enable the plugin on a simple application. From sbt run the following to compile the code, build a Docker image, and launch a Docker Compose instance.
 
@@ -164,3 +167,7 @@ However, from the root "multi-project" you can run the following to build new Do
     dockerComposeUp
     
 Note how the docker-compose.yml file for the root project tags each image with "\<localBuild\>". This allows dockerComposeUp to know that these images should not be updated from the Docker Registry.
+
+Other
+-----
+Testing of sbt-docker-compose has been performed starting with docker-compose version: 1.5.1
