@@ -11,7 +11,7 @@ Steps to Enable and Configure sbt-docker-compose
 ------------------------------------------------
 
 1) Configure your sbt project(s) to build Docker images. By default sbt-docker-compose uses [sbt-docker plugin] (https://github.com/marcuslonnberg/sbt-docker).
-   It is possible use a different plugin to create Docker images however the "buildDockerImageTask" in the DockerComposePlugin would have to be updated.
+   It is possible to use a different plugin to create Docker images however the "buildDockerImageTask" in the DockerComposePlugin would have to be updated.
 
 2) Add the sbt-docker-compose plugin to your projects plugins.sbt file:
 
@@ -39,6 +39,7 @@ Steps to Enable and Configure sbt-docker-compose
     composeNoBuild := // True if a Docker Compose file is to be started without building any images and only using ones that already exist in the Docker Registry. This defaults to False.
     composeRemoveContainersOnShutdown := // True if a Docker Compose should remove containers when shutting down the compose instance. This defaults to True.
     composeContainerStartTimeoutSeconds := // The amount of time in seconds to wait for the containers in a Docker Compose instance to start. Defaults to 500 seconds.
+    composeRemoveTempFileOnShutdown := // True if a Docker Compose should remove the post Custom Tag processed Compose File on shutdown. This defaults to True.
     dockerMachineName =: //If running on OSX the name of the Docker Machine Virtual machine being used. If not overridden it is set to 'default'
 
 There are several sample projects showing how to configure sbt-docker-compose that can be found in the [**examples**] (examples) folder.

@@ -83,6 +83,21 @@ trait ComposeInstancePersistence extends SettingsHelper {
   }
 
   /**
+   * Gets the sequence of running instance Id's for all instances
+   * @param state The current application state which contains the set of instances running
+   * @return Sequence of running instance Id's for this sbt project
+   */
+  def getAllRunningInstanceIds(implicit state: State): Seq[String] = {
+    getAttribute(runningInstances) match {
+      case Some(launchedInstances) =>
+        //Get the instance names that map to the current sbt projects defined service
+        launchedInstances.map(_.instanceName)
+      case None =>
+        Seq.empty
+    }
+  }
+
+  /**
    * Updates the sbt session information into includes the new RunningInstanceInfo object
    * @param state The current application state which contains the set of instances running
    * @param instance The instance information to save

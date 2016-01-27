@@ -48,6 +48,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val composeServiceName = DockerComposeKeys.composeServiceName
     val composeNoBuild = DockerComposeKeys.composeNoBuild
     val composeRemoveContainersOnShutdown = DockerComposeKeys.composeRemoveContainersOnShutdown
+    val composeRemoveTempFileOnShutdown = DockerComposeKeys.composeRemoveTempFileOnShutdown
     val composeContainerStartTimeoutSeconds = DockerComposeKeys.composeContainerStartTimeoutSeconds
     val dockerMachineName = DockerComposeKeys.dockerMachineName
   }
@@ -148,7 +149,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     pullDockerImages(args, servicesInfo)
 
     //Generate random instance name so that it won't collide with other instances running and so that it can be uniquely identified from the list of running containers
-    val instanceName = generateInstanceName
+    val instanceName = generateInstanceName(state)
 
     val newState = Try {
       dockerComposeUp(instanceName, updatedComposePath)
@@ -231,6 +232,11 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     if (getSetting(composeRemoveContainersOnShutdown)) {
       dockerComposeRemoveContainers(instanceName, composePath)
     }
+
+    //When shutting down the instance remove the tag processed compose file by default. This is an option as it can be useful to have this file for debugging purposes.
+    if (getSetting(composeRemoveTempFileOnShutdown)) {
+      deleteComposeFile(composePath)
+    }
   }
 
   def buildDockerImage(implicit state: State, args: Seq[String]): Unit = {
@@ -296,11 +302,22 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
   }
 
   /**
-   * Generates a random instance name so that it won't collide with other instances running and so that instances can be uniquely identified from the list of running containers
+   * Generates an instance name that is unique from that of the running containers
    * @return The generated instance name
    */
-  def generateInstanceName: String = {
-    scala.util.Random.nextInt(1000000).toString
+  def generateInstanceName(state: State): String = {
+    val runningIds = getAllRunningInstanceIds(state)
+    generateInstanceNameRec(runningIds)
+  }
+
+  /**
+   * Recursively looks for an instance name that is unique
+   * @param runningIds The current list of running instance id's
+   * @return
+   */
+  def generateInstanceNameRec(runningIds: Seq[String]): String = {
+    val randNum = scala.util.Random.nextInt(1000000).toString
+    if (runningIds.contains(randNum)) generateInstanceNameRec(runningIds) else randNum
   }
 
   def containsArg(arg: String, args: Seq[String]): Boolean = {

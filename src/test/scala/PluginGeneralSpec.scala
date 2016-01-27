@@ -1,3 +1,4 @@
+import com.tapad.docker.DockerComposeKeys._
 import com.tapad.docker.DockerComposePlugin._
 import com.tapad.docker._
 import org.mockito.Mockito._
@@ -8,13 +9,6 @@ import scala._
 import scala.io._
 
 class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest with MockitoSugar {
-
-  test("Validate Docker instance name generation is random") {
-    val plugin = new DockerComposePluginLocal
-    val instanceName1 = plugin.generateInstanceName
-    val instanceName2 = plugin.generateInstanceName
-    assert(instanceName1 != instanceName2)
-  }
 
   test("Validate containsArg function") {
     val plugin = new DockerComposePluginLocal
@@ -64,6 +58,16 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     assert(portInfo.exists(port => port.containerPort == "3000/tcp" && port.hostPort == "32803"))
     assert(portInfo.exists(port => port.containerPort == "3001/udp" && port.hostPort == "32802"))
     assert(portInfo.exists(port => port.containerPort == "3002" && port.hostPort == "32801"))
+  }
+
+  test("Validate Docker instance name generation is random") {
+    val composeMock = spy(new DockerComposePluginLocal)
+    val instanceName1 = "123"
+    val instance1 = RunningInstanceInfo(instanceName1, "servicename", "path", List.empty)
+    doReturn(Option(List(instance1))).when(composeMock).getAttribute(runningInstances)(null)
+    val instanceName2 = composeMock.generateInstanceName(null)
+
+    assert(instanceName1 != instanceName2)
   }
 }
 

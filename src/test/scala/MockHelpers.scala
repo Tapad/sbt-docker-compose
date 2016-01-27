@@ -8,6 +8,7 @@ trait MockHelpers {
     doReturn(null).when(composeMock).getPersistedState(null)
     doReturn(serviceName).when(composeMock).getSetting(composeServiceName)(null)
     doReturn(true).when(composeMock).getSetting(composeRemoveContainersOnShutdown)(null)
+    doReturn(false).when(composeMock).getSetting(composeRemoveTempFileOnShutdown)(null)
     doReturn(instances).when(composeMock).getAttribute(runningInstances)(null)
     doReturn(null).when(composeMock).removeAttribute(runningInstances)(null)
     doReturn(null).when(composeMock).setAttribute(any, any)(any[sbt.State])
@@ -16,7 +17,7 @@ trait MockHelpers {
 
   /**
    * Stubs out calls to Docker so that they don't actually call any Docker commands
-   * @param composeMock Mock instnace of the Plugin
+   * @param composeMock Mock instance of the Plugin
    */
   def mockDockerCommandCalls(composeMock: DockerComposePluginLocal): Unit = {
     doNothing().when(composeMock).dockerComposeRemoveContainers(anyString, anyString)

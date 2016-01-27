@@ -98,6 +98,10 @@ trait ComposeFile extends SettingsHelper {
     new Yaml().load(fromFile(composePath).reader()).asInstanceOf[java.util.Map[String, java.util.LinkedHashMap[String, Any]]].asScala.toMap
   }
 
+  def deleteComposeFile(composePath: String): Unit = {
+    new File(composePath).delete()
+  }
+
   /**
    * Saves the supplied Docker Compose Yaml data to a temporary file
    * @param finalYaml Compose Yaml to save
