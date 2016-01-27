@@ -37,17 +37,32 @@ trait ComposeCustomTagHelpers {
   }
 
   /**
-   * Returns the image name without a tag appended to it. It will also remove any Docker Registry information prepended on the image
+   * Returns the image name without a tag, organization info or Docker Registry information. With the image format being: registry/org/image:tag
+   * this function will return "image" or "org/image" if removeOrganization is false.
    * @param imageName The full image name
-   * @return The image name without any tag or Docker Registry information
+   * @param removeOrganization True to remove organization info, False to keep it. Default is True.
+   * @return
    */
-  def imageWithoutTag(imageName: String): String = {
+  def getImageNameOnly(imageName: String, removeOrganization: Boolean = true): String = {
+    //Remove the tag if it exists
     val indexOfTag = imageName.lastIndexOf(':')
-    if (indexOfTag == -1) {
+    val imageNoTag = if (indexOfTag == -1) {
       imageName
     } else {
-      val indexOfImageStart = imageName.indexOf('/') + 1
-      imageName.substring(indexOfImageStart, indexOfTag)
+      imageName.substring(0, indexOfTag)
+    }
+
+    val indexOfRegistryEnd = imageNoTag.indexOf('/')
+    val indexOfOrganizationEnd = imageNoTag.lastIndexOf('/')
+    val orgExists = indexOfRegistryEnd != indexOfOrganizationEnd
+
+    //If there is no registry than return return image without a tag
+    if (indexOfRegistryEnd == -1) {
+      imageNoTag
+    } else if (orgExists && removeOrganization) {
+      imageNoTag.substring(indexOfOrganizationEnd + 1)
+    } else {
+      imageNoTag.substring(indexOfRegistryEnd + 1)
     }
   }
 }

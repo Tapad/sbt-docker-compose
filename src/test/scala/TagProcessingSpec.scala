@@ -9,6 +9,7 @@ class TagProcessingSpec extends FunSuite with BeforeAndAfter with OneInstancePer
   val imagePrivateRegistryNoTag = "registry/testImage"
   val imagePrivateRegistryWithLatest = "registry/testImage:latest"
   val imagePrivateRegistryWithTag = "registry/testImage:tag"
+  val imagePrivateRegistryWithOrgWithTag = "registry/org/testImage:tag"
   val imageCustomTag = "testImage<localbuild>"
   val imageTagAndCustomTag = "testImage:latest<localbuild>"
 
@@ -42,15 +43,17 @@ class TagProcessingSpec extends FunSuite with BeforeAndAfter with OneInstancePer
   }
 
   test("Validate custom tags get removed") {
-    assert(processImageTag(null, null, imageCustomTag) == "testimage")
-    assert(processImageTag(null, null, imageTagAndCustomTag) == "testimage:latest")
+    assert(processImageTag(null, null, imageCustomTag) == "testImage")
+    assert(processImageTag(null, null, imageTagAndCustomTag) == "testImage:latest")
   }
 
   test("Validate the removal of a tag from various image formats") {
-    assert(imageWithoutTag(imageNoTag) == imageNoTag)
-    assert(imageWithoutTag(imageLatestTag) == "testImage")
-    assert(imageWithoutTag(imagePrivateRegistryNoTag) == imagePrivateRegistryNoTag)
-    assert(imageWithoutTag(imagePrivateRegistryWithLatest) == "testImage")
-    assert(imageWithoutTag(imagePrivateRegistryWithTag) == "testImage")
+    assert(getImageNameOnly(imageNoTag) == imageNoTag)
+    assert(getImageNameOnly(imageLatestTag) == "testImage")
+    assert(getImageNameOnly(imagePrivateRegistryNoTag) == "testImage")
+    assert(getImageNameOnly(imagePrivateRegistryWithLatest) == "testImage")
+    assert(getImageNameOnly(imagePrivateRegistryWithTag) == "testImage")
+    assert(getImageNameOnly(imagePrivateRegistryWithOrgWithTag) == "testImage")
+    assert(getImageNameOnly(imagePrivateRegistryWithOrgWithTag, removeOrganization = false) == "org/testImage")
   }
 }

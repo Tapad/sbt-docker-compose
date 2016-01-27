@@ -38,15 +38,15 @@ trait ComposeFile extends SettingsHelper {
 
     composeYaml.map { service =>
       val (serviceName, serviceData) = service match { case (a, b) => (a, b) }
-      val imageName = serviceData.get(imageKey).toString.toLowerCase
+      val imageName = serviceData.get(imageKey).toString
 
       //Update Compose yaml with any images built as part of dockerComposeUp regardless of how it's defined in the compose file
-      val (updatedImageName, imageSource) = if (!useExistingImages && imageWithoutTag(imageName) == localService) {
+      val (updatedImageName, imageSource) = if (!useExistingImages && serviceName == localService) {
         //If the image does not contain a tag or has the tag "latest" it will not be replaced
         (replaceDefinedVersionTag(imageName, getSetting(version)), buildImageSource)
-      } else if (imageName.contains(useLocalBuildTag)) {
+      } else if (imageName.toLowerCase.contains(useLocalBuildTag)) {
         (processImageTag(state, args, imageName), buildImageSource)
-      } else if (imageName.contains(skipPullTag) || containsArg(skipPullArg, args)) {
+      } else if (imageName.toLowerCase.contains(skipPullTag) || containsArg(skipPullArg, args)) {
         (processImageTag(state, args, imageName), cachedImageSource)
       } else {
         (imageName, definedImageSource)
@@ -67,7 +67,7 @@ trait ComposeFile extends SettingsHelper {
    * @return The updated image value after any processing indicated by the custom tags
    */
   def processImageTag(implicit state: State, args: Seq[String], imageName: String): String = {
-    imageName.toLowerCase.replace(useLocalBuildTag, "").replace(skipPullTag, "")
+    imageName.replaceAll(s"(?i)$useLocalBuildTag", "").replaceAll(s"(?i)$skipPullTag", "")
   }
 
   /**
