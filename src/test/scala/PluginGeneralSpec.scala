@@ -27,12 +27,13 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
   test("Validate timeout when getting running instance info") {
     val serviceName = "service"
     val instanceName = "instance"
+    val dockerMachineName = "default"
     val composeMock = spy(new DockerComposePluginLocal)
     doReturn("").when(composeMock).getDockerContainerId(instanceName, serviceName)
 
     val serviceInfo = ServiceInfo(serviceName, "image", "source", null)
     val thrown = intercept[IllegalStateException] {
-      composeMock.populateServiceInfoForInstance(instanceName, List(serviceInfo), 0)
+      composeMock.populateServiceInfoForInstance(instanceName, dockerMachineName, List(serviceInfo), 0)
     }
 
     assert(thrown.getMessage === s"Cannot determine container Id for service: $serviceName")
@@ -42,6 +43,7 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     val serviceName = "service"
     val instanceName = "instance"
     val containerId = "123456"
+    val dockerMachineName = "default"
     val jsonStream = getClass.getResourceAsStream("docker_inspect.json")
     val inspectJson = Source.fromInputStream(jsonStream).mkString
     val composeMock = spy(new DockerComposePluginLocal)
@@ -53,7 +55,7 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     val port2 = PortInfo("0", "3001/udp", isDebug = false)
     val port3 = PortInfo("0", "3002", isDebug = false)
     val serviceInfo = ServiceInfo(serviceName, "image", "source", List(port1, port2, port3))
-    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance(instanceName, List(serviceInfo), 60)
+    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance(instanceName, dockerMachineName, List(serviceInfo), 60)
 
     assert(serviceInfoUpdated.size == 1)
     val portInfo = serviceInfoUpdated.head.ports

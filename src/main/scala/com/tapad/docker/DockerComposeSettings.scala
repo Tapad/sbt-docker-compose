@@ -26,6 +26,7 @@ trait DockerComposeSettingsLocal {
     composeNoBuild := false,
     composeRemoveContainersOnShutdown := true,
     composeContainerStartTimeoutSeconds := 500,
+    dockerMachineName := "default",
     commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeInstancesCommand)
   )
 }

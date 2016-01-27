@@ -49,6 +49,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val composeNoBuild = DockerComposeKeys.composeNoBuild
     val composeRemoveContainersOnShutdown = DockerComposeKeys.composeRemoveContainersOnShutdown
     val composeContainerStartTimeoutSeconds = DockerComposeKeys.composeContainerStartTimeoutSeconds
+    val dockerMachineName = DockerComposeKeys.dockerMachineName
   }
 }
 
@@ -168,8 +169,9 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
   def getRunningInstanceInfo(implicit state: State, instanceName: String, composePath: String, servicesInfo: Iterable[ServiceInfo]): RunningInstanceInfo = {
     val composeService = getSetting(composeServiceName).toLowerCase
     val composeStartTimeout = getSetting(composeContainerStartTimeoutSeconds)
+    val dockerMachine = getSetting(dockerMachineName)
 
-    val serviceInfo = populateServiceInfoForInstance(instanceName, servicesInfo, composeStartTimeout)
+    val serviceInfo = populateServiceInfoForInstance(instanceName, dockerMachine, servicesInfo, composeStartTimeout)
 
     RunningInstanceInfo(instanceName, composeService, composePath, serviceInfo)
   }
@@ -242,7 +244,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     }
   }
 
-  def populateServiceInfoForInstance(instanceName: String, services: Iterable[ServiceInfo], timeout: Int): Iterable[ServiceInfo] = {
+  def populateServiceInfoForInstance(instanceName: String, dockerMachineName: String, services: Iterable[ServiceInfo], timeout: Int): Iterable[ServiceInfo] = {
     //For all of the defined ports in the compose file get the port information from the locally running Docker containers
     services.map { service =>
       val serviceName = service.serviceName
@@ -271,7 +273,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
         val hostPort = compact(render(jsonInspect \ "NetworkSettings" \ "Ports" \ portFullName \ "HostPort")).replaceAll("\"", "")
         PortInfo(hostPort, port.containerPort, port.isDebug)
       }
-      val containerHost = getContainerHost(jsonInspect)
+      val containerHost = getContainerHost(dockerMachineName, jsonInspect)
 
       service.copy(ports = portsWithHost, containerId = containerId, containerHost = containerHost)
     }
@@ -279,13 +281,14 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
 
   /**
    * Determines the host connection string for a container
+   * @param dockerMachineName If on OSX the name of the Docker Machine being used
    * @param json The "docker inspect" json output for a container
    * @return The IP or host that can be used to access a container
    */
-  def getContainerHost(json: JValue): String = {
+  def getContainerHost(dockerMachineName: String, json: JValue): String = {
     if (isBoot2DockerEnvironment) {
       print("OSX boot2docker environment detected. Using the docker-machine IP for the container.")
-      dockerMachineIp()
+      dockerMachineIp(dockerMachineName)
     } else {
       print("Non-OSX environment detected. Using the host from the container.")
       compact(render(json \ "NetworkSettings" \ "Gateway")).replaceAll("\"", "")

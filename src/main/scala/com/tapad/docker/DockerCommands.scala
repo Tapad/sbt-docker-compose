@@ -20,8 +20,8 @@ trait DockerCommands {
     s"docker pull $imageName".!
   }
 
-  def dockerMachineIp(): String = {
-    "docker-machine ip default".!!.trim
+  def dockerMachineIp(machineName: String): String = {
+    s"docker-machine ip $machineName".!!.trim
   }
 
   def getDockerContainerId(instanceName: String, serviceName: String): String = {
@@ -31,6 +31,22 @@ trait DockerCommands {
 
   def getDockerContainerInfo(containerId: String): String = {
     s"docker inspect --type=container $containerId".!!
+  }
+
+  def dockerRemoveImage(imageName: String): Unit = {
+    s"docker rmi $imageName".!!
+  }
+
+  def dockerTagImage(currentImageName: String, newImageName: String): Unit = {
+    s"docker tag $currentImageName $newImageName".!!
+  }
+
+  def dockerPushImage(imageName: String): Unit = {
+    s"docker push $imageName".!
+  }
+
+  def dockerRun(command: String): Unit = {
+    s"docker run $command".!
   }
 
   /**
