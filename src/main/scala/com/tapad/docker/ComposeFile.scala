@@ -25,11 +25,13 @@ trait ComposeFile extends SettingsHelper {
   import com.tapad.docker.DockerComposePlugin._
 
   /**
-   * processCustomTags performs any pre-processing of Custom Tags in the Compose File before the Compose file is used by Docker. This function will also determine any debug ports.
+   * processCustomTags performs any pre-processing of Custom Tags in the Compose File before the Compose file is used
+   * by Docker. This function will also determine any debug ports.
    * This function can be overridden in derived plug-ins to add additional custom tags to process
    * @param state The sbt state
    * @param args Args passed to sbt command
-   * @return The collection of ServiceInfo objects. The Compose Yaml passed in is also modified inplace so the calling function will have the updates performed here
+   * @return The collection of ServiceInfo objects. The Compose Yaml passed in is also modified in-place so the calling
+   *        function will have the updates performed here
    */
   def processCustomTags(implicit state: State, args: Seq[String], composeYaml: yamlData): Iterable[ServiceInfo] = {
     val useExistingImages = getSetting(composeNoBuild)
@@ -39,7 +41,8 @@ trait ComposeFile extends SettingsHelper {
       val (serviceName, serviceData) = service match { case (a, b) => (a, b) }
       val imageName = serviceData.get(imageKey).toString
 
-      //Update Compose yaml with any images built as part of dockerComposeUp regardless of how it's defined in the compose file
+      //Update Compose yaml with any images built as part of dockerComposeUp regardless of how it's defined in the
+      //compose file
       val (updatedImageName, imageSource) = if (!useExistingImages && serviceName == localService) {
         //If the image does not contain a tag or has the tag "latest" it will not be replaced
         (replaceDefinedVersionTag(imageName, getSetting(version)), buildImageSource)
@@ -57,12 +60,14 @@ trait ComposeFile extends SettingsHelper {
   }
 
   /**
-   * Function that reads plug-in defined "<customTag>" fields from the Docker Compose file and performs some transformation on the Docker File based on the tag.
-   * The file after transformations are applied is what is used by Docker Compose to launch the instance. This function can be overridden in derived plug-ins to add
-   * additional tags pre-processing features.
+   * Function that reads plug-in defined "<customTag>" fields from the Docker Compose file and performs some
+   * transformation on the Docker File based on the tag. The file after transformations are applied is what is used by
+   * Docker Compose to launch the instance. This function can be overridden in derived plug-ins to add additional tags
+   * pre-processing features.
    * @param state The sbt state
    * @param args Args passed to sbt command
-   * @param imageName The image name and tag to be processed for example "testimage:1.0.0<skipPull>" This plugin just removes the tags from the image name.
+   * @param imageName The image name and tag to be processed for example "testimage:1.0.0<skipPull>" This plugin just
+   *                 removes the tags from the image name.
    * @return The updated image value after any processing indicated by the custom tags
    */
   def processImageTag(implicit state: State, args: Seq[String], imageName: String): String = {
@@ -70,7 +75,8 @@ trait ComposeFile extends SettingsHelper {
   }
 
   /**
-   * Parses the Port information from the Yaml content for a service. It will also report any ports that are exposed as Debugging ports
+   * Parses the Port information from the Yaml content for a service. It will also report any ports that are exposed as
+   * Debugging ports
    * @param serviceKeys The Docker Compose Yaml representing a service
    * @return PortInfo collection for all defined ports
    */
@@ -94,7 +100,12 @@ trait ComposeFile extends SettingsHelper {
   }
 
   def readComposeFile(composePath: String): yamlData = {
-    new Yaml().load(fromFile(composePath).reader()).asInstanceOf[java.util.Map[String, java.util.LinkedHashMap[String, Any]]].asScala.toMap
+    val fileReader = fromFile(composePath).reader()
+    try {
+      new Yaml().load(fileReader).asInstanceOf[java.util.Map[String, java.util.LinkedHashMap[String, Any]]].asScala.toMap
+    } finally {
+      fileReader.close()
+    }
   }
 
   def deleteComposeFile(composePath: String): Unit = {

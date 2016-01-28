@@ -9,7 +9,8 @@ import scala.collection.Seq
 import scala.util.Try
 
 /**
- * Trait for defining how to save Docker Compose RunningInstanceInfo to both the sbt session state and to the disk for longer term persistence across sbt sessions
+ * Trait for defining how to save Docker Compose RunningInstanceInfo to both the sbt session state and to the disk for
+ * longer term persistence across sbt sessions
  */
 trait ComposeInstancePersistence extends SettingsHelper {
   val settingsFileName = "dockerComposeInstances.bin"
@@ -21,7 +22,8 @@ trait ComposeInstancePersistence extends SettingsHelper {
   private var initialized = false
 
   /**
-   * getPersistedState loads any saved dockerCompose instances from previous sbt sessions. It will only be loaded on the initial call.
+   * getPersistedState loads any saved dockerCompose instances from previous sbt sessions. It will only be loaded on the
+   * initial call.
    * @param state  The current application state which contains the set of instances running
    * @return The updated application state containing any running instances from exited sbt sessions
    */
@@ -51,8 +53,8 @@ trait ComposeInstancePersistence extends SettingsHelper {
   }
 
   /**
-   * saveInstanceState will write out the current docker instance information to a temporary file so that it this information
-   * can be used between sbt sessions. If the there are no instances then remove the file.
+   * saveInstanceState will write out the current docker instance information to a temporary file so that it this
+   * information can be used between sbt sessions. If the there are no instances then remove the file.
    * @param state The current application state which contains the set of instances running
    */
   def saveInstanceState(implicit state: State): Unit = {

@@ -22,7 +22,8 @@ trait ComposeCustomTagHelpers {
   }
 
   /**
-   * Replaces the currently defined tag with the newly specified one. If no tag exists or the "latest" tag is defined then just return the original image.
+   * Replaces the currently defined tag with the newly specified one. If no tag exists or the "latest" tag is defined
+   * then just return the original image.
    * @param imageName The full image name
    * @param newTag The new tag to put on the image
    * @return The updated image name with the previous tag replaced by newly specified tag
@@ -37,7 +38,8 @@ trait ComposeCustomTagHelpers {
   }
 
   /**
-   * Returns the image name without a tag, organization info or Docker Registry information. With the image format being: registry/org/image:tag
+   * Returns the image name without a tag, organization info or Docker Registry information. With the image format being:
+   * registry/org/image:tag
    * this function will return "image" or "org/image" if removeOrganization is false.
    * @param imageName The full image name
    * @param removeOrganization True to remove organization info, False to keep it. Default is True.

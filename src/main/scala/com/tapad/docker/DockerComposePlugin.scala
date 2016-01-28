@@ -21,24 +21,28 @@ case class PortInfo(hostPort: String, containerPort: String, isDebug: Boolean)
  * Represents a Docker Compose service entry
  * @param serviceName The name of the Docker Compose service
  * @param imageName The full image name of the image for the service
- * @param imageSource An identifier representing where this image is being retrieved from. For example, "cache", "build", or "defined". More types can be added in extended classes.
+ * @param imageSource An identifier representing where this image is being retrieved from. For example, "cache",
+ *                    "build", or "defined". More types can be added in extended classes.
  * @param ports A collection of ports that are defined by the service
  * @param containerId The container ID of the running service
  * @param containerHost The container Host (name or IP) of the running service
  */
-case class ServiceInfo(serviceName: String, imageName: String, imageSource: String, ports: List[PortInfo], containerId: String = "", containerHost: String = "") extends ComposeCustomTagHelpers {
+case class ServiceInfo(serviceName: String, imageName: String, imageSource: String, ports: List[PortInfo],
+    containerId: String = "", containerHost: String = "") extends ComposeCustomTagHelpers {
   val versionTag = getTagFromImage(imageName)
 }
 
 /**
  * Represents a running Docker Compose instance
  * @param instanceName The unique identifier that represents a running Docker Compose instance
- * @param composeServiceName The SBT defined settingKey for composeServiceName. This allows an instance to be associated with an SBT project.
+ * @param composeServiceName The SBT defined settingKey for composeServiceName. This allows an instance to be associated
+ *                          with an SBT project.
  * @param composeFilePath The path to the Docker Compose file used by this instance
  * @param servicesInfo The collection of ServiceInfo objects that define this instance
  * @param instanceData An optional parameter to specify additional information about the instance
  */
-case class RunningInstanceInfo(instanceName: String, composeServiceName: String, composeFilePath: String, servicesInfo: Iterable[ServiceInfo], instanceData: Option[Any] = None)
+case class RunningInstanceInfo(instanceName: String, composeServiceName: String, composeFilePath: String,
+  servicesInfo: Iterable[ServiceInfo], instanceData: Option[Any] = None)
 
 object DockerComposePlugin extends DockerComposePluginLocal {
   override def projectSettings = DockerComposeSettings.baseDockerComposeSettings
@@ -71,21 +75,23 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
   val buildImageSource = "build"
 
   lazy val dockerComposeUpCommand = Command.args("dockerComposeUp", ("dockerComposeUp", "Starts a local Docker Compose instance."),
-    "Supply 'skipPull' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
-      "Supply 'skipBuild' as a parameter to use the current Docker image for the main project instead of building a new one.", "") {
+    s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
+      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one.", "") {
       (state: State, args: Seq[String]) =>
 
         launchInstanceWithLatestChanges(state, args)
     }
 
-  lazy val dockerComposeStopCommand = Command.args("dockerComposeStop", ("dockerComposeStop", "Stops all local Docker Compose instances started in this sbt project."),
+  lazy val dockerComposeStopCommand = Command.args("dockerComposeStop", ("dockerComposeStop", "Stops all local Docker " +
+    "Compose instances started in this sbt project."),
     "Supply the Instance Id to just stop a particular instance", "") {
       (state: State, args: Seq[String]) =>
 
         stopRunningInstances(state, args)
     }
 
-  lazy val dockerComposeInstancesCommand = Command.args("dockerComposeInstances", ("dockerComposeInstances", "Prints a table of information for all running Docker Compose instances."), "", "") {
+  lazy val dockerComposeInstancesCommand = Command.args("dockerComposeInstances", ("dockerComposeInstances", "Prints a " +
+    "table of information for all running Docker Compose instances."), "", "") {
     (state: State, args: Seq[String]) =>
 
       dockerComposeInstances(state, args)
@@ -129,13 +135,14 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
   }
 
   /**
-   * startDockerCompose creates a local Docker Compose instance based on the defined compose file definition. The compose
-   * instance will be randomly named so that it will not conflict with any currently running instances. It will also
-   * save the name of this instance to the settings state so that it can be stopped via dockerComposeStop. After the
-   * instance is started the set of connection information for the services will be printed to the console.
+   * startDockerCompose creates a local Docker Compose instance based on the defined compose file definition. The
+   * composeinstance will be randomly named so that it will not conflict with any currently running instances. It will
+   * also save the name of this instance to the settings state so that it can be stopped via dockerComposeStop. After
+   * the instance is started the set of connection information for the services will be printed to the console.
    *
    * @param state Current sbt setting state for the project
-   * @param args Supply 'skipPull' if locally cached images should be used in the Docker Compose instance. Otherwise, images will be pulled from the Docker Registry.
+   * @param args Supply 'skipPull' if locally cached images should be used in the Docker Compose instance. Otherwise,
+   *            images will be pulled from the Docker Registry.
    * @return The updated sbt session state along with the generated instance name
    */
   def startDockerCompose(implicit state: State, args: Seq[String]): (State, String) = {
@@ -151,7 +158,8 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
 
     pullDockerImages(args, servicesInfo)
 
-    //Generate random instance name so that it won't collide with other instances running and so that it can be uniquely identified from the list of running containers
+    //Generate random instance name so that it won't collide with other instances running and so that it can be uniquely
+    //identified from the list of running containers
     val instanceName = generateInstanceName(state)
 
     val newState = Try {
@@ -170,7 +178,8 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     (newState, instanceName)
   }
 
-  def getRunningInstanceInfo(implicit state: State, instanceName: String, composePath: String, servicesInfo: Iterable[ServiceInfo]): RunningInstanceInfo = {
+  def getRunningInstanceInfo(implicit state: State, instanceName: String, composePath: String,
+    servicesInfo: Iterable[ServiceInfo]): RunningInstanceInfo = {
     val composeService = getSetting(composeServiceName).toLowerCase
     val composeStartTimeout = getSetting(composeContainerStartTimeoutSeconds)
     val dockerMachine = getSetting(dockerMachineName)
@@ -182,9 +191,11 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
 
   def pullDockerImages(args: Seq[String], services: Iterable[ServiceInfo]): Unit = {
     if (containsArg(skipPullArg, args)) {
-      print(s"'skipPull' argument supplied. Skipping Docker Repository Pull for all images. Using locally cached version of images.")
+      print(s"'$skipPullArg' argument supplied. Skipping Docker Repository Pull for all images. Using locally cached " +
+        s"version of images.")
     } else {
-      //Pull down the dependent images ignoring locally built images since we want to test the local changes and not what has been already published
+      //Pull down the dependent images ignoring locally built images since we want to test the local changes and not
+      // what has been already published
       printBold(s"Pulling Docker images except for locally built images and images defined as <skipPull> or <localBuild>.")
 
       val (skipPull, pull) = services.partition(service => service.imageSource == buildImageSource || service.imageSource == cachedImageSource)
@@ -194,8 +205,8 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
   }
 
   /**
-   * stopDockerCompose stops the local Docker Compose instances that was previously started by startDockerCompose. It will also
-   * by default remove the containers and volumes created by Docker Compose.
+   * stopDockerCompose stops the local Docker Compose instances that was previously started by startDockerCompose. It
+   * will also by default remove the containers and volumes created by Docker Compose.
    *
    * @param state Current sbt setting state for the project.
    * @param args List of instance id's to stop.
@@ -236,7 +247,8 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
       dockerComposeRemoveContainers(instanceName, composePath)
     }
 
-    //When shutting down the instance remove the tag processed compose file by default. This is an option as it can be useful to have this file for debugging purposes.
+    //When shutting down the instance remove the tag processed compose file by default. This is an option as it can be
+    //useful to have this file for debugging purposes.
     if (getSetting(composeRemoveTempFileOnShutdown)) {
       deleteComposeFile(composePath)
     }
@@ -245,7 +257,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
   def buildDockerImage(implicit state: State, args: Seq[String]): Unit = {
     if (!getSetting(composeNoBuild)) {
       if (containsArg(skipBuildArg, args)) {
-        print(s"'skipBuild' argument supplied. Using the current local Docker image instead of building a new one.")
+        print(s"'$skipBuildArg' argument supplied. Using the current local Docker image instead of building a new one.")
       } else {
         printBold("Building a new Docker image")
         buildDockerImageTask(state)
@@ -253,7 +265,8 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     }
   }
 
-  def populateServiceInfoForInstance(instanceName: String, dockerMachineName: String, services: Iterable[ServiceInfo], timeout: Int): Iterable[ServiceInfo] = {
+  def populateServiceInfoForInstance(instanceName: String, dockerMachineName: String, services: Iterable[ServiceInfo],
+    timeout: Int): Iterable[ServiceInfo] = {
     //For all of the defined ports in the compose file get the port information from the locally running Docker containers
     services.map { service =>
       val serviceName = service.serviceName
