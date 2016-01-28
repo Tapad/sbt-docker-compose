@@ -8,7 +8,6 @@ import org.yaml.snakeyaml.Yaml
 import sbt.Keys._
 import sbt._
 
-import scala.Console._
 import scala.collection.JavaConverters._
 import scala.collection.{ Iterable, Seq }
 import scala.io.Source._
@@ -117,7 +116,6 @@ trait ComposeFile extends SettingsHelper {
       writer.close()
     }
 
-    println(s"Created Compose File with Updated Images: $updatedComposePath")
     updatedComposePath
   }
 }

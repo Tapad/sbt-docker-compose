@@ -28,6 +28,7 @@ trait DockerComposeSettingsLocal {
     composeRemoveTempFileOnShutdown := true,
     composeContainerStartTimeoutSeconds := 500,
     dockerMachineName := "default",
+    dockerImageCreationPlugin := DockerImagePluginType.SbtDocker,
     commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeInstancesCommand)
   )
 }

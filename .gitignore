@@ -6,6 +6,6 @@ project/target/*
 project/project/*
 project/license.sbt
 project/credentials.sbt
-examples/*/project/*
+examples/*/project/project
 examples/*/target/*
-examples/multi-project/*/target/
+examples/*/*/target/

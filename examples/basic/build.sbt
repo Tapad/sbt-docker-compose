@@ -4,7 +4,7 @@ version := "1.0.0"
 
 scalaVersion := "2.10.6"
 
-enablePlugins(DockerPlugin, DockerComposePlugin)
+enablePlugins(sbtdocker.DockerPlugin, DockerComposePlugin)
 
 dockerfile in docker := {
   new Dockerfile {

@@ -4,6 +4,7 @@ import com.tapad.docker.DockerComposeKeys._
 import net.liftweb.json._
 import sbt._
 
+import scala.Console._
 import scala.collection._
 import scala.concurrent.duration._
 import scala.util.Try
@@ -51,6 +52,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val composeRemoveTempFileOnShutdown = DockerComposeKeys.composeRemoveTempFileOnShutdown
     val composeContainerStartTimeoutSeconds = DockerComposeKeys.composeContainerStartTimeoutSeconds
     val dockerMachineName = DockerComposeKeys.dockerMachineName
+    val dockerImageCreationPlugin = DockerComposeKeys.dockerImageCreationPlugin
   }
 }
 
@@ -145,6 +147,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     val composeYaml = readComposeFile(composeFilePath)
     val servicesInfo = processCustomTags(state, args, composeYaml)
     val updatedComposePath = saveComposeFile(composeYaml)
+    println(s"Created Compose File with Processed Custom Tags: $updatedComposePath")
 
     pullDockerImages(args, servicesInfo)
 

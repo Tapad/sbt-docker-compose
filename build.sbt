@@ -15,6 +15,10 @@ libraryDependencies ++= Seq("net.liftweb" %% "lift-json" % "2.5-RC5",
   "org.scalatest" %% "scalatest" % "2.2.6" % "test",
   "org.mockito" % "mockito-all" % "1.9.5" % "test")
 
+//Add library dependencies for the following Docker image creation plugins so that their sbt 'tasks' are available
+addSbtPlugin("com.typesafe.sbt" %% "sbt-native-packager" % "1.0.6")
+addSbtPlugin("se.marcuslonnberg" % "sbt-docker" % "1.2.0")
+
 //TODO Remove code below and replace with commented out publishTo once in Sonatype
 val tapadNexusSnapshots = "Tapad Nexus Snapshots" at "http://nexus.tapad.com:8080/nexus/content/repositories/snapshots"
 val tapadNexusReleases = "Tapad Nexus Releases" at "http://nexus.tapad.com:8080/nexus/content/repositories/releases"
@@ -63,8 +67,6 @@ pomExtra := {
       </developer>
     </developers>
   }
-
-addSbtPlugin("se.marcuslonnberg" % "sbt-docker" % "1.2.0")
 
 scalariformSettings
 

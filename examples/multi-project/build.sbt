@@ -11,7 +11,7 @@ docker <<= (docker in sample1, docker in sample2) map {(image, _) => image}
 val dockerAppPath = "/app/"
 
 lazy val sample1 = project.
-  enablePlugins(DockerPlugin, DockerComposePlugin).
+  enablePlugins(sbtdocker.DockerPlugin, DockerComposePlugin).
   settings(
     dockerfile in docker := {
       new Dockerfile {
@@ -29,7 +29,7 @@ lazy val sample1 = project.
   )
 
 lazy val sample2 = project.
-  enablePlugins(DockerPlugin, DockerComposePlugin).
+  enablePlugins(sbtdocker.DockerPlugin, DockerComposePlugin).
   settings(
     dockerfile in docker := {
       new Dockerfile {

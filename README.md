@@ -3,15 +3,24 @@ sbt-docker-compose
 
 About
 -----
-sbt-docker-compose is an sbt plugin that integrates the functionality of [Docker Compose] (https://docs.docker.com/compose/) directly into the sbt build environment. 
-This allows you to make code changes and with one sbt command start up a local running instance of your latest changes connected to all of its dependencies for live testing and debugging.
-This plugin is designed to be extended to allow for instances to be launched in non-local environments such as AWS and Mesos.
+sbt-docker-compose is an sbt plugin that integrates the functionality of [Docker Compose] (https://docs.docker.com/compose/) 
+directly into the sbt build environment. This allows you to make code changes and with one sbt command start up a local 
+running instance of your latest changes connected to all of its dependencies for live testing and debugging. This plugin 
+is designed to be extended to allow for instances to be launched in non-local environments such as AWS and Mesos.
 
 Steps to Enable and Configure sbt-docker-compose
 ------------------------------------------------
 
-1) Configure your sbt project(s) to build Docker images. By default sbt-docker-compose uses [sbt-docker plugin] (https://github.com/marcuslonnberg/sbt-docker).
-   It is possible to use a different plugin to create Docker images however the "buildDockerImageTask" in the DockerComposePlugin would have to be updated.
+1) Configure your sbt project(s) to build Docker images:
+ 
+  - The [sbt-docker] (https://github.com/marcuslonnberg/sbt-docker) plugin is configured by default.
+ 
+  - The [sbt-native-packager] (https://github.com/sbt/sbt-native-packager) plugin can be used instead by setting:
+  
+  
+    dockerImageCreationPlugin := NativePackager
+      
+   See the [basic-native-packager] (examples/basic-native-packager) example for more details.
 
 2) Add the sbt-docker-compose plugin to your projects plugins.sbt file:
 
@@ -23,14 +32,14 @@ Steps to Enable and Configure sbt-docker-compose
 
     enablePlugins(DockerComposePlugin)
 
-4) Define a [docker-compose.yml] (https://docs.docker.com/compose/compose-file/) file which describes your component, its dependent images and the links between them.
-   The file can be located in one of three places with the precedence order:
+4) Define a [docker-compose.yml] (https://docs.docker.com/compose/compose-file/) file which describes your component, 
+its dependent images and the links between them. This file can be located in one of three places with the precedence order:
    
-   - Resources directory of the project
+   - The 'resources' directory of the project as defined by the sbt 'resourceDirectory' setting.
    
-   - A 'docker' directory off of the root of the project
+   - A 'docker' directory off of the root of the project.
    
-   - In the root of the project directory
+   - In the root of the project directory.
 
 5) Optional: There are a number of optional Keys that can be set as well if you want to override the default settings:
    
@@ -40,7 +49,8 @@ Steps to Enable and Configure sbt-docker-compose
     composeRemoveContainersOnShutdown := // True if a Docker Compose should remove containers when shutting down the compose instance. This defaults to True.
     composeContainerStartTimeoutSeconds := // The amount of time in seconds to wait for the containers in a Docker Compose instance to start. Defaults to 500 seconds.
     composeRemoveTempFileOnShutdown := // True if a Docker Compose should remove the post Custom Tag processed Compose File on shutdown. This defaults to True.
-    dockerMachineName =: //If running on OSX the name of the Docker Machine Virtual machine being used. If not overridden it is set to 'default'
+    dockerMachineName =: // If running on OSX the name of the Docker Machine Virtual machine being used. If not overridden it is set to 'default'
+    dockerImageCreationPlugin =: // Specifies the sbt plugin being used Docker image creation. This defaults to SbtDocker for the 'sbt-docker' plugin but can also be set to NativePackager for the 'sbt-native-packager' plugin.
 
 There are several sample projects showing how to configure sbt-docker-compose that can be found in the [**examples**] (examples) folder.
 
@@ -50,11 +60,13 @@ To Start a Docker Compose Instance for Testing / Debugging
 
     dockerComposeUp
    
-   To use locally built images for all services defined in the Docker Compose file instead of pulling from the Docker Registry use the following command:
+   To use locally built images for all services defined in the Docker Compose file instead of pulling from the Docker 
+   Registry use the following command:
    
     dockerComposeUp skipPull
     
-   By default before starting a Docker Compose instance a new Docker image will be built with your latest code changes. If you know you didn't make any code changes and do not want to build a new image use the 'skipBuild' argument:
+   By default before starting a Docker Compose instance a new Docker image will be built with your latest code changes.
+   If you know you didn't make any code changes and do not want to build a new image use the 'skipBuild' argument:
    
     dockerComposeUp skipBuild
     
@@ -76,14 +88,18 @@ Instance information is persisted in a temporary file so that it will be availab
 
 Docker Compose File Custom Tags
 -------------------------------
-Custom tags add the ability to pre-process the contents of the docker-compose.yml file and make modifications to it before using it to start your instance.
-There are two custom tags for images that this plugin supports: "\<localBuild\>" and "\<skipPull\>". Support for additional tags can be added by overriding the "processCustomTags" method.
+Custom tags add the ability to pre-process the contents of the docker-compose.yml file and make modifications to it 
+before using it to start your instance. There are two custom tags for images that this plugin supports: "\<localBuild\>"
+and "\<skipPull\>". Support for additional tags can be added by overriding the "processCustomTags" method.
 
-1) Define "\<skipPull\>" on a set of particular images in the docker-compose file that you want to use a local copy of instead of pulling the latest available from the Docker Registry.
+1) Define "\<skipPull\>" on a set of particular images in the docker-compose file that you want to use a local copy of 
+instead of pulling the latest available from the Docker Registry.
 
     image: yourregistry.com/service:1.0.0<skipPull>
    
-2) Define "\<localBuild\>" to launch the locally built version of the image instead of pulling from the public Docker Registry. This is how associated images from multi-project builds should be tagged. See the [**multi-project**] (examples/multi-project) example.
+2) Define "\<localBuild\>" to launch the locally built version of the image instead of pulling from the public Docker 
+Registry. This is how associated images from multi-project builds should be tagged. 
+See the [**multi-project**] (examples/multi-project) example.
    
     image: service:latest<localBuild>
     
@@ -107,11 +123,13 @@ The 'Image Source' column can be one of the following values:
     
     image: yourregistry.com/service:1:0:0
 
-2) **build**: The image was built when starting the topology instance or the image is tagged as "\<localBuild\>" and being used in a muti-project sbt compose-file. 
+2) **build**: The image was built when starting the topology instance or the image is tagged as "\<localBuild\>" and 
+being used in a muti-project sbt compose-file. 
 
     image: service:latest<localBuild>
     
-3) **cache**: The locally cached version of the image is being used even if there may be a new version in the Docker Registry. This is the result of "\<skipPull\>" being defined on a particular image or being passed to dockerComposeUp.
+3) **cache**: The locally cached version of the image is being used even if there may be a new version in the Docker 
+Registry. This is the result of "\<skipPull\>" being defined on a particular image or being passed to dockerComposeUp.
 
     image: service:latest<skipPull>
     
@@ -141,34 +159,45 @@ In the ports section you will also need to expose the port value defined in the 
         - "0:5005"
 
 Once the container is started you can to attach to it remotely. The instance connection table will mark 'YES' in the 'IsDebug'
-column for any exposed ports that can be attached to with the debugger. See the [basic] (examples/basic/docker/docker-compose.yml) example for a project configured with debugging enabled.
+column for any exposed ports that can be attached to with the debugger. 
+See the [basic] (examples/basic/docker/docker-compose.yml) example for a project configured with debugging enabled.
 
 Examples
 --------
-In the [**examples**] (examples) folder there are three different projects showing different uses for the sbt-docker-compose plugin.
+In the [**examples**] (examples) folder there are three different projects showing different uses for the 
+sbt-docker-compose plugin.
 
-1) [**basic**] (examples/basic): This project outlines a very basic example of how to enable the plugin on a simple application. From sbt run the following to compile the code, build a Docker image, and launch a Docker Compose instance.
+1) [**basic**] (examples/basic): This project outlines a very basic example of how to enable the plugin on a simple 
+application. From sbt run the following to compile the code, build a Docker image, and launch a Docker Compose instance.
+
+    dockerComposeUp
+    
+2) [**basic-native-packager**] (examples/basic-native-packager): The same as the 'basic' example except that the 
+sbt-native-packager is used to build the Docker image instead of sbt-docker.
 
     dockerComposeUp
 
-2) [**no-build**] (examples/no-build): This project shows how sbt-docker-compose can be used to launch instances of images that are already published and do not need to be built locally.
-This example uses the official Redis image from Docker Hub. Once the instance is started Redis will be available on the displayed "Host:Port". The port is dynamically assigned so that multiple
-instances can be started.
+3) [**no-build**] (examples/no-build): This project shows how sbt-docker-compose can be used to launch instances of 
+images that are already published and do not need to be built locally.
+This example uses the official Redis image from Docker Hub. Once the instance is started Redis will be available on the 
+displayed "Host:Port". The port is dynamically assigned so that multiple instances can be started.
 
     dockerComposeUp
 
-3) [**multi-project**] (examples/multi-project): This project shows how more advanced multi-project builds are supported.
+4) [**multi-project**] (examples/multi-project): This project shows how more advanced multi-project builds are supported.
 From sbt you can build the Docker image and launch a running instance of a single project by executing:
 
     project sample1
     dockerComposeUp
     
-However, from the root "multi-project" you can run the following to build new Docker images for both sub projects and launch a running instance that consists of both images:
+However, from the root "multi-project" you can run the following to build new Docker images for both sub projects and 
+launch a running instance that consists of both images:
 
     project multi-project
     dockerComposeUp
     
-Note how the docker-compose.yml file for the root project tags each image with "\<localBuild\>". This allows dockerComposeUp to know that these images should not be updated from the Docker Registry.
+Note how the docker-compose.yml file for the root project tags each image with "\<localBuild\>". This allows dockerComposeUp 
+to know that these images should not be updated from the Docker Registry.
 
 Other
 -----
