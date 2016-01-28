@@ -16,10 +16,9 @@ Steps to Enable and Configure sbt-docker-compose
   - The [sbt-docker] (https://github.com/marcuslonnberg/sbt-docker) plugin is configured by default.
  
   - The [sbt-native-packager] (https://github.com/sbt/sbt-native-packager) plugin can be used instead by setting:
-  
-  
+    ```
     dockerImageCreationPlugin := NativePackager
-      
+    ```
    See the [basic-native-packager] (examples/basic-native-packager) example for more details.
 
 2) Add the sbt-docker-compose plugin to your projects plugins.sbt file:
