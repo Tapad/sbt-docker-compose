@@ -4,7 +4,12 @@ version := "1.0.0"
 
 scalaVersion := "2.10.6"
 
+libraryDependencies += "org.scalatest" %% "scalatest" % "2.2.6" % "test"
+
 enablePlugins(sbtdocker.DockerPlugin, DockerComposePlugin)
+
+//Only execute tests tagged as the following
+testTagsToExecute := "DockerComposeTag"
 
 dockerfile in docker := {
   new Dockerfile {

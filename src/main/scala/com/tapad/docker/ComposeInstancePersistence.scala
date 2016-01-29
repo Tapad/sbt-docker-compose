@@ -100,6 +100,26 @@ trait ComposeInstancePersistence extends SettingsHelper {
   }
 
   /**
+   * Gets a matching Running Instance if it exists
+   * @param state The current application state which contains the set of instances running
+   * @param args Arguments given to an sbt command
+   * @return The first instance that matches the input args
+   */
+  def getMatchingRunningInstance(implicit state: State, args: Seq[String]): Option[RunningInstanceInfo] = {
+    getAttribute(runningInstances) match {
+      case Some(launchedInstances) =>
+        val matchingInstance = for {
+          arg <- args
+          instance <- launchedInstances
+          if arg == instance.instanceName
+        } yield instance
+
+        matchingInstance.headOption
+      case None => None
+    }
+  }
+
+  /**
    * Updates the sbt session information into includes the new RunningInstanceInfo object
    * @param state The current application state which contains the set of instances running
    * @param instance The instance information to save

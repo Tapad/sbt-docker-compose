@@ -29,6 +29,12 @@ trait DockerComposeSettingsLocal {
     composeContainerStartTimeoutSeconds := 500,
     dockerMachineName := "default",
     dockerImageCreationPlugin := DockerImagePluginType.SbtDocker,
-    commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeInstancesCommand)
+    testTagsToExecute := "",
+    scalaTestJar := {
+      val classpathTest = (managedClasspath in Test).value
+      classpathTest.files.filter(_.getAbsolutePath.contains("scalatest")).mkString(":")
+    },
+    testCasesJar := artifactPath.in(Test, packageBin).value.getAbsolutePath,
+    commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeInstancesCommand, dockerComposeTest)
   )
 }

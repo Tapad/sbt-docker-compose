@@ -1,7 +1,7 @@
 package com.tapad.docker
 
-import sbt.Keys._
 import sbt._
+import sbt.Keys._
 import sbtdocker.DockerKeys._
 import com.tapad.docker.DockerComposeKeys._
 import com.tapad.docker.DockerImagePluginType._

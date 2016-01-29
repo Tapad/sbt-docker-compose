@@ -30,7 +30,7 @@ trait ComposeCustomTagHelpers {
    */
   def replaceDefinedVersionTag(imageName: String, newTag: String): String = {
     //Handle the case where the "latest" tag is used for the image. In this case disregard the sbt project version info
-    if (imageName.endsWith(latestVersion) || !imageName.contains(":")) {
+    if (!imageName.contains(":") || imageName.endsWith(s":$latestVersion")) {
       imageName
     } else {
       imageName.substring(0, imageName.lastIndexOf(':')) + s":$newTag"

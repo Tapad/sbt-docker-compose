@@ -7,7 +7,6 @@ import com.tapad.docker.DockerComposeKeys._
 import org.yaml.snakeyaml.Yaml
 import sbt.Keys._
 import sbt._
-
 import scala.collection.JavaConverters._
 import scala.collection.{ Iterable, Seq }
 import scala.io.Source._

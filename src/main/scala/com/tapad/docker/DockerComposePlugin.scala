@@ -57,6 +57,9 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val composeContainerStartTimeoutSeconds = DockerComposeKeys.composeContainerStartTimeoutSeconds
     val dockerMachineName = DockerComposeKeys.dockerMachineName
     val dockerImageCreationPlugin = DockerComposeKeys.dockerImageCreationPlugin
+    val testTagsToExecute = DockerComposeKeys.testTagsToExecute
+    val testCasesJar = DockerComposeKeys.testCasesJar
+    val scalaTestJar = DockerComposeKeys.scalaTestJar
   }
 }
 
@@ -64,7 +67,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
  * SBT Plug-in that allows for local Docker Compose instances to be managed directly from SBT.
  * This class can be extended to manage Docker Compose instances in non-local environments such as Mesos or AWS.
  */
-class DockerComposePluginLocal extends AutoPlugin with DockerCommands with ComposeFile with ComposeCustomTagHelpers with ComposeInstancePersistence with PrintFormatting with SettingsHelper {
+class DockerComposePluginLocal extends AutoPlugin with DockerCommands with ComposeFile with ComposeCustomTagHelpers with ComposeInstancePersistence with PrintFormatting with ComposeTestRunner with SettingsHelper {
   //Command line arguments
   val skipPullArg = "skipPull"
   val skipBuildArg = "skipBuild"
@@ -94,7 +97,13 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     "table of information for all running Docker Compose instances."), "", "") {
     (state: State, args: Seq[String]) =>
 
-      dockerComposeInstances(state, args)
+      printDockerComposeInstances(state, args)
+  }
+
+  lazy val dockerComposeTest = Command.args("dockerComposeTest", ("dockerComposeTest", "Executes test " +
+    "cases against a Docker Compose instance."), "", "") { (state: State, args: Seq[String]) =>
+
+    composeTestRunner(state, args)
   }
 
   def launchInstanceWithLatestChanges(state: State, args: Seq[String]): State = {
@@ -120,23 +129,9 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     }
   }
 
-  def dockerComposeInstances(state: State, args: Seq[String]): State = {
-    val newState = getPersistedState(state)
-
-    getAttribute(runningInstances)(newState) match {
-      case Some(launchedInstances) =>
-        //Print all of the connection information for each running instance
-        launchedInstances.foreach(printMappedPortInformation)
-      case None =>
-        print("There are no currently running Docker Compose instances detected.")
-    }
-
-    newState
-  }
-
   /**
    * startDockerCompose creates a local Docker Compose instance based on the defined compose file definition. The
-   * composeinstance will be randomly named so that it will not conflict with any currently running instances. It will
+   * compose instance will be randomly named so that it will not conflict with any currently running instances. It will
    * also save the name of this instance to the settings state so that it can be stopped via dockerComposeStop. After
    * the instance is started the set of connection information for the services will be printed to the console.
    *
@@ -299,6 +294,51 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
 
       service.copy(ports = portsWithHost, containerId = containerId, containerHost = containerHost)
     }
+  }
+
+  def composeTestRunner(implicit state: State, args: Seq[String]): State = {
+    val newState = getPersistedState(state)
+
+    val requiresShutdown = getMatchingRunningInstance(state, args).isEmpty
+    val (finalState, instance) = getTestPassInstance(newState, args)
+
+    runTestPass(finalState, instance)
+
+    if (requiresShutdown)
+      stopDockerCompose(finalState, Seq(instance.get.instanceName))
+    else
+      finalState
+  }
+
+  def getTestPassInstance(state: State, args: Seq[String]): (State, Option[RunningInstanceInfo]) = {
+    //Check to see if a running instance was passed in which case kick off a test pass against it without starting and
+    //stopping a new instance
+    getMatchingRunningInstance(state, args) match {
+      case Some(runningInstance) =>
+        printBold(s"Starting Test Pass against the running local Docker Compose instance: ${runningInstance.instanceName}")
+        (state, getMatchingRunningInstance(state, Seq(runningInstance.instanceName)))
+      case None =>
+        printBold(s"Starting Test Pass against a new local Docker Compose instance")
+        buildDockerImage(state, args)
+        //Get the set of decorated endpoints and the randomly generated name of the project
+        val (newState2, instanceId) = startDockerCompose(state, args)
+
+        (newState2, getMatchingRunningInstance(newState2, Seq(instanceId)))
+    }
+  }
+
+  def printDockerComposeInstances(state: State, args: Seq[String]): State = {
+    val newState = getPersistedState(state)
+
+    getAttribute(runningInstances)(newState) match {
+      case Some(launchedInstances) =>
+        //Print all of the connection information for each running instance
+        launchedInstances.foreach(printMappedPortInformation)
+      case None =>
+        print("There are no currently running Docker Compose instances detected.")
+    }
+
+    newState
   }
 
   /**

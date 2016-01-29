@@ -50,6 +50,9 @@ its dependent images and the links between them. This file can be located in one
     composeRemoveTempFileOnShutdown := // True if a Docker Compose should remove the post Custom Tag processed Compose File on shutdown. This defaults to True.
     dockerMachineName =: // If running on OSX the name of the Docker Machine Virtual machine being used. If not overridden it is set to 'default'
     dockerImageCreationPlugin =: // Specifies the sbt plugin being used Docker image creation. This defaults to SbtDocker for the 'sbt-docker' plugin but can also be set to NativePackager for the 'sbt-native-packager' plugin.
+    testTagsToExecute =: // Set of ScalaTest Tags to execute when dockerComposeTest is run. Separate multiple tags by a comma. It defaults to executing all tests.
+    testCasesJar =: //The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.
+    scalaTestJar =: //The path to the ScalaTest Jar file used to run the test cases. This defaults to using the ScalaTest Jar in the current sbt project that was added as a library dependency.
 
 There are several sample projects showing how to configure sbt-docker-compose that can be found in the [**examples**] (examples) folder.
 
@@ -84,6 +87,34 @@ To Start a Docker Compose Instance for Testing / Debugging
     dockerComposeInstances
     
 Instance information is persisted in a temporary file so that it will be available between restarts of an sbt session.
+
+To Execute ScalaTest Test Cases Against the Running Instance
+------------------------------------------------------------
+The sbt-docker-compose plugin provides the ability to run a suite of ScalaTest test cases against a Docker Compose instance.
+The dynamically assigned host and port information are passed into each test case via the 
+ScalaTest [ConfigMap] (http://doc.scalatest.org/2.0/index.html#org.scalatest.ConfigMap).
+
+The key into the map is the "serviceName:containerPort" that is statically defined in the Docker Compose file and it 
+will return "host:hostPort" which is the Docker Compose generated and exposed endpoint that can be connected to at runtime
+for testing. See the [**basic-with-tests**] (examples/basic-with-tests) example for more details.
+
+By default all tests will be executed, however you can also Tag test cases and indicate to the plugin to only execute those tests:
+ 
+    testTagsToExecute := "DockerComposeTag"
+
+1) To start a new DockerCompose instance, run your tests, and then shut it down run:
+
+    dockerComposeTest
+    
+2) To run your test cases against an already running instance execute:
+
+    dockerComposeTest <instance id>
+    
+**Note** The test pass is started using the (ScalaTest Test Runner) [http://www.scalatest.org/user_guide/using_the_runner]
+using the 'Scala' process that exist on you PATH. For this to work the version of ScalaTest being used must be aligned
+to the version 'Scala' that is installed. For example, if you are using ScalaTest 2.10.6 than Scala on the path
+must be 2.10.X. If this is not configured correctly you may see an issue with the Test Runner failing to load classes.
+
 
 Docker Compose File Custom Tags
 -------------------------------
@@ -159,20 +190,32 @@ In the ports section you will also need to expose the port value defined in the 
 
 Once the container is started you can to attach to it remotely. The instance connection table will mark 'YES' in the 'IsDebug'
 column for any exposed ports that can be attached to with the debugger. 
-See the [basic] (examples/basic/docker/docker-compose.yml) example for a project configured with debugging enabled.
+See the [basic] (examples/basic-with-tests/docker/docker-compose.yml) example for a project configured with debugging enabled.
 
 Examples
 --------
 In the [**examples**] (examples) folder there are three different projects showing different uses for the 
 sbt-docker-compose plugin.
 
-1) [**basic**] (examples/basic): This project outlines a very basic example of how to enable the plugin on a simple 
-application. From sbt run the following to compile the code, build a Docker image, and launch a Docker Compose instance.
+1) [**basic-with-tests**] (examples/basic-with-tests): This project outlines a very basic example of how to enable the
+plugin on a simple application that will echo back "Hello, world!". The examples also shows how to create a ScalaTest 
+test case that can run against the dynamically assigned endpoints. From sbt run the following to compile the code, 
+build a Docker image, and launch a Docker Compose instance.
 
     dockerComposeUp
     
-2) [**basic-native-packager**] (examples/basic-native-packager): The same as the 'basic' example except that the 
-sbt-native-packager is used to build the Docker image instead of sbt-docker.
+Run the following to execute a test case against the running instance:
+
+    dockerComposeTest <instance id>
+
+Run the following to start a new instance, run tests and shutdown the instance:
+
+    dockerComposeTest
+    
+2) [**basic-native-packager**] (examples/basic-native-packager): This project outlines a very basic example of how to
+enable the plugin on a simple application. From sbt run the following to compile the code, build a Docker image, and 
+launch a Docker Compose instance. In this example the sbt-native-packager is used to build the Docker image instead of 
+sbt-docker.
 
     dockerComposeUp
 
