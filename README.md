@@ -88,8 +88,8 @@ To Start a Docker Compose Instance for Testing / Debugging
     
 Instance information is persisted in a temporary file so that it will be available between restarts of an sbt session.
 
-To Execute ScalaTest Test Cases Against the Running Instance
-------------------------------------------------------------
+To Execute ScalaTest Test Cases Against a Running Instance
+----------------------------------------------------------
 The sbt-docker-compose plugin provides the ability to run a suite of ScalaTest test cases against a Docker Compose instance.
 The dynamically assigned host and port information are passed into each test case via the 
 ScalaTest [ConfigMap] (http://doc.scalatest.org/2.0/index.html#org.scalatest.ConfigMap).
@@ -110,8 +110,8 @@ By default all tests will be executed, however you can also Tag test cases and i
 
     dockerComposeTest <instance id>
     
-**Note** The test pass is started using the (ScalaTest Test Runner) [http://www.scalatest.org/user_guide/using_the_runner]
-using the 'Scala' process that exist on you PATH. For this to work the version of ScalaTest being used must be aligned
+**Note:** The test pass is started using the [ScalaTest Test Runner] (http://www.scalatest.org/user_guide/using_the_runner)
+using the 'Scala' process that exists on your PATH. For this to work the version of ScalaTest being used must be aligned
 to the version 'Scala' that is installed. For example, if you are using ScalaTest 2.10.6 than Scala on the path
 must be 2.10.X. If this is not configured correctly you may see an issue with the Test Runner failing to load classes.
 
@@ -176,6 +176,10 @@ Each running instance will also output the commands that can be used to:
 3) **View the standard out logging from the instance:**
  
     docker-compose -p 449342 -f /tmp/compose-updated4937097142223953047.yml logs
+
+4) **Execute test cases against the running instance:**
+ 
+    dockerComposeTest <Instance Id>
     
                                                                                                           
 Debugging
@@ -206,7 +210,7 @@ build a Docker image, and launch a Docker Compose instance.
     
 Run the following to execute a test case against the running instance:
 
-    dockerComposeTest <instance id>
+    dockerComposeTest <Instance Id>
 
 Run the following to start a new instance, run tests and shutdown the instance:
 
