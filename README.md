@@ -112,7 +112,7 @@ By default all tests will be executed, however you can also Tag test cases and i
     
 **Note:** The test pass is started using the [ScalaTest Test Runner] (http://www.scalatest.org/user_guide/using_the_runner)
 using the 'Scala' process that exists on your PATH. For this to work the version of ScalaTest being used must be aligned
-to the version 'Scala' that is installed. For example, if you are using ScalaTest 2.10.6 than Scala on the path
+to the version of 'Scala' that is on your PATH. For example, if you are using ScalaTest 2.10.6 than Scala on the PATH
 must be 2.10.X. If this is not configured correctly you may see an issue with the Test Runner failing to load classes.
 
 
@@ -198,13 +198,13 @@ See the [basic] (examples/basic-with-tests/docker/docker-compose.yml) example fo
 
 Examples
 --------
-In the [**examples**] (examples) folder there are three different projects showing different uses for the 
+In the [**examples**] (examples) folder there are four different projects showing different uses for the 
 sbt-docker-compose plugin.
 
 1) [**basic-with-tests**] (examples/basic-with-tests): This project outlines a very basic example of how to enable the
 plugin on a simple application that will echo back "Hello, world!". The examples also shows how to create a ScalaTest 
 test case that can run against the dynamically assigned endpoints. From sbt run the following to compile the code, 
-build a Docker image, and launch a Docker Compose instance.
+build a Docker image and launch a Docker Compose instance.
 
     dockerComposeUp
     
@@ -217,16 +217,16 @@ Run the following to start a new instance, run tests and shutdown the instance:
     dockerComposeTest
     
 2) [**basic-native-packager**] (examples/basic-native-packager): This project outlines a very basic example of how to
-enable the plugin on a simple application. From sbt run the following to compile the code, build a Docker image, and 
+enable the plugin on a simple application. From sbt run the following to compile the code, build a Docker image and 
 launch a Docker Compose instance. In this example the sbt-native-packager is used to build the Docker image instead of 
 sbt-docker.
 
     dockerComposeUp
 
 3) [**no-build**] (examples/no-build): This project shows how sbt-docker-compose can be used to launch instances of 
-images that are already published and do not need to be built locally.
-This example uses the official Redis image from Docker Hub. Once the instance is started Redis will be available on the 
-displayed "Host:Port". The port is dynamically assigned so that multiple instances can be started.
+images that are already published and do not need to be built locally. This example uses the official Redis image 
+from Docker Hub. Once the instance is started Redis will be available on the displayed "Host:Port". The port is
+dynamically assigned so that multiple instances can be started.
 
     dockerComposeUp
 
