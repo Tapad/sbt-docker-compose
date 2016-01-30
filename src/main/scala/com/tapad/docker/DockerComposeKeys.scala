@@ -5,7 +5,7 @@ import sbt._
 object DockerComposeKeys extends DockerComposeKeysLocal
 
 trait DockerComposeKeysLocal {
-  val composeFile = settingKey[String]("Full Path to the Compose File to use create test environment.")
+  val composeFile = settingKey[String]("Specify the full path to the Compose File to use to create your test instance. It defaults to docker-compose.yml in your resources folder.")
   val composeServiceName = settingKey[String]("The name of the service in the Docker Compose file being tested. This setting prevents the service image from being pull down from the Docker Registry. This defaults to the Project name.")
   val composeNoBuild = settingKey[Boolean]("True if a Docker Compose file is to be started without building any images and only using ones that already exist in the Docker Registry. This defaults to False.")
   val composeRemoveContainersOnShutdown = settingKey[Boolean]("True if a Docker Compose should remove containers when shutting down the compose instance. This defaults to True.")

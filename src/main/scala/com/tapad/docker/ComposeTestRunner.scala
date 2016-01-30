@@ -4,7 +4,7 @@ import com.tapad.docker.DockerComposeKeys._
 import sbt._
 import sbt.Project
 
-trait ComposeTestRunner extends SettingsHelper {
+trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
 
   /**
    * Compiles and binPackages latest test code
@@ -19,15 +19,11 @@ trait ComposeTestRunner extends SettingsHelper {
    * Attempts to locate the ScalaTest Jar that is being used sby this sbt project. By default it searches the
    * managedClasspath under the Test scope
    * @param state The sbt state
-   * @return The full path the the ScalaTest Jar if it is found otherwise and exception is thrown
+   * @return The full path the the ScalaTest Jar if it is found
    */
   def getScalaTestJar(implicit state: State): String = {
     val extracted = Project.extract(state)
     val (_, scalaTestJarPath) = extracted.runTask(scalaTestJar, state)
-    if (scalaTestJarPath.isEmpty) {
-      throw new IllegalStateException(s"Cannot find a ScalaTest Jar dependency. Please make sure it is added " +
-        s"to your sbt projects libraryDependencies")
-    }
 
     scalaTestJarPath
   }
@@ -58,6 +54,12 @@ trait ComposeTestRunner extends SettingsHelper {
     print("Compiling and Packaging test cases...")
     binPackageTests
 
-    s"scala -cp $getScalaTestJar org.scalatest.tools.Runner -o -R ${getSetting(testCasesJar)} $testTags $testParams".!
+    val scalaTestJar = getScalaTestJar
+    if (scalaTestJar.isEmpty) {
+      printBold("Cannot find a ScalaTest Jar dependency. Please make sure it is added to your sbt projects " +
+        "libraryDependencies.")
+    } else {
+      s"scala -cp $scalaTestJar org.scalatest.tools.Runner -o -R ${getSetting(testCasesJar)} $testTags $testParams".!
+    }
   }
 }

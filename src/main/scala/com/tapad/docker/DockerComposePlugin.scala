@@ -143,7 +143,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
   def startDockerCompose(implicit state: State, args: Seq[String]): (State, String) = {
     val composeFilePath = getSetting(composeFile)
 
-    printBold(s"Creating Local Docker Compose Environment")
+    printBold(s"Creating Local Docker Compose Environment.")
     printBold(s"Reading Compose File: $composeFilePath")
 
     val composeYaml = readComposeFile(composeFilePath)
@@ -254,7 +254,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
       if (containsArg(skipBuildArg, args)) {
         print(s"'$skipBuildArg' argument supplied. Using the current local Docker image instead of building a new one.")
       } else {
-        printBold("Building a new Docker image")
+        printBold("Building a new Docker image.")
         buildDockerImageTask(state)
       }
     }
@@ -318,7 +318,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
         printBold(s"Starting Test Pass against the running local Docker Compose instance: ${runningInstance.instanceName}")
         (state, getMatchingRunningInstance(state, Seq(runningInstance.instanceName)))
       case None =>
-        printBold(s"Starting Test Pass against a new local Docker Compose instance")
+        printBold(s"Starting Test Pass against a new local Docker Compose instance.")
         buildDockerImage(state, args)
         //Get the set of decorated endpoints and the randomly generated name of the project
         val (newState2, instanceId) = startDockerCompose(state, args)
