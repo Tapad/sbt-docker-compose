@@ -32,7 +32,8 @@ Steps to Enable and Configure sbt-docker-compose
     enablePlugins(DockerComposePlugin)
 
 4) Define a [docker-compose.yml] (https://docs.docker.com/compose/compose-file/) file which describes your component, 
-its dependent images and the links between them. This file can be located in one of three places with the precedence order:
+its dependent images and the links between them. This path to this file can be explicitly defined or by default the
+plugin will attempt to locate it in one of three places with the precedence order:
    
    - The 'resources' directory of the project as defined by the sbt 'resourceDirectory' setting.
    
@@ -42,7 +43,7 @@ its dependent images and the links between them. This file can be located in one
 
 5) Optional: There are a number of optional Keys that can be set as well if you want to override the default settings:
    
-    composeFile := // Specify the full path to the Compose File to use to create test environment. It defaults to docker-compose.yml in your resources folder.   
+    composeFile := // Specify the full path to the Compose File to use to create your test instance. It defaults to docker-compose.yml in your resources folder.   
     composeServiceName := // Specify the name of the service in the Docker Compose file being tested. This setting prevents the service image from being pull down from the Docker Registry. It defaults to the sbt Project name.
     composeNoBuild := // True if a Docker Compose file is to be started without building any images and only using ones that already exist in the Docker Registry. This defaults to False.
     composeRemoveContainersOnShutdown := // True if a Docker Compose should remove containers when shutting down the compose instance. This defaults to True.
@@ -98,11 +99,12 @@ The key into the map is the "serviceName:containerPort" that is statically defin
 will return "host:hostPort" which is the Docker Compose generated and exposed endpoint that can be connected to at runtime
 for testing. See the [**basic-with-tests**] (examples/basic-with-tests) example for more details.
 
-By default all tests will be executed, however you can also Tag test cases and indicate to the plugin to only execute those tests:
+By default all tests will be executed, however you can also [Tag] (http://www.scalatest.org/user_guide/tagging_your_tests)
+test cases and indicate to the plugin to only execute those tests:
  
     testTagsToExecute := "DockerComposeTag"
 
-1) To start a new DockerCompose instance, run your tests, and then shut it down run:
+1) To start a new DockerCompose instance, run your tests and then shut it down run:
 
     dockerComposeTest
     
@@ -110,17 +112,19 @@ By default all tests will be executed, however you can also Tag test cases and i
 
     dockerComposeTest <instance id>
     
-**Note:** The test pass is started using the [ScalaTest Test Runner] (http://www.scalatest.org/user_guide/using_the_runner)
-using the 'Scala' process that exists on your PATH. For this to work the version of ScalaTest being used must be aligned
-to the version of 'Scala' that is on your PATH. For example, if you are using ScalaTest 2.10.6 than Scala on the PATH
-must be 2.10.X. If this is not configured correctly you may see an issue with the Test Runner failing to load classes.
+**Note:** The test pass is started using the using the 'Scala' process that exists on your PATH to launch the
+[ScalaTest Test Runner] (http://www.scalatest.org/user_guide/using_the_runner). For this to work the version of 
+ScalaTest being used must be aligned to the version of 'Scala' that is on your PATH. For example, if you are using 
+ScalaTest 2.10.6 than Scala on the PATH must be 2.10.X. If this is not configured correctly you may see an issue with 
+the Test Runner failing to load classes.
 
 
 Docker Compose File Custom Tags
 -------------------------------
-Custom tags add the ability to pre-process the contents of the docker-compose.yml file and make modifications to it 
-before using it to start your instance. There are two custom tags for images that this plugin supports: "\<localBuild\>"
-and "\<skipPull\>". Support for additional tags can be added by overriding the "processCustomTags" method.
+Custom tags are a feature of the sbt-docker-compose plugin that add the ability to pre-process the contents of the 
+docker-compose.yml file and make modifications to it before using it to start your instance. There are two custom tags 
+for images that this plugin supports: "\<localBuild\>" and "\<skipPull\>". Support for additional tags can be added by 
+overriding the "processCustomTags" method.
 
 1) Define "\<skipPull\>" on a set of particular images in the docker-compose file that you want to use a local copy of 
 instead of pulling the latest available from the Docker Registry.
