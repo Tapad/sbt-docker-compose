@@ -6,7 +6,7 @@ object BasicApp extends App {
 
   val responseText = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 200\r\n\r\n<HTML><HEAD> <TITLE>Hello, world!</TITLE></HTML>"
 
-  // This is the container port that the Dokcer container uses internally. This port will be dynamically assigned and
+  // This is the container port that the Docker container uses internally. This port will be dynamically assigned and
   // exposed for external access by Docker Compose.
   val containerPort = 8080
 

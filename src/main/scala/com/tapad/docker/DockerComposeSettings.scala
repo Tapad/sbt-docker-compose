@@ -30,9 +30,10 @@ trait DockerComposeSettingsLocal {
     dockerMachineName := "default",
     dockerImageCreationPlugin := DockerImagePluginType.SbtDocker,
     testTagsToExecute := "",
-    scalaTestJar := {
-      val classpathTest = (managedClasspath in Test).value
-      classpathTest.files.filter(_.getAbsolutePath.contains("scalatest")).mkString(":")
+    testDependenciesClasspath := {
+      val classpathTestManaged = (managedClasspath in Test).value
+      val classpathTestUnmanaged = (unmanagedClasspath in Test).value
+      (classpathTestManaged.files ++ classpathTestUnmanaged.files).map(_.getAbsoluteFile).mkString(":")
     },
     testCasesJar := artifactPath.in(Test, packageBin).value.getAbsolutePath,
     commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeInstancesCommand, dockerComposeTest)

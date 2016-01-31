@@ -52,8 +52,8 @@ plugin will attempt to locate it in one of three places with the precedence orde
     dockerMachineName =: // If running on OSX the name of the Docker Machine Virtual machine being used. If not overridden it is set to 'default'
     dockerImageCreationPlugin =: // Specifies the sbt plugin being used Docker image creation. This defaults to SbtDocker for the 'sbt-docker' plugin but can also be set to NativePackager for the 'sbt-native-packager' plugin.
     testTagsToExecute =: // Set of ScalaTest Tags to execute when dockerComposeTest is run. Separate multiple tags by a comma. It defaults to executing all tests.
-    testCasesJar =: //The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.
-    scalaTestJar =: //The path to the ScalaTest Jar file used to run the test cases. This defaults to using the ScalaTest Jar in the current sbt project that was added as a library dependency.
+    testDependenciesClasspath =: // The path to all managed and unmanaged Test dependencies. This path needs to include the ScalaTest Jar for the tests to execute. This defaults to all managedClasspath and unmanagedClasspath in the Test Scope.
+    testCasesJar =: // The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.
 
 There are several sample projects showing how to configure sbt-docker-compose that can be found in the [**examples**] (examples) folder.
 

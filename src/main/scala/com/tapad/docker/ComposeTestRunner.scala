@@ -16,16 +16,15 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
   }
 
   /**
-   * Attempts to locate the ScalaTest Jar that is being used sby this sbt project. By default it searches the
-   * managedClasspath under the Test scope
+   * Gets a classpath representing all managed and unmanaged dependencies in the Test Scope for this sbt project.
    * @param state The sbt state
-   * @return The full path the the ScalaTest Jar if it is found
+   * @return The full set of classpath entries used by Tet
    */
-  def getScalaTestJar(implicit state: State): String = {
+  def getTestDependenciesClassPath(implicit state: State): String = {
     val extracted = Project.extract(state)
-    val (_, scalaTestJarPath) = extracted.runTask(scalaTestJar, state)
+    val (_, testClassPath) = extracted.runTask(testDependenciesClasspath, state)
 
-    scalaTestJarPath
+    testClassPath
   }
 
   /**
@@ -54,12 +53,12 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
     print("Compiling and Packaging test cases...")
     binPackageTests
 
-    val scalaTestJar = getScalaTestJar
-    if (scalaTestJar.isEmpty) {
+    val testDependencies = getTestDependenciesClassPath
+    if (testDependencies.contains("org.scalatest")) {
+      s"scala -cp $testDependencies org.scalatest.tools.Runner -o -R ${getSetting(testCasesJar)} $testTags $testParams".!
+    } else {
       printBold("Cannot find a ScalaTest Jar dependency. Please make sure it is added to your sbt projects " +
         "libraryDependencies.")
-    } else {
-      s"scala -cp $scalaTestJar org.scalatest.tools.Runner -o -R ${getSetting(testCasesJar)} $testTags $testParams".!
     }
   }
 }

@@ -1,6 +1,7 @@
 import org.scalatest._
 import scala.Console._
 import scala.sys.process._
+import scalaj.http.Http
 import org.scalatest.Tag
 import org.scalatest.concurrent._
 import org.scalatest.exceptions._
@@ -17,14 +18,13 @@ class BasicAppSpec extends fixture.FunSuite with fixture.ConfigMapFixture with E
   // for testing.
   val basicServiceKey = "basic:8080"
 
-  test("Validate the Docker Compose endpoint is available and returns 'Hello, world!' when queried", DockerComposeTag) {
+  test("Validate the Docker Compose endpoint is available and returns a successful Http code when queried", DockerComposeTag) {
     configMap =>{
       val hostInfo = getHostInfo(configMap)
       println(s"Attempting to connect to: $hostInfo")
 
       eventually {
-        val (stdOut, _) = runCommand(Seq("curl", "-s", hostInfo))
-        stdOut should include ("Hello, world!")
+        Http(s"http://$hostInfo").asString.isSuccess shouldBe true
       }
     }
   }
@@ -40,18 +40,5 @@ class BasicAppSpec extends fixture.FunSuite with fixture.ConfigMapFixture with E
     else {
       throw new TestFailedException(s"Cannot find the expected Docker Compose service '$basicServiceKey' in the configMap", 10)
     }
-  }
-
-  def runCommand(cmd: Seq[String]): (String, String) = {
-    val stdout = new ByteArrayOutputStream
-    val stdoutWriter = new PrintWriter(stdout)
-    val stderrWriter = new PrintWriter(stderr)
-    try {
-      cmd.!(ProcessLogger(stdoutWriter.println, stderrWriter.println))
-    } finally {
-      stdoutWriter.close()
-      stderrWriter.close()
-    }
-    (stdout.toString, stderr.toString)
   }
 }

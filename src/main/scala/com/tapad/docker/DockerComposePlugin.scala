@@ -59,7 +59,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val dockerImageCreationPlugin = DockerComposeKeys.dockerImageCreationPlugin
     val testTagsToExecute = DockerComposeKeys.testTagsToExecute
     val testCasesJar = DockerComposeKeys.testCasesJar
-    val scalaTestJar = DockerComposeKeys.scalaTestJar
+    val scalaTestJar = DockerComposeKeys.testDependenciesClasspath
   }
 }
 
