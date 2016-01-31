@@ -100,11 +100,16 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
       printDockerComposeInstances(state, args)
   }
 
-  lazy val dockerComposeTest = Command.args("dockerComposeTest", ("dockerComposeTest", "Executes test " +
-    "cases against a Docker Compose instance."), "", "") { (state: State, args: Seq[String]) =>
+  lazy val dockerComposeTest = Command.args("dockerComposeTest", ("dockerComposeTest", "Executes ScalaTest test " +
+    "cases against a newly started Docker Compose instance."),
+    s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry." +
+      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
+      s"Supply '$testDebugPortArg:<port> as a parameter to cause the test execution to wait for a debugger to be attached on the specified port" +
+      s"Supply '$testTagOverride:<tagName1,tagName2>' as a parameter to override the tags specified in the testTagsToExecute setting." +
+      "To execute a test pass against a previously started dockerComposeUp instance just pass the instance id to the command as a parameter", "") { (state: State, args: Seq[String]) =>
 
-    composeTestRunner(state, args)
-  }
+      composeTestRunner(state, args)
+    }
 
   def launchInstanceWithLatestChanges(state: State, args: Seq[String]): State = {
     val newState = getPersistedState(state)

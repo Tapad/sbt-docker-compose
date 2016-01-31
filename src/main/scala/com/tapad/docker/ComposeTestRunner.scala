@@ -8,6 +8,7 @@ import scala.collection.Seq
 
 trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
   val testDebugPortArg = "-debug"
+  val testTagOverride = "-tags"
 
   /**
    * Compiles and binPackages latest test code
@@ -40,7 +41,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    * version 2.10.X.
    * @param state The sbt state
    * @param args The command line arguments
-   * @param instance The running Docker Compose instnace to test against
+   * @param instance The running Docker Compose instance to test against
    */
   def runTestPass(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): Unit = {
     //Build the list of Docker Compose connection endpoints to pass as a ConfigMap to the ScalaTest Runner
@@ -52,8 +53,6 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
       case None => ""
     }
 
-    val testTags = getSetting(testTagsToExecute).split(',').filter(_.nonEmpty).map(tag => s"-n $tag") mkString " "
-
     print("Compiling and Packaging test cases...")
     binPackageTests
 
@@ -62,6 +61,11 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
       case Some(port) => s"-J-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$port"
       case None => ""
     }
+
+    val testTags = (getArgValue(testTagOverride, args) match {
+      case Some(tag) => tag
+      case None => getSetting(testTagsToExecute)
+    }).split(',').filter(_.nonEmpty).map(tag => s"-n $tag") mkString " "
 
     val testDependencies = getTestDependenciesClassPath
     if (testDependencies.contains("org.scalatest")) {

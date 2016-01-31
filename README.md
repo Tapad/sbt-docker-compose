@@ -112,7 +112,12 @@ test cases and indicate to the plugin to only execute those tests:
 
     dockerComposeTest <instance id>
     
-3) To attach a debugger during test case execution provide a port number to the "-debug" argument. This will suspend the
+3) To override the sbt setting 'testTagsToExecute' when starting a test pass provide a comma separated list of tags to
+the "-tags" argument:
+
+    dockerComposeTest -tags:<tag1,tag2>
+    
+4) To attach a debugger during test case execution provide a port number to the "-debug" argument. This will suspend the
 tests from running until you attach a debugger to the specified port. For example:
 
     dockerComposeTest <instance id> -debug:<debug port>
