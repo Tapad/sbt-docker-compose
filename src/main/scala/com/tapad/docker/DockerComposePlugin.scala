@@ -67,15 +67,10 @@ object DockerComposePlugin extends DockerComposePluginLocal {
  * SBT Plug-in that allows for local Docker Compose instances to be managed directly from SBT.
  * This class can be extended to manage Docker Compose instances in non-local environments such as Mesos or AWS.
  */
-class DockerComposePluginLocal extends AutoPlugin with DockerCommands with ComposeFile with ComposeCustomTagHelpers with ComposeInstancePersistence with PrintFormatting with ComposeTestRunner with SettingsHelper {
+class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCommands with ComposeTestRunner with ComposeInstancePersistence {
   //Command line arguments
   val skipPullArg = "skipPull"
   val skipBuildArg = "skipBuild"
-
-  //Set of values representing the source location of a Docker Compose image
-  val cachedImageSource = "cache"
-  val definedImageSource = "defined"
-  val buildImageSource = "build"
 
   lazy val dockerComposeUpCommand = Command.args("dockerComposeUp", ("dockerComposeUp", "Starts a local Docker Compose instance."),
     s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
