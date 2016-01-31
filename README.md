@@ -112,6 +112,11 @@ test cases and indicate to the plugin to only execute those tests:
 
     dockerComposeTest <instance id>
     
+3) To attach a debugger during test case execution provide a port number to the "-debug" argument. This will suspend the
+tests from running until you attach a debugger to the specified port. For example:
+
+    dockerComposeTest <instance id> -debug:<debug port>
+    
 **Note:** The test pass is started using the using the 'Scala' process that exists on your PATH to launch the
 [ScalaTest Test Runner] (http://www.scalatest.org/user_guide/using_the_runner). For this to work the version of 
 ScalaTest being used must be aligned to the version of 'Scala' that is on your PATH. For example, if you are using 
@@ -199,6 +204,8 @@ In the ports section you will also need to expose the port value defined in the 
 Once the container is started you can to attach to it remotely. The instance connection table will mark 'YES' in the 'IsDebug'
 column for any exposed ports that can be attached to with the debugger. 
 See the [basic] (examples/basic-with-tests/docker/docker-compose.yml) example for a project configured with debugging enabled.
+
+See the test case execution section above for information on how to attach a debugger to running test cases.
 
 Examples
 --------

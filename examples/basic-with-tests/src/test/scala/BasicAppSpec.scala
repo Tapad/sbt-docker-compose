@@ -34,7 +34,7 @@ class BasicAppSpec extends fixture.FunSuite with fixture.ConfigMapFixture with E
   }
 
   def getHostInfo(configMap: ConfigMap): String = {
-    if (configMap.keySet.exists(_ == basicServiceKey)) {
+    if (configMap.keySet.contains(basicServiceKey)) {
       configMap(basicServiceKey).toString
     }
     else {

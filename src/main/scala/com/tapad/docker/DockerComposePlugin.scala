@@ -302,7 +302,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     val requiresShutdown = getMatchingRunningInstance(state, args).isEmpty
     val (finalState, instance) = getTestPassInstance(newState, args)
 
-    runTestPass(finalState, instance)
+    runTestPass(finalState, args, instance)
 
     if (requiresShutdown)
       stopDockerCompose(finalState, Seq(instance.get.instanceName))
@@ -374,9 +374,5 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
   def generateInstanceNameRec(runningIds: Seq[String]): String = {
     val randNum = scala.util.Random.nextInt(1000000).toString
     if (runningIds.contains(randNum)) generateInstanceNameRec(runningIds) else randNum
-  }
-
-  def containsArg(arg: String, args: Seq[String]): Boolean = {
-    args != null && args.exists(_.contains(arg))
   }
 }

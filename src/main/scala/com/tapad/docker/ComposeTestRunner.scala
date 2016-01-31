@@ -4,7 +4,10 @@ import com.tapad.docker.DockerComposeKeys._
 import sbt._
 import sbt.Project
 
+import scala.collection.Seq
+
 trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
+  val testDebugPortArg = "-debug"
 
   /**
    * Compiles and binPackages latest test code
@@ -36,9 +39,10 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    * that the ScalaTest Jar was compiled with. For example,  if you are using ScalaTest 2.10.X Scala must be of
    * version 2.10.X.
    * @param state The sbt state
+   * @param args The command line arguments
    * @param instance The running Docker Compose instnace to test against
    */
-  def runTestPass(implicit state: State, instance: Option[RunningInstanceInfo]): Unit = {
+  def runTestPass(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): Unit = {
     //Build the list of Docker Compose connection endpoints to pass as a ConfigMap to the ScalaTest Runner
     //format: <-Dservice:containerPort=host:hostPort>
     val testParams = instance match {
@@ -53,9 +57,15 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
     print("Compiling and Packaging test cases...")
     binPackageTests
 
+    // Looks for the <-debug:port> argument and will suspend test case execution until a debugger is attached
+    val debugSettings = getArgValue(testDebugPortArg, args) match {
+      case Some(port) => s"-J-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$port"
+      case None => ""
+    }
+
     val testDependencies = getTestDependenciesClassPath
     if (testDependencies.contains("org.scalatest")) {
-      s"scala -cp $testDependencies org.scalatest.tools.Runner -o -R ${getSetting(testCasesJar)} $testTags $testParams".!
+      s"scala $debugSettings -cp $testDependencies org.scalatest.tools.Runner -o -R ${getSetting(testCasesJar)} $testTags $testParams".!
     } else {
       printBold("Cannot find a ScalaTest Jar dependency. Please make sure it is added to your sbt projects " +
         "libraryDependencies.")
