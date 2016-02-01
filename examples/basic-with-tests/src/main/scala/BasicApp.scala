@@ -4,18 +4,21 @@ import java.net.ServerSocket
 
 object BasicApp extends App {
 
-  val responseText = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-Length: 200\r\n\r\n<HTML><HEAD> <TITLE>Hello, world!</TITLE></HTML>"
 
-  // This is the container port that the Docker container uses internally. This port will be dynamically assigned and
-  // exposed for external access by Docker Compose.
-  val containerPort = 8080
+  val text =
+    """HTTP/1.0 200 OK
+        Content-Type: text/html
+        Content-Length: 200
+        Connection: close
 
-  val listener = new ServerSocket(containerPort)
-  println(s"Container listening at port $containerPort")
+        <HTML> <HEAD> <TITLE>Hello world </TITLE> </HEAD> <BODY LANG="en-US" BGCOLOR="#e6e6ff" DIR="LTR"> <P ALIGN="CENTER"> <FONT FACE="Arial, sans-serif" SIZE="6">Hello World!</FONT> </P> </BODY> </HTML>"""
+  val port = 8080
+  val listener = new ServerSocket(port)
+  printf("Listening at port %1$d", port)
 
   while (true) {
     val sock = listener.accept()
-    new PrintWriter(sock.getOutputStream, true).println(responseText)
-    sock.close()
+    new PrintWriter(sock.getOutputStream(), true).println(text)
+    sock.shutdownOutput()
   }
 }
