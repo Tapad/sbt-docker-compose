@@ -218,7 +218,7 @@ In the [**examples**] (examples) folder there are four different projects showin
 sbt-docker-compose plugin.
 
 1) [**basic-with-tests**] (examples/basic-with-tests): This project outlines a very basic example of how to enable the
-plugin on a simple application that will echo back "Hello, world!". The examples also shows how to create a ScalaTest 
+plugin on a simple application that will echo back "Hello, World!". The examples also shows how to create a ScalaTest 
 test case that can run against the dynamically assigned endpoints. From sbt run the following to compile the code, 
 build a Docker image and launch a Docker Compose instance.
 

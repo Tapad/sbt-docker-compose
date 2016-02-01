@@ -18,13 +18,15 @@ class BasicAppSpec extends fixture.FunSuite with fixture.ConfigMapFixture with E
   // for testing.
   val basicServiceKey = "basic:8080"
 
-  test("Validate the Docker Compose endpoint is available and returns a successful Http code when queried", DockerComposeTag) {
+  test("Validate that the Docker Compose endpoint returns a success code and the string 'Hello, World!'", DockerComposeTag) {
     configMap =>{
       val hostInfo = getHostInfo(configMap)
       println(s"Attempting to connect to: $hostInfo")
 
       eventually {
-        Http(s"http://$hostInfo").asString.isSuccess shouldBe true
+        val output = Http(s"http://$hostInfo").asString
+        output.isSuccess shouldBe true
+        output.body should include ("Hello, World!")
       }
     }
   }

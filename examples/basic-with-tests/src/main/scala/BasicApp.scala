@@ -9,16 +9,15 @@ object BasicApp extends App {
     """HTTP/1.0 200 OK
         Content-Type: text/html
         Content-Length: 200
-        Connection: close
 
-        <HTML> <HEAD> <TITLE>Hello world </TITLE> </HEAD> <BODY LANG="en-US" BGCOLOR="#e6e6ff" DIR="LTR"> <P ALIGN="CENTER"> <FONT FACE="Arial, sans-serif" SIZE="6">Hello World!</FONT> </P> </BODY> </HTML>"""
+        <HTML> <HEAD> <TITLE>Hello, World!</TITLE> </HEAD> <BODY LANG="en-US" BGCOLOR="#e6e6ff" DIR="LTR"> <P ALIGN="CENTER"> <FONT FACE="Arial, sans-serif" SIZE="6">Hello, World!</FONT> </P> </BODY> </HTML>"""
   val port = 8080
   val listener = new ServerSocket(port)
   printf("Listening at port %1$d", port)
 
   while (true) {
     val sock = listener.accept()
-    new PrintWriter(sock.getOutputStream(), true).println(text)
+    new PrintWriter(sock.getOutputStream, true).println(text)
     sock.shutdownOutput()
   }
 }
