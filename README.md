@@ -11,13 +11,16 @@ is designed to be extended to allow for instances to be launched in non-local en
 Steps to Enable and Configure sbt-docker-compose
 ------------------------------------------------
 
-1) Configure your sbt project(s) to build Docker images:
+1) Configure your sbt project(s) to build Docker images by setting the 'dockerImageCreationTask':
  
-  - The [sbt-docker] (https://github.com/marcuslonnberg/sbt-docker) plugin is configured by default.
- 
-  - The [sbt-native-packager] (https://github.com/sbt/sbt-native-packager) plugin can be used instead by setting:
+  - The [sbt-docker] (https://github.com/marcuslonnberg/sbt-docker) plugin can be used by setting:
     ```
-    dockerImageCreationPlugin := NativePackager
+    dockerImageCreationTask := docker.value
+    ```
+    
+  - The [sbt-native-packager] (https://github.com/sbt/sbt-native-packager) plugin can be used by setting:
+    ```
+    dockerImageCreationTask := (publishLocal in Docker).value
     ```
    See the [basic-native-packager] (examples/basic-native-packager) example for more details.
 
@@ -49,8 +52,8 @@ plugin will attempt to locate it in one of three places with the precedence orde
     composeRemoveContainersOnShutdown := // True if a Docker Compose should remove containers when shutting down the compose instance. This defaults to True.
     composeContainerStartTimeoutSeconds := // The amount of time in seconds to wait for the containers in a Docker Compose instance to start. Defaults to 500 seconds.
     composeRemoveTempFileOnShutdown := // True if a Docker Compose should remove the post Custom Tag processed Compose File on shutdown. This defaults to True.
-    dockerMachineName =: // If running on OSX the name of the Docker Machine Virtual machine being used. If not overridden it is set to 'default'
-    dockerImageCreationPlugin =: // Specifies the sbt plugin being used Docker image creation. This defaults to SbtDocker for the 'sbt-docker' plugin but can also be set to NativePackager for the 'sbt-native-packager' plugin.
+    dockerMachineName := // If running on OSX the name of the Docker Machine Virtual machine being used. If not overridden it is set to 'default'
+    dockerImageCreationTask := // The sbt task used to create a Docker image. For sbt-docker this should be set to 'docker.value' for the sbt-native-packager this should be set to '(publishLocal in Docker).value'.
     testTagsToExecute =: // Set of ScalaTest Tags to execute when dockerComposeTest is run. Separate multiple tags by a comma. It defaults to executing all tests.
     testDependenciesClasspath =: // The path to all managed and unmanaged Test dependencies. This path needs to include the ScalaTest Jar for the tests to execute. This defaults to all managedClasspath and unmanagedClasspath in the Test Scope.
     testCasesJar =: // The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.

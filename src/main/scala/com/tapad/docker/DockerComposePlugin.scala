@@ -56,7 +56,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val composeRemoveTempFileOnShutdown = DockerComposeKeys.composeRemoveTempFileOnShutdown
     val composeContainerStartTimeoutSeconds = DockerComposeKeys.composeContainerStartTimeoutSeconds
     val dockerMachineName = DockerComposeKeys.dockerMachineName
-    val dockerImageCreationPlugin = DockerComposeKeys.dockerImageCreationPlugin
+    val dockerImageCreationTask = DockerComposeKeys.dockerImageCreationTask
     val testTagsToExecute = DockerComposeKeys.testTagsToExecute
     val testCasesJar = DockerComposeKeys.testCasesJar
     val scalaTestJar = DockerComposeKeys.testDependenciesClasspath

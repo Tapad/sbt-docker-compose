@@ -1,11 +1,7 @@
 package com.tapad.docker
 
 import sbt._
-import sbt.Keys._
-import sbtdocker.DockerKeys._
 import com.tapad.docker.DockerComposeKeys._
-import com.tapad.docker.DockerImagePluginType._
-import com.typesafe.sbt.packager.docker.DockerPlugin.autoImport.Docker
 
 trait DockerCommands {
   def dockerComposeUp(instanceName: String, composePath: String): Unit = {
@@ -66,15 +62,11 @@ trait DockerCommands {
   }
 
   /**
-   * Builds a docker image for an sbt project using either the sbt-docker or sbt-native-packager plugins
-   * Override this method to support additional Docker image creation plugins
+   * Builds a docker image for an sbt project using the user defined task.
    * @param state The sbt state
    */
   def buildDockerImageTask(state: State): Unit = {
     val extracted = Project.extract(state)
-    extracted.get(dockerImageCreationPlugin) match {
-      case SbtDocker => extracted.runTask(docker, state)
-      case NativePackager => extracted.runTask(publishLocal in Docker, state)
-    }
+    extracted.runTask(dockerImageCreationTask, state)
   }
 }

@@ -7,7 +7,7 @@ import com.tapad.docker.DockerComposePlugin._
 
 object DockerComposeSettings extends DockerComposeSettingsLocal
 
-trait DockerComposeSettingsLocal {
+trait DockerComposeSettingsLocal extends PrintFormatting {
   lazy val baseDockerComposeSettings = Seq(
     // Attempt to read the compose file from the resources folder followed by a docker folder off the base directory of the project followed by the root directory
     composeFile := {
@@ -28,7 +28,8 @@ trait DockerComposeSettingsLocal {
     composeRemoveTempFileOnShutdown := true,
     composeContainerStartTimeoutSeconds := 500,
     dockerMachineName := "default",
-    dockerImageCreationPlugin := DockerImagePluginType.SbtDocker,
+    dockerImageCreationTask := printError("***Warning: The 'dockerImageCreationTask' has not been defined. " +
+      "Please configure this setting to have Docker images built.***"),
     testTagsToExecute := "",
     testDependenciesClasspath := {
       val classpathTestManaged = (managedClasspath in Test).value
