@@ -2,7 +2,6 @@ package com.tapad.docker
 
 import java.io.{ File, FileWriter }
 
-import com.tapad.docker.ComposeFile._
 import com.tapad.docker.DockerComposeKeys._
 import org.yaml.snakeyaml.Yaml
 import sbt.Keys._
@@ -12,17 +11,22 @@ import scala.collection.JavaConverters._
 import scala.collection.{ Iterable, Seq }
 import scala.io.Source._
 
-object ComposeFile {
+trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
+  // Compose file Yaml keys
   val imageKey = "image"
   val environmentKey = "environment"
   val portsKey = "ports"
+
+  //Set of values representing the source location of a Docker Compose image
+  val cachedImageSource = "cache"
+  val definedImageSource = "defined"
+  val buildImageSource = "build"
+
+  //Custom tags
   val useLocalBuildTag = "<localbuild>"
   val skipPullTag = "<skippull>"
-  type yamlData = Map[String, java.util.LinkedHashMap[String, Any]]
-}
 
-trait ComposeFile extends SettingsHelper {
-  import com.tapad.docker.DockerComposePlugin._
+  type yamlData = Map[String, java.util.LinkedHashMap[String, Any]]
 
   /**
    * processCustomTags performs any pre-processing of Custom Tags in the Compose File before the Compose file is used
@@ -48,7 +52,7 @@ trait ComposeFile extends SettingsHelper {
         (replaceDefinedVersionTag(imageName, getSetting(version)), buildImageSource)
       } else if (imageName.toLowerCase.contains(useLocalBuildTag)) {
         (processImageTag(state, args, imageName), buildImageSource)
-      } else if (imageName.toLowerCase.contains(skipPullTag) || containsArg(skipPullArg, args)) {
+      } else if (imageName.toLowerCase.contains(skipPullTag) || containsArg(DockerComposePlugin.skipPullArg, args)) {
         (processImageTag(state, args, imageName), cachedImageSource)
       } else {
         (imageName, definedImageSource)

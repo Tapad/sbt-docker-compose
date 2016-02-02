@@ -8,6 +8,8 @@ enablePlugins(DockerComposePlugin)
 
 docker <<= (docker in sample1, docker in sample2) map {(image, _) => image}
 
+dockerImageCreationTask := docker.value
+
 val dockerAppPath = "/app/"
 
 lazy val sample1 = project.

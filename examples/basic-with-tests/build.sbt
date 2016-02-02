@@ -4,7 +4,16 @@ version := "1.0.0"
 
 scalaVersion := "2.10.6"
 
-enablePlugins(sbtdocker.DockerPlugin, DockerComposePlugin)
+libraryDependencies ++= Seq("org.scalatest" %% "scalatest" % "2.2.6" % "test",
+  "org.scalaj" %% "scalaj-http" % "2.2.1" % "test")
+
+enablePlugins(DockerPlugin, DockerComposePlugin)
+
+//Only execute tests tagged as the following
+testTagsToExecute := "DockerComposeTag"
+
+//Set the image creation Task to be the one used by sbt-docker
+dockerImageCreationTask := docker.value
 
 dockerfile in docker := {
   new Dockerfile {

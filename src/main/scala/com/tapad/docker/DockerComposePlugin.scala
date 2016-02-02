@@ -56,7 +56,10 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val composeRemoveTempFileOnShutdown = DockerComposeKeys.composeRemoveTempFileOnShutdown
     val composeContainerStartTimeoutSeconds = DockerComposeKeys.composeContainerStartTimeoutSeconds
     val dockerMachineName = DockerComposeKeys.dockerMachineName
-    val dockerImageCreationPlugin = DockerComposeKeys.dockerImageCreationPlugin
+    val dockerImageCreationTask = DockerComposeKeys.dockerImageCreationTask
+    val testTagsToExecute = DockerComposeKeys.testTagsToExecute
+    val testCasesJar = DockerComposeKeys.testCasesJar
+    val scalaTestJar = DockerComposeKeys.testDependenciesClasspath
   }
 }
 
@@ -64,15 +67,10 @@ object DockerComposePlugin extends DockerComposePluginLocal {
  * SBT Plug-in that allows for local Docker Compose instances to be managed directly from SBT.
  * This class can be extended to manage Docker Compose instances in non-local environments such as Mesos or AWS.
  */
-class DockerComposePluginLocal extends AutoPlugin with DockerCommands with ComposeFile with ComposeCustomTagHelpers with ComposeInstancePersistence with PrintFormatting with SettingsHelper {
+class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCommands with ComposeTestRunner with ComposeInstancePersistence {
   //Command line arguments
   val skipPullArg = "skipPull"
   val skipBuildArg = "skipBuild"
-
-  //Set of values representing the source location of a Docker Compose image
-  val cachedImageSource = "cache"
-  val definedImageSource = "defined"
-  val buildImageSource = "build"
 
   lazy val dockerComposeUpCommand = Command.args("dockerComposeUp", ("dockerComposeUp", "Starts a local Docker Compose instance."),
     s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
@@ -94,8 +92,19 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     "table of information for all running Docker Compose instances."), "", "") {
     (state: State, args: Seq[String]) =>
 
-      dockerComposeInstances(state, args)
+      printDockerComposeInstances(state, args)
   }
+
+  lazy val dockerComposeTest = Command.args("dockerComposeTest", ("dockerComposeTest", "Executes ScalaTest test " +
+    "cases against a newly started Docker Compose instance."),
+    s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry." +
+      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
+      s"Supply '$testDebugPortArg:<port> as a parameter to cause the test execution to wait for a debugger to be attached on the specified port" +
+      s"Supply '$testTagOverride:<tagName1,tagName2>' as a parameter to override the tags specified in the testTagsToExecute setting." +
+      "To execute a test pass against a previously started dockerComposeUp instance just pass the instance id to the command as a parameter", "") { (state: State, args: Seq[String]) =>
+
+      composeTestRunner(state, args)
+    }
 
   def launchInstanceWithLatestChanges(state: State, args: Seq[String]): State = {
     val newState = getPersistedState(state)
@@ -120,20 +129,6 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     }
   }
 
-  def dockerComposeInstances(state: State, args: Seq[String]): State = {
-    val newState = getPersistedState(state)
-
-    getAttribute(runningInstances)(newState) match {
-      case Some(launchedInstances) =>
-        //Print all of the connection information for each running instance
-        launchedInstances.foreach(printMappedPortInformation)
-      case None =>
-        print("There are no currently running Docker Compose instances detected.")
-    }
-
-    newState
-  }
-
   /**
    * startDockerCompose creates a local Docker Compose instance based on the defined compose file definition. The
    * compose instance will be randomly named so that it will not conflict with any currently running instances. It will
@@ -148,7 +143,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
   def startDockerCompose(implicit state: State, args: Seq[String]): (State, String) = {
     val composeFilePath = getSetting(composeFile)
 
-    printBold(s"Creating Local Docker Compose Environment")
+    printBold(s"Creating Local Docker Compose Environment.")
     printBold(s"Reading Compose File: $composeFilePath")
 
     val composeYaml = readComposeFile(composeFilePath)
@@ -259,7 +254,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
       if (containsArg(skipBuildArg, args)) {
         print(s"'$skipBuildArg' argument supplied. Using the current local Docker image instead of building a new one.")
       } else {
-        printBold("Building a new Docker image")
+        printBold("Building a new Docker image.")
         buildDockerImageTask(state)
       }
     }
@@ -301,6 +296,51 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
     }
   }
 
+  def composeTestRunner(implicit state: State, args: Seq[String]): State = {
+    val newState = getPersistedState(state)
+
+    val requiresShutdown = getMatchingRunningInstance(state, args).isEmpty
+    val (finalState, instance) = getTestPassInstance(newState, args)
+
+    runTestPass(finalState, args, instance)
+
+    if (requiresShutdown)
+      stopDockerCompose(finalState, Seq(instance.get.instanceName))
+    else
+      finalState
+  }
+
+  def getTestPassInstance(state: State, args: Seq[String]): (State, Option[RunningInstanceInfo]) = {
+    //Check to see if a running instance was passed in which case kick off a test pass against it without starting and
+    //stopping a new instance
+    getMatchingRunningInstance(state, args) match {
+      case Some(runningInstance) =>
+        printBold(s"Starting Test Pass against the running local Docker Compose instance: ${runningInstance.instanceName}")
+        (state, getMatchingRunningInstance(state, Seq(runningInstance.instanceName)))
+      case None =>
+        printBold(s"Starting Test Pass against a new local Docker Compose instance.")
+        buildDockerImage(state, args)
+        //Get the set of decorated endpoints and the randomly generated name of the project
+        val (newState2, instanceId) = startDockerCompose(state, args)
+
+        (newState2, getMatchingRunningInstance(newState2, Seq(instanceId)))
+    }
+  }
+
+  def printDockerComposeInstances(state: State, args: Seq[String]): State = {
+    val newState = getPersistedState(state)
+
+    getAttribute(runningInstances)(newState) match {
+      case Some(launchedInstances) =>
+        //Print all of the connection information for each running instance
+        launchedInstances.foreach(printMappedPortInformation)
+      case None =>
+        print("There are no currently running Docker Compose instances detected.")
+    }
+
+    newState
+  }
+
   /**
    * Determines the host connection string for a container
    * @param dockerMachineName If on OSX the name of the Docker Machine being used
@@ -334,9 +374,5 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
   def generateInstanceNameRec(runningIds: Seq[String]): String = {
     val randNum = scala.util.Random.nextInt(1000000).toString
     if (runningIds.contains(randNum)) generateInstanceNameRec(runningIds) else randNum
-  }
-
-  def containsArg(arg: String, args: Seq[String]): Boolean = {
-    args != null && args.exists(_.contains(arg))
   }
 }

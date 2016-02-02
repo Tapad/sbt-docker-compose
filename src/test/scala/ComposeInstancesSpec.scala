@@ -11,7 +11,7 @@ class ComposeInstancesSpec extends FunSuite with BeforeAndAfter with OneInstance
     mockDockerCommandCalls(composeMock)
     mockSystemSettings(composeMock, serviceName, None)
 
-    composeMock.dockerComposeInstances(null, null)
+    composeMock.printDockerComposeInstances(null, null)
 
     verify(composeMock, times(0)).printMappedPortInformation(any[RunningInstanceInfo])
   }
@@ -26,7 +26,7 @@ class ComposeInstancesSpec extends FunSuite with BeforeAndAfter with OneInstance
     mockDockerCommandCalls(composeMock)
     mockSystemSettings(composeMock, serviceName, Some(List(instance1, instance2, instance3)))
 
-    composeMock.dockerComposeInstances(null, null)
+    composeMock.printDockerComposeInstances(null, null)
 
     verify(composeMock, times(3)).printMappedPortInformation(any[RunningInstanceInfo])
   }

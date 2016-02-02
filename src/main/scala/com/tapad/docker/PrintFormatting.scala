@@ -40,6 +40,9 @@ trait PrintFormatting {
 
     print(s"3) To view log files from bash run:")
     printSuccess(s"   docker-compose -p ${instance.instanceName} -f ${instance.composeFilePath} logs")
+
+    print(s"4) To execute test cases against instance from sbt run:")
+    printSuccess(s"   dockerComposeTest ${instance.instanceName}")
   }
 
   def getTableOutputList(servicesInfo: Iterable[ServiceInfo]): Iterable[List[String]] = {
