@@ -136,7 +136,7 @@ class DockerComposePluginLocal extends AutoPlugin with DockerCommands with Compo
 
   /**
    * startDockerCompose creates a local Docker Compose instance based on the defined compose file definition. The
-   * composeinstance will be randomly named so that it will not conflict with any currently running instances. It will
+   * compose instance will be randomly named so that it will not conflict with any currently running instances. It will
    * also save the name of this instance to the settings state so that it can be stopped via dockerComposeStop. After
    * the instance is started the set of connection information for the services will be printed to the console.
    *
