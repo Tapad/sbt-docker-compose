@@ -100,7 +100,9 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
         val debugMatch = portArray.contains(debugPort)
         PortInfo(hostPort, containerPort, debugMatch)
       }).toList
-    } else List.empty
+    } else {
+      List.empty
+    }
   }
 
   def readComposeFile(composePath: String): yamlData = {
@@ -112,7 +114,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
     }
   }
 
-  def deleteComposeFile(composePath: String): Unit = {
+  def deleteComposeFile(composePath: String): Boolean = {
     new File(composePath).delete()
   }
 
@@ -122,8 +124,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
    * @return The path to the temporary Compose File
    */
   def saveComposeFile(finalYaml: yamlData): String = {
-    val tmp = File.createTempFile("compose-updated", ".yml")
-    val updatedComposePath = tmp.getPath
+    val updatedComposePath = File.createTempFile("compose-updated", ".yml").getPath
     val writer = new FileWriter(updatedComposePath)
     try {
       new Yaml().dump(finalYaml.asJava, writer)
