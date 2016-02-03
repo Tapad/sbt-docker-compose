@@ -3,8 +3,7 @@ import java.io.PrintWriter
 import java.net.ServerSocket
 
 object BasicApp extends App {
-
-
+  
   val text =
     """HTTP/1.0 200 OK
         Content-Type: text/html
