@@ -64,6 +64,7 @@ class TagProcessingSpec extends FunSuite with BeforeAndAfter with OneInstancePer
   }
 
   test("Validate getting image name with no tag") {
+    assert(getImageNoTag("") == "")
     assert(getImageNoTag(imageNoTag) == imageNoTag)
     assert(getImageNoTag(imageLatestTag) == imageNoTag)
     assert(getImageNoTag(imagePrivateRegistryNoTag) == imagePrivateRegistryNoTag)
