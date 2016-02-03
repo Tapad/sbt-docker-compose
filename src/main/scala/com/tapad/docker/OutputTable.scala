@@ -31,7 +31,7 @@ case class OutputTable(table: List[List[String]]) {
         List(
           mkBorder(),
           mkRow(header),
-          mkBorder(),
+          mkBorder(borderFiller = "="),
           rows.map(mkRow(_)).mkString("\n"),
           mkBorder()
         ).mkString("\n")
