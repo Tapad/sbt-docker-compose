@@ -27,7 +27,7 @@ trait ComposeCustomTagHelpers {
     //Handle the case where the "latest" tag is used for the image. In this case disregard the sbt project version info
     case (-1, _) => imageName
     case (_, true) => imageName
-    case (index, false) => s"{$imageName.substring(0, index)}:$newTag"
+    case (index, false) => s"${imageName.substring(0, index)}:$newTag"
   }
 
   /**
@@ -49,7 +49,7 @@ trait ComposeCustomTagHelpers {
    * @return
    */
   def getImageNameOnly(imageName: String, removeOrganization: Boolean = true): String = {
-    val imageNoTag = getImageNameOnly(imageName)
+    val imageNoTag = getImageNoTag(imageName)
 
     //If there is no registry than return return image without a tag
     (imageNoTag.indexOf('/'), removeOrganization) match {
