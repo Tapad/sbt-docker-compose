@@ -37,7 +37,7 @@ trait SettingsHelper {
    */
   def getArgValue(arg: String, args: Seq[String]): Option[String] = {
     args
-      .filter(a => (a.contains(s"$arg:") && a.split(':').length == 2))
+      .filter(a => a.contains(s"$arg:") && a.split(':').length == 2)
       .map(_.split(':').last)
       .headOption
   }
