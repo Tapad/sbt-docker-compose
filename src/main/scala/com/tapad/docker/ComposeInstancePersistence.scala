@@ -14,7 +14,7 @@ import scala.util.Try
  */
 trait ComposeInstancePersistence extends SettingsHelper {
   val settingsFileName = "dockerComposeInstances.bin"
-  val settingsFile = if (new java.io.File("/tmp").exists) {
+  val settingsFile = if (new File("/tmp").exists) {
     s"/tmp/$settingsFileName"
   } else {
     s"${System.getProperty("java.io.tmpdir")}$settingsFileName"
@@ -49,7 +49,9 @@ trait ComposeInstancePersistence extends SettingsHelper {
           }
           state
       }
-    } else state
+    } else {
+      state
+    }
   }
 
   /**
@@ -72,16 +74,13 @@ trait ComposeInstancePersistence extends SettingsHelper {
    * @param state The current application state which contains the set of instances running
    * @return Sequence of running instance Id's for this sbt project
    */
-  def getServiceRunningInstanceIds(implicit state: State): Seq[String] = {
+  def getServiceRunningInstanceIds(implicit state: State): Seq[String] = getAttribute(runningInstances) match {
     //By default if no arguments are passed return all instances from current sbt project
-    val serviceName = getSetting(composeServiceName).toLowerCase
-    getAttribute(runningInstances) match {
-      case Some(launchedInstances) =>
-        //Get the instance names that map to the current sbt projects defined service
-        launchedInstances.filter(_.composeServiceName == serviceName).map(_.instanceName)
-      case None =>
-        Seq.empty
-    }
+    case Some(launchedInstances) =>
+      //Get the instance names that map to the current sbt projects defined service
+      launchedInstances.filter(_.composeServiceName.equalsIgnoreCase(getSetting(composeServiceName))).map(_.instanceName)
+    case None =>
+      Seq.empty
   }
 
   /**
@@ -89,14 +88,12 @@ trait ComposeInstancePersistence extends SettingsHelper {
    * @param state The current application state which contains the set of instances running
    * @return Sequence of running instance Id's for this sbt project
    */
-  def getAllRunningInstanceIds(implicit state: State): Seq[String] = {
-    getAttribute(runningInstances) match {
-      case Some(launchedInstances) =>
-        //Get the instance names that map to the current sbt projects defined service
-        launchedInstances.map(_.instanceName)
-      case None =>
-        Seq.empty
-    }
+  def getAllRunningInstanceIds(implicit state: State): Seq[String] = getAttribute(runningInstances) match {
+    case Some(launchedInstances) =>
+      //Get the instance names that map to the current sbt projects defined service
+      launchedInstances.map(_.instanceName)
+    case None =>
+      Seq.empty
   }
 
   /**
@@ -105,18 +102,19 @@ trait ComposeInstancePersistence extends SettingsHelper {
    * @param args Arguments given to an sbt command
    * @return The first instance that matches the input args
    */
-  def getMatchingRunningInstance(implicit state: State, args: Seq[String]): Option[RunningInstanceInfo] = {
-    getAttribute(runningInstances) match {
-      case Some(launchedInstances) =>
-        val matchingInstance = for {
-          arg <- args
-          instance <- launchedInstances
-          if arg == instance.instanceName
-        } yield instance
+  def getMatchingRunningInstance(implicit state: State, args: Seq[String]): Option[RunningInstanceInfo] = getAttribute(runningInstances) match {
+    case Some(launchedInstances) =>
+      args
+        .zip(launchedInstances)
+        .filter {
+          case (arg, instance) => arg == instance.instanceName
+        }
+        .map {
+          case (arg, instance) => instance
+        }
+        .headOption
 
-        matchingInstance.headOption
-      case None => None
-    }
+    case None => None
   }
 
   /**
@@ -125,11 +123,9 @@ trait ComposeInstancePersistence extends SettingsHelper {
    * @param instance The instance information to save
    * @return The updated State which includes the new RunningInstnaceInfo object
    */
-  def saveInstanceToSbtSession(implicit state: State, instance: RunningInstanceInfo): State = {
+  def saveInstanceToSbtSession(implicit state: State, instance: RunningInstanceInfo): State = getAttribute(runningInstances) match {
     //Save a list of generated Service Names and port mappings so that it can be used for the dockerComposeStop command
-    getAttribute(runningInstances) match {
-      case Some(names) => setAttribute(runningInstances, names ::: List(instance))
-      case None => setAttribute(runningInstances, List(instance))
-    }
+    case Some(names) => setAttribute(runningInstances, names ::: List(instance))
+    case None => setAttribute(runningInstances, List(instance))
   }
 }
