@@ -36,16 +36,9 @@ trait SettingsHelper {
    * @return None if the argument value is malformed or not found. Otherwise, an Option[String] with the argument value is returned.
    */
   def getArgValue(arg: String, args: Seq[String]): Option[String] = {
-    val argList = args.filter(_.contains(arg))
-    val debugPort = if (argList.nonEmpty) {
-      val argValues = argList.head.split(':')
-      if (argValues.length == 2) {
-        Some(argValues(1))
-      } else
-        None
-    } else
-      None
-
-    debugPort
+    args
+      .filter(a => (a.contains(s"$arg:") && a.split(':').length == 2))
+      .map(_.split(':').last)
+      .headOption
   }
 }

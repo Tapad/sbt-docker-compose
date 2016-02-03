@@ -11,14 +11,9 @@ trait ComposeCustomTagHelpers {
    * @param imageName The full image name
    * @return Returns the "tag" value of on an image if it is defined. Otherwise, it will return "latest" as the tag.
    */
-  def getTagFromImage(imageName: String): String = {
-    val indexOfTag = imageName.lastIndexOf(':')
-    if (indexOfTag == -1) {
-      //If no tag is defined it is assumed to be the latest tag
-      latestVersion
-    } else {
-      imageName.substring(indexOfTag + 1)
-    }
+  def getTagFromImage(imageName: String): String = imageName.lastIndexOf(':') match {
+    case -1 => latestVersion
+    case indexOfTag => imageName.substring(indexOfTag + 1)
   }
 
   /**
@@ -28,13 +23,21 @@ trait ComposeCustomTagHelpers {
    * @param newTag The new tag to put on the image
    * @return The updated image name with the previous tag replaced by newly specified tag
    */
-  def replaceDefinedVersionTag(imageName: String, newTag: String): String = {
+  def replaceDefinedVersionTag(imageName: String, newTag: String): String = (imageName.lastIndexOf(":"), imageName.endsWith(s":$latestVersion")) match {
     //Handle the case where the "latest" tag is used for the image. In this case disregard the sbt project version info
-    if (!imageName.contains(":") || imageName.endsWith(s":$latestVersion")) {
-      imageName
-    } else {
-      imageName.substring(0, imageName.lastIndexOf(':')) + s":$newTag"
-    }
+    case (-1, _) => imageName
+    case (_, true) => imageName
+    case (index, false) => s"${imageName.substring(0, index)}:$newTag"
+  }
+
+  /**
+   * Remove tag from image name if it exists.
+   * @param imageName The full image name.
+   * @return The updated image name with the tag removed.
+   */
+  def getImageNoTag(imageName: String): String = imageName.lastIndexOf(':') match {
+    case -1 => imageName
+    case index => imageName.substring(0, index)
   }
 
   /**
@@ -46,25 +49,13 @@ trait ComposeCustomTagHelpers {
    * @return
    */
   def getImageNameOnly(imageName: String, removeOrganization: Boolean = true): String = {
-    //Remove the tag if it exists
-    val indexOfTag = imageName.lastIndexOf(':')
-    val imageNoTag = if (indexOfTag == -1) {
-      imageName
-    } else {
-      imageName.substring(0, indexOfTag)
-    }
-
-    val indexOfRegistryEnd = imageNoTag.indexOf('/')
-    val indexOfOrganizationEnd = imageNoTag.lastIndexOf('/')
-    val orgExists = indexOfRegistryEnd != indexOfOrganizationEnd
+    val imageNoTag = getImageNoTag(imageName)
 
     //If there is no registry than return return image without a tag
-    if (indexOfRegistryEnd == -1) {
-      imageNoTag
-    } else if (orgExists && removeOrganization) {
-      imageNoTag.substring(indexOfOrganizationEnd + 1)
-    } else {
-      imageNoTag.substring(indexOfRegistryEnd + 1)
+    (imageNoTag.indexOf('/'), removeOrganization) match {
+      case (-1, _) => imageNoTag
+      case (_, true) => imageNoTag.substring(imageNoTag.lastIndexOf('/') + 1)
+      case (indexOfRegistryEnd, false) => imageNoTag.substring(indexOfRegistryEnd + 1)
     }
   }
 }

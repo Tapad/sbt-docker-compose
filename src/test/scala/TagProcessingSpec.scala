@@ -9,9 +9,15 @@ class TagProcessingSpec extends FunSuite with BeforeAndAfter with OneInstancePer
   val imagePrivateRegistryNoTag = "registry/testImage"
   val imagePrivateRegistryWithLatest = "registry/testImage:latest"
   val imagePrivateRegistryWithTag = "registry/testImage:tag"
+  val imagePrivateRegistryWithOrgNoTag = "registry/org/testImage"
   val imagePrivateRegistryWithOrgWithTag = "registry/org/testImage:tag"
   val imageCustomTag = "testImage<localbuild>"
   val imageTagAndCustomTag = "testImage:latest<localbuild>"
+
+  // Boundary
+  val badImageWithColon = "testImage:"
+  val badImageWithMultipleColon = "testImage:fooImage:latest"
+  val badImageWithOnlyColon = ":::::::"
 
   test("Validate various image tag formats are properly replaced") {
     val replacementTag = "replaceTag"
@@ -55,5 +61,18 @@ class TagProcessingSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     assert(getImageNameOnly(imagePrivateRegistryWithTag) == "testImage")
     assert(getImageNameOnly(imagePrivateRegistryWithOrgWithTag) == "testImage")
     assert(getImageNameOnly(imagePrivateRegistryWithOrgWithTag, removeOrganization = false) == "org/testImage")
+  }
+
+  test("Validate getting image name with no tag") {
+    assert(getImageNoTag("") == "")
+    assert(getImageNoTag(imageNoTag) == imageNoTag)
+    assert(getImageNoTag(imageLatestTag) == imageNoTag)
+    assert(getImageNoTag(imagePrivateRegistryNoTag) == imagePrivateRegistryNoTag)
+    assert(getImageNoTag(imagePrivateRegistryWithLatest) == imagePrivateRegistryNoTag)
+    assert(getImageNoTag(imagePrivateRegistryWithTag) == imagePrivateRegistryNoTag)
+    assert(getImageNoTag(imagePrivateRegistryWithOrgWithTag) == imagePrivateRegistryWithOrgNoTag)
+    assert(getImageNoTag(badImageWithColon) == imageNoTag)
+    assert(getImageNoTag(badImageWithMultipleColon) == badImageWithMultipleColon.split(":").dropRight(1).mkString(":"))
+    assert(getImageNoTag(badImageWithOnlyColon) == badImageWithOnlyColon.dropRight(1))
   }
 }

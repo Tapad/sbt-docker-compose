@@ -14,12 +14,13 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
       val dockerFileName = "docker-compose.yml"
       val dockerFileInResources = (resourceDirectory in Compile).value / dockerFileName toString ()
       val dockerFileInDir = s"${baseDirectory.value.absolutePath}/docker/$dockerFileName"
-      if (new File(dockerFileInResources).exists)
+      if (new File(dockerFileInResources).exists) {
         dockerFileInResources
-      else if (new File(dockerFileInDir).exists)
+      } else if (new File(dockerFileInDir).exists) {
         dockerFileInDir
-      else
+      } else {
         s"${baseDirectory.value.absolutePath}/$dockerFileName"
+      }
     },
     // By default set the Compose service name to be that of the sbt Project Name
     composeServiceName := name.value.toLowerCase,

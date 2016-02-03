@@ -49,7 +49,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
     val testParams = instance match {
       case Some(inst) => inst.servicesInfo.flatMap(service =>
         service.ports.map(port =>
-          s"-D${service.serviceName}:${port.containerPort}=${service.containerHost}:${port.hostPort}")) mkString " "
+          s"-D${service.serviceName}:${port.containerPort}=${service.containerHost}:${port.hostPort}")).mkString(" ")
       case None => ""
     }
 
@@ -65,7 +65,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
     val testTags = (getArgValue(testTagOverride, args) match {
       case Some(tag) => tag
       case None => getSetting(testTagsToExecute)
-    }).split(',').filter(_.nonEmpty).map(tag => s"-n $tag") mkString " "
+    }).split(',').filter(_.nonEmpty).map(tag => s"-n $tag").mkString(" ")
 
     val testDependencies = getTestDependenciesClassPath
     if (testDependencies.contains("org.scalatest")) {
