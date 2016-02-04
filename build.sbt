@@ -15,25 +15,13 @@ libraryDependencies ++= Seq("net.liftweb" %% "lift-json" % "2.5-RC5",
   "org.scalatest" %% "scalatest" % "2.2.6" % "test",
   "org.mockito" % "mockito-all" % "1.9.5" % "test")
 
-//TODO Remove code below and replace with commented out publishTo once in Sonatype
-val tapadNexusSnapshots = "Tapad Nexus Snapshots" at "http://nexus.tapad.com:8080/nexus/content/repositories/snapshots"
-val tapadNexusReleases = "Tapad Nexus Releases" at "http://nexus.tapad.com:8080/nexus/content/repositories/releases"
-publishTo <<= version { version: String =>
-  if (version.endsWith("SNAPSHOT") || version.endsWith("TAPAD"))
-    Some(tapadNexusSnapshots)
-  else
-    Some(tapadNexusReleases)
-}
-
-/*
 publishTo := {
   val nexus = "https://oss.sonatype.org"
   if (isSnapshot.value)
-    Some("snapshots" at s"${nexus}/content/repositories/snapshots")
+    Some("snapshots" at s"$nexus/content/repositories/snapshots")
   else
-    Some("releases" at s"${nexus}/service/local/staging/deploy/maven2")
+    Some("releases" at s"$nexus/service/local/staging/deploy/maven2")
 }
-*/
 
 useGpg := true
 
