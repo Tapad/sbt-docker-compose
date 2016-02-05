@@ -8,6 +8,8 @@ directly into the sbt build environment. This allows you to make code changes an
 running instance of your latest changes connected to all of its dependencies for live testing and debugging. This plugin 
 is designed to be extended to allow for instances to be launched in non-local environments such as AWS and Mesos.
 
+![Alt text](/screenshots/dockerComposeUp.png?raw=true "dockerComposeUp output")
+
 Steps to Enable and Configure sbt-docker-compose
 ------------------------------------------------
 
