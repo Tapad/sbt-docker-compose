@@ -42,7 +42,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
     val localService = getSetting(composeServiceName)
 
     composeYaml.map { service =>
-      val (serviceName, serviceData) = service match { case (a, b) => (a, b) }
+      val (serviceName, serviceData) = service
       val imageName = serviceData.get(imageKey).toString
 
       //Update Compose yaml with any images built as part of dockerComposeUp regardless of how it's defined in the
