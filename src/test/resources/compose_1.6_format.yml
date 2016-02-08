@@ -1,0 +1,26 @@
+version: "2"
+
+services:
+  web:
+    image: myapp:latest<skipPull>
+    networks:
+      - front
+      - back
+  redis:
+    image: redis:latest<localBuild>
+    volumes:
+      - redis-data:/var/lib/redis
+    networks:
+      - back
+  test:
+      image: test:latest
+
+volumes:
+  redis-data:
+    driver: flocker
+
+networks:
+  front:
+    driver: overlay
+  back:
+    driver: overlay

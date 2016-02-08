@@ -128,6 +128,17 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
       service.ports.exists(_.containerPort == "1234")))
   }
 
+  test("Validate that the 1.6 Docker Compose file format can be properly processed") {
+    val composeMock = getComposeFileMock(serviceName = "nomatch")
+    val composeFilePath = getClass.getResource("compose_1.6_format.yml").getPath
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+
+    assert(serviceInfo.exists(service => service.imageName == "myapp:latest" && service.imageSource == cachedImageSource))
+    assert(serviceInfo.exists(service => service.imageName == "redis:latest" && service.imageSource == buildImageSource))
+    assert(serviceInfo.exists(service => service.imageName == "test:latest" && service.imageSource == definedImageSource))
+  }
+
   def getComposeFileMock(serviceName: String = "testservice", versionNumber: String = "1.0.0", noBuild: Boolean = false): ComposeFile = {
     val composeMock = spy(new DockerComposePluginLocal)
 

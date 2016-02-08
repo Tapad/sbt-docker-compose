@@ -16,6 +16,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
   val imageKey = "image"
   val environmentKey = "environment"
   val portsKey = "ports"
+  val servicesKey = "services"
 
   //Set of values representing the source location of a Docker Compose image
   val cachedImageSource = "cache"
@@ -41,7 +42,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
     val useExistingImages = getSetting(composeNoBuild)
     val localService = getSetting(composeServiceName)
 
-    composeYaml.map { service =>
+    getComposeFileServices(composeYaml).map { service =>
       val (serviceName, serviceData) = service
       val imageName = serviceData.get(imageKey).toString
 
@@ -60,6 +61,20 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
 
       serviceData.put(imageKey, updatedImageName)
       ServiceInfo(serviceName, updatedImageName, imageSource, getPortInfo(serviceData))
+    }
+  }
+
+  /**
+   * If the Yaml is in the Docker 1.6 format which includes a new "services" key work with that sub-set of data.
+   * Otherwise, return the original Yaml
+   * @param composeYaml Docker Compose yaml to process
+   * @return The 'services' section of the Yaml file
+   */
+  def getComposeFileServices(composeYaml: yamlData): yamlData = {
+    composeYaml.get(servicesKey) match {
+      case Some(services) => services.asInstanceOf[java.util.Map[String, java.util.LinkedHashMap[String, Any]]].
+        asScala.toMap
+      case None => composeYaml
     }
   }
 
