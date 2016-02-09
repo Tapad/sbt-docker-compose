@@ -362,17 +362,17 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
    * @return The generated instance name
    */
   def generateInstanceName(state: State): String = {
+    /**
+     * Recursively looks for an instance name that is unique
+     * @param runningIds The current list of running instance id's
+     * @return The unique instance name
+     */
+    def generateInstanceNameRec(runningIds: Seq[String]): String = {
+      val randNum = scala.util.Random.nextInt(1000000).toString
+      if (runningIds.contains(randNum)) generateInstanceNameRec(runningIds) else randNum
+    }
+
     val runningIds = getAllRunningInstanceIds(state)
     generateInstanceNameRec(runningIds)
-  }
-
-  /**
-   * Recursively looks for an instance name that is unique
-   * @param runningIds The current list of running instance id's
-   * @return
-   */
-  def generateInstanceNameRec(runningIds: Seq[String]): String = {
-    val randNum = scala.util.Random.nextInt(1000000).toString
-    if (runningIds.contains(randNum)) generateInstanceNameRec(runningIds) else randNum
   }
 }
