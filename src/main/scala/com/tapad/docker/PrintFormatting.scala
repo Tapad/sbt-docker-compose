@@ -1,11 +1,12 @@
 package com.tapad.docker
 
+import sbt._
 import scala.Console._
 import scala.collection.Iterable
 
 trait PrintFormatting {
   // Allows for standard print statements to be inspected for test purposes
-  def print(s: String) = Console.println(s)
+  def print(s: String) = println(s)
 
   def printBold(input: String): Unit = {
     print(BOLD + input + RESET)
@@ -23,7 +24,7 @@ trait PrintFormatting {
     print(RED + input + RESET)
   }
 
-  def printMappedPortInformation(instance: RunningInstanceInfo): Unit = {
+  def printMappedPortInformation(state: State, instance: RunningInstanceInfo): Unit = {
     printBold(s"\nThe following endpoints are available for your local instance: ${instance.instanceName}")
 
     val tableEntries = getTableOutputList(instance.servicesInfo)

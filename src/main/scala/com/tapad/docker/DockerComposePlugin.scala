@@ -161,7 +161,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       dockerComposeUp(instanceName, updatedComposePath)
       val newInstance = getRunningInstanceInfo(state, instanceName, updatedComposePath, servicesInfo)
 
-      printMappedPortInformation(newInstance)
+      printMappedPortInformation(state, newInstance)
       saveInstanceToSbtSession(state, newInstance)
     } getOrElse {
       stopLocalDockerInstance(state, instanceName, updatedComposePath)
@@ -333,7 +333,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     getAttribute(runningInstances)(newState) match {
       case Some(launchedInstances) =>
         //Print all of the connection information for each running instance
-        launchedInstances.foreach(printMappedPortInformation)
+        launchedInstances.foreach(printMappedPortInformation(newState, _))
       case None =>
         print("There are no currently running Docker Compose instances detected.")
     }

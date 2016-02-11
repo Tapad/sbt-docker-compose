@@ -6,7 +6,7 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
     val plugin = new DockerComposePluginLocal
     val service = new ServiceInfo("service", "image", "source", List.empty)
     val instance = new RunningInstanceInfo("instance", "service", "composePath", List(service))
-    plugin.printMappedPortInformation(instance)
+    plugin.printMappedPortInformation(null, instance)
   }
 
   test("Validate table printing succeeds when Ports are exposed") {
@@ -14,6 +14,6 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
     val port = new PortInfo("host", "container", false)
     val service = new ServiceInfo("service", "image", "source", List(port))
     val instance = new RunningInstanceInfo("instance", "service", "composePath", List(service))
-    plugin.printMappedPortInformation(instance)
+    plugin.printMappedPortInformation(null, instance)
   }
 }
