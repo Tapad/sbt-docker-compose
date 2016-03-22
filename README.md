@@ -18,7 +18,17 @@ You must have [Docker] (https://docs.docker.com/engine/installation/) and
 Steps to Enable and Configure sbt-docker-compose
 ------------------------------------------------
 
-1) Configure your sbt project(s) to build Docker images by setting the 'dockerImageCreationTask':
+1) Add the sbt-docker-compose plugin to your projects plugins.sbt file:
+
+    addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.1")
+    
+   sbt-docker-compose is an auto-plugin which requires that sbt version 0.13.5 or higher be used.
+   
+2) Enable the plugin on the sbt projects you would like to test:
+
+    enablePlugins(DockerComposePlugin)
+
+3) Configure your sbt project(s) to build Docker images by setting the 'dockerImageCreationTask':
  
   - The [sbt-docker] (https://github.com/marcuslonnberg/sbt-docker) plugin can be used by setting:
     ```
@@ -30,17 +40,7 @@ Steps to Enable and Configure sbt-docker-compose
     dockerImageCreationTask := (publishLocal in Docker).value
     ```
    See the [basic-native-packager] (examples/basic-native-packager) example for more details.
-
-2) Add the sbt-docker-compose plugin to your projects plugins.sbt file:
-
-    addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.1")
-    
-   sbt-docker-compose is an auto-plugin which requires that sbt version 0.13.5 or higher be used.
    
-3) Enable the plugin on the sbt projects you would like to test:
-
-    enablePlugins(DockerComposePlugin)
-
 4) Define a [docker-compose.yml] (https://docs.docker.com/compose/compose-file/) file which describes your component, 
 its dependent images and the links between them. This path to this file can be explicitly defined or by default the
 plugin will attempt to locate it in one of three places with the precedence order:
