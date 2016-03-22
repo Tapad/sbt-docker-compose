@@ -10,6 +10,11 @@ is designed to be extended to allow for instances to be launched in non-local en
 
 ![Alt text](/screenshots/dockerComposeUp.png?raw=true "dockerComposeUp output")
 
+Prerequisites
+-------------
+You must have [Docker] (https://docs.docker.com/engine/installation/) and 
+[Docker-Compose] (https://docs.docker.com/compose/install/) installed.
+
 Steps to Enable and Configure sbt-docker-compose
 ------------------------------------------------
 
