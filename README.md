@@ -277,9 +277,12 @@ to know that these images should not be updated from the Docker Registry.
 Currently Unsupported Docker Compose Fields
 -------------------------------------------
 1) "build:" - All docker compose services need to specify an "image:" field.
+
 2) "container_name:" - To allow for multi-instance support container names need to be dynamically provided by the plugin
  instead of being explicitly defined.
+
 3) "extends:" - All docker services must be defined in a single docker compose yml file.
+
 4) Port ranges. Instead of defining a port range, for example:
 
        ports:
