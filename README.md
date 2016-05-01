@@ -274,6 +274,23 @@ launch a running instance that consists of both images:
 Note how the docker-compose.yml file for the root project tags each image with "\<localBuild\>". This allows dockerComposeUp 
 to know that these images should not be updated from the Docker Registry.
 
+Currently Unsupported Docker Compose Fields
+-------------------------------------------
+1) "build:" - All docker compose services need to specify an "image:" field.
+2) "container_name:" - To allow for multi-instance support container names need to be dynamically provided by the plugin
+ instead of being explicitly defined.
+3) "extends:" - All docker services must be defined in a single docker compose yml file.
+4) Port ranges. Instead of defining a port range, for example:
+
+       ports:
+         - "7000-7001:7000-7001"
+
+   Each port must be specified separately:
+
+        ports:
+          - "7000:7000"
+          - "7001:7001"
+
 Other
 -----
 Testing of sbt-docker-compose has been performed starting with docker-compose version: 1.5.1
