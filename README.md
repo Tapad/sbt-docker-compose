@@ -1,6 +1,8 @@
 sbt-docker-compose
 ==================
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.tapad/sbt-docker-compose/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.tapad/sbt-docker-compose)
+
 About
 -----
 sbt-docker-compose is an sbt plugin that integrates the functionality of [Docker Compose] (https://docs.docker.com/compose/) 
