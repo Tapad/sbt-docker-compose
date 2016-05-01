@@ -1,6 +1,7 @@
 package com.tapad.docker
 
 import java.io.{ File, FileWriter }
+import java.util
 
 import com.tapad.docker.DockerComposeKeys._
 import org.yaml.snakeyaml.Yaml
@@ -26,6 +27,8 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
   //Custom tags
   val useLocalBuildTag = "<localbuild>"
   val skipPullTag = "<skippull>"
+
+  val environmentDebugKey = "JAVA_TOOL_OPTIONS"
 
   type yamlData = Map[String, java.util.LinkedHashMap[String, Any]]
 
@@ -110,9 +113,19 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
     if (serviceKeys.containsKey(portsKey)) {
       //Determine if there is a debug port set on the service
       val debugPort = if (serviceKeys.containsKey(environmentKey)) {
-        val env = serviceKeys.get(environmentKey).asInstanceOf[java.util.LinkedHashMap[String, String]].asScala
-        val debugOptions = env.filter(_._1 == "JAVA_TOOL_OPTIONS")
-        val debugAddress = debugOptions.flatMap(_._2.split(',')).filter(_.contains("address")).mkString.split("=")
+        val debugAddress = {
+          serviceKeys.get(environmentKey) match {
+            case key: util.LinkedHashMap[_, _] =>
+              val env = key.asInstanceOf[java.util.LinkedHashMap[String, String]].asScala
+              val debugOptions = env.filter(_._1 == environmentDebugKey)
+              debugOptions.flatMap(_._2.split(','))
+            case key: util.ArrayList[_] =>
+              val env = key.asInstanceOf[util.ArrayList[String]].asScala
+              val debugOptions = env.filter(_.startsWith(environmentDebugKey))
+              debugOptions.flatMap(_.split(','))
+          }
+        }.filter(_.contains("address")).mkString.split("=")
+
         if (debugAddress.size == 2) debugAddress(1) else "none"
       }
 
