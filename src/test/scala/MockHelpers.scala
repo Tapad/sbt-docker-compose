@@ -8,6 +8,7 @@ trait MockHelpers {
     doReturn(null).when(composeMock).getPersistedState(null)
     doReturn(serviceName).when(composeMock).getSetting(composeServiceName)(null)
     doReturn(true).when(composeMock).getSetting(composeRemoveContainersOnShutdown)(null)
+    doReturn(false).when(composeMock).getSetting(composeRemoveNetworkOnShutdown)(null)
     doReturn(false).when(composeMock).getSetting(composeRemoveTempFileOnShutdown)(null)
     doReturn(instances).when(composeMock).getAttribute(runningInstances)(null)
     doReturn(null).when(composeMock).removeAttribute(runningInstances)(null)

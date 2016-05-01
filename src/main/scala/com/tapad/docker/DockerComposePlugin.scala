@@ -11,6 +11,7 @@ import scala.util.Try
 
 /**
  * Defines an internal to external port mapping for a Docker Compose service port
+ *
  * @param hostPort The port that is externally exposed for access from the Docker host machine
  * @param containerPort The port that is internally exposed for access within the Docker Compose instance
  * @param isDebug True if this port for connecting to for debugging purposes, False otherwise.
@@ -19,6 +20,7 @@ case class PortInfo(hostPort: String, containerPort: String, isDebug: Boolean)
 
 /**
  * Represents a Docker Compose service entry
+ *
  * @param serviceName The name of the Docker Compose service
  * @param imageName The full image name of the image for the service
  * @param imageSource An identifier representing where this image is being retrieved from. For example, "cache",
@@ -34,6 +36,7 @@ case class ServiceInfo(serviceName: String, imageName: String, imageSource: Stri
 
 /**
  * Represents a running Docker Compose instance
+ *
  * @param instanceName The unique identifier that represents a running Docker Compose instance
  * @param composeServiceName The SBT defined settingKey for composeServiceName. This allows an instance to be associated
  *                          with an SBT project.
@@ -53,6 +56,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val composeServiceName = DockerComposeKeys.composeServiceName
     val composeNoBuild = DockerComposeKeys.composeNoBuild
     val composeRemoveContainersOnShutdown = DockerComposeKeys.composeRemoveContainersOnShutdown
+    val composeRemoveNetworkOnShutdown = DockerComposeKeys.composeRemoveNetworkOnShutdown
     val composeRemoveTempFileOnShutdown = DockerComposeKeys.composeRemoveTempFileOnShutdown
     val composeContainerStartTimeoutSeconds = DockerComposeKeys.composeContainerStartTimeoutSeconds
     val dockerMachineName = DockerComposeKeys.dockerMachineName
@@ -242,6 +246,15 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       dockerComposeRemoveContainers(instanceName, composePath)
     }
 
+    if (getSetting(composeRemoveNetworkOnShutdown)) {
+      // If the compose file being used is a version that creates a new network on startup then remove that network on
+      // shutdown
+      val composeYaml = readComposeFile(composePath)
+      if (getComposeVersion(composeYaml) >= 2) {
+        dockerRemoveNetwork(instanceName)
+      }
+    }
+
     //When shutting down the instance remove the tag processed compose file by default. This is an option as it can be
     //useful to have this file for debugging purposes.
     if (getSetting(composeRemoveTempFileOnShutdown)) {
@@ -343,6 +356,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
   /**
    * Determines the host connection string for a container
+   *
    * @param dockerMachineName If on OSX the name of the Docker Machine being used
    * @param json The "docker inspect" json output for a container
    * @return The IP or host that can be used to access a container
@@ -359,11 +373,13 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
   /**
    * Generates an instance name that is unique from that of the running containers
+   *
    * @return The generated instance name
    */
   def generateInstanceName(state: State): String = {
     /**
      * Recursively looks for an instance name that is unique
+     *
      * @param runningIds The current list of running instance id's
      * @return The unique instance name
      */

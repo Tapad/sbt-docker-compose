@@ -26,6 +26,7 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
     composeServiceName := name.value.toLowerCase,
     composeNoBuild := false,
     composeRemoveContainersOnShutdown := true,
+    composeRemoveNetworkOnShutdown := true,
     composeRemoveTempFileOnShutdown := true,
     composeContainerStartTimeoutSeconds := 500,
     dockerMachineName := "default",

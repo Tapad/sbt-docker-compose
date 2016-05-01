@@ -20,7 +20,7 @@ Steps to Enable and Configure sbt-docker-compose
 
 1) Add the sbt-docker-compose plugin to your projects plugins.sbt file:
 
-    addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.1")
+    addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.2")
     
    sbt-docker-compose is an auto-plugin which requires that sbt version 0.13.5 or higher be used.
    
@@ -57,6 +57,7 @@ plugin will attempt to locate it in one of three places with the precedence orde
     composeServiceName := // Specify the name of the service in the Docker Compose file being tested. This setting prevents the service image from being pull down from the Docker Registry. It defaults to the sbt Project name.
     composeNoBuild := // True if a Docker Compose file is to be started without building any images and only using ones that already exist in the Docker Registry. This defaults to False.
     composeRemoveContainersOnShutdown := // True if a Docker Compose should remove containers when shutting down the compose instance. This defaults to True.
+    composeRemoveNetworkOnShutdown := // True if a Docker Compose should remove the network it created when shutting down the compose instance. This defaults to True.
     composeContainerStartTimeoutSeconds := // The amount of time in seconds to wait for the containers in a Docker Compose instance to start. Defaults to 500 seconds.
     composeRemoveTempFileOnShutdown := // True if a Docker Compose should remove the post Custom Tag processed Compose File on shutdown. This defaults to True.
     dockerMachineName := // If running on OSX the name of the Docker Machine Virtual machine being used. If not overridden it is set to 'default'

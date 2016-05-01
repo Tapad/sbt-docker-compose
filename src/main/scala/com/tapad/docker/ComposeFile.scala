@@ -78,6 +78,13 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
     }
   }
 
+  def getComposeVersion(composeYaml: yamlData): Int = {
+    composeYaml.get(servicesKey) match {
+      case Some(services) => 2
+      case None => 1
+    }
+  }
+
   /**
    * Function that reads plug-in defined "<customTag>" fields from the Docker Compose file and performs some
    * transformation on the Docker File based on the tag. The file after transformations are applied is what is used by

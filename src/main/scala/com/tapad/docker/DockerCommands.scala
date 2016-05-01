@@ -37,6 +37,10 @@ trait DockerCommands {
     s"docker rmi $imageName".!!
   }
 
+  def dockerRemoveNetwork(networkName: String): Unit = {
+    s"docker network rm ${networkName}_default".!
+  }
+
   def dockerTagImage(currentImageName: String, newImageName: String): Unit = {
     s"docker tag $currentImageName $newImageName".!!
   }
