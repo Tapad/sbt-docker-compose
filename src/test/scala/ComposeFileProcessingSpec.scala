@@ -117,6 +117,17 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
       service.ports.exists(_.containerPort == "5005")))
   }
 
+  test("Validate the correct Debug port is found when the alternate 'environment:' field format is used") {
+    val composeMock = getComposeFileMock()
+    val composeFilePath = getClass.getResource("debug_port_alternate_environment_format.yml").getPath
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+
+    assert(serviceInfo.exists(service => service.imageName == "testservice:latest" &&
+      service.ports.exists(_.isDebug) &&
+      service.ports.exists(_.containerPort == "5005")))
+  }
+
   test("Validate the Debug port is not found when no exposed") {
     val composeMock = getComposeFileMock()
     val composeFilePath = getClass.getResource("debug_port_not_exposed.yml").getPath
