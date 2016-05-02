@@ -22,7 +22,7 @@ Steps to Enable and Configure sbt-docker-compose
 
 1) Add the sbt-docker-compose plugin to your projects plugins.sbt file:
 
-    addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.2")
+    addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.3")
     
    sbt-docker-compose is an auto-plugin which requires that sbt version 0.13.5 or higher be used.
    
@@ -135,11 +135,10 @@ tests from running until you attach a debugger to the specified port. For exampl
 
     dockerComposeTest <instance id> -debug:<debug port>
     
-**Note:** The test pass is started using the using the 'Scala' process that exists on your PATH to launch the
-[ScalaTest Test Runner] (http://www.scalatest.org/user_guide/using_the_runner). For this to work the version of 
-ScalaTest being used must be aligned to the version of 'Scala' that is on your PATH. For example, if you are using 
-ScalaTest 2.10.6 than Scala on the PATH must be 2.10.X. If this is not configured correctly you may see an issue with 
-the Test Runner failing to load classes.
+**Note:** The test pass is started using the using the 'java' process that exists on your command line PATH to launch the
+[ScalaTest Test Runner] (http://www.scalatest.org/user_guide/using_the_runner). For this to work the classpath of your
+project needs to be built with the version of scala used by the project. If this is not configured correctly you may see
+an issue with the Test Runner failing to load classes.
 
 
 Docker Compose File Custom Tags
