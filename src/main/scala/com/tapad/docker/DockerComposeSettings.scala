@@ -34,9 +34,11 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
       "Please configure this setting to have Docker images built.***"),
     testTagsToExecute := "",
     testDependenciesClasspath := {
+      val classpathCompileManaged = (managedClasspath in Compile).value
+      val classpathCompileUnmanaged = (unmanagedClasspath in Compile).value
       val classpathTestManaged = (managedClasspath in Test).value
       val classpathTestUnmanaged = (unmanagedClasspath in Test).value
-      (classpathTestManaged.files ++ classpathTestUnmanaged.files).map(_.getAbsoluteFile).mkString(":")
+      (classpathCompileManaged.files ++ classpathCompileUnmanaged.files ++ classpathTestManaged.files ++ classpathTestUnmanaged.files).map(_.getAbsoluteFile).mkString(":")
     },
     testCasesJar := artifactPath.in(Test, packageBin).value.getAbsolutePath,
     commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeInstancesCommand, dockerComposeTest)

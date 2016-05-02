@@ -20,9 +20,9 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
   }
 
   /**
-   * Gets a classpath representing all managed and unmanaged dependencies in the Test Scope for this sbt project.
+   * Gets a classpath representing all managed and unmanaged dependencies in the Test and Compile Scope for this sbt project.
    * @param state The sbt state
-   * @return The full set of classpath entries used by Tet
+   * @return The full set of classpath entries used by Test and Compile
    */
   def getTestDependenciesClassPath(implicit state: State): String = {
     val extracted = Project.extract(state)
