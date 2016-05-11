@@ -60,6 +60,24 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     assert(portInfo.exists(port => port.containerPort == "3002" && port.hostPort == "32801"))
   }
 
+  test("Validate Docker Compose 2.0 NetworkSettings are read when available") {
+    val serviceName = "service"
+    val instanceName = "instance"
+    val containerId = "123456"
+    val dockerMachineName = "default"
+    val jsonStream = getClass.getResourceAsStream("docker_inspect2.0.json")
+    val inspectJson = Source.fromInputStream(jsonStream).mkString
+    val composeMock = spy(new DockerComposePluginLocal)
+    doReturn(containerId).when(composeMock).getDockerContainerId(instanceName, serviceName)
+    doReturn(inspectJson).when(composeMock).getDockerContainerInfo(containerId)
+    doReturn(false).when(composeMock).isBoot2DockerEnvironment
+
+    val port = PortInfo("0", "3002", isDebug = false)
+    val serviceInfo = ServiceInfo(serviceName, "image", "source", List(port))
+    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance(instanceName, dockerMachineName, List(serviceInfo), 60)
+    assert(serviceInfoUpdated.head.containerHost == "172.18.0.1")
+  }
+
   test("Validate Docker instance name generation is random") {
     val composeMock = spy(new DockerComposePluginLocal)
     val instanceName1 = "123"

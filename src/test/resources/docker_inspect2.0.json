@@ -1,0 +1,61 @@
+[
+  {
+    "NetworkSettings": {
+      "Bridge": "",
+      "SandboxID": "09599d0d6575a5c1790f09fca7f9a38f89421516bb48b9b9adf868bd6bd0bb80",
+      "HairpinMode": false,
+      "LinkLocalIPv6Address": "",
+      "LinkLocalIPv6PrefixLen": 0,
+      "Ports": {
+        "3000/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "32803"
+          }
+        ],
+        "3001/udp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "32802"
+          }
+        ],
+        "3002/tcp": [
+          {
+            "HostIp": "0.0.0.0",
+            "HostPort": "32801"
+          }
+        ]
+      },
+      "SandboxKey": "/var/run/docker/netns/09599d0d6575",
+      "SecondaryIPAddresses": null,
+      "SecondaryIPv6Addresses": null,
+      "EndpointID": "",
+      "Gateway": "",
+      "GlobalIPv6Address": "",
+      "GlobalIPv6PrefixLen": 0,
+      "IPAddress": "",
+      "IPPrefixLen": 0,
+      "IPv6Gateway": "",
+      "MacAddress": "",
+      "Networks": {
+        "instance_default": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": [
+            "zookeeper",
+            "72471c8769e1"
+          ],
+          "NetworkID": "9a147c09c7f873c1ded7ad8743a7cf82fec1849a0827ed0dfc6c5ca33fa12a1c",
+          "EndpointID": "5ea92039c19addeb85c32d2484e7c87b896b13e48099a0a4a688c52b308aa457",
+          "Gateway": "172.18.0.1",
+          "IPAddress": "172.18.0.2",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "MacAddress": "11:11:11:11:11:11"
+        }
+      }
+    }
+  }
+]

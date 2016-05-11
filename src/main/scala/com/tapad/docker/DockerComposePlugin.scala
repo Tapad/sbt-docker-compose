@@ -304,7 +304,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         val hostPort = compact(render(jsonInspect \ "NetworkSettings" \ "Ports" \ portFullName \ "HostPort")).replaceAll("\"", "")
         PortInfo(hostPort, port.containerPort, port.isDebug)
       }
-      val containerHost = getContainerHost(dockerMachineName, jsonInspect)
+      val containerHost = getContainerHost(dockerMachineName, instanceName, jsonInspect)
 
       service.copy(ports = portsWithHost, containerId = containerId, containerHost = containerHost)
     }
@@ -359,16 +359,24 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
    * Determines the host connection string for a container
    *
    * @param dockerMachineName If on OSX the name of the Docker Machine being used
+   * @param instanceName The name of the Docker Compose instance
    * @param json The "docker inspect" json output for a container
    * @return The IP or host that can be used to access a container
    */
-  def getContainerHost(dockerMachineName: String, json: JValue): String = {
+  def getContainerHost(dockerMachineName: String, instanceName: String, json: JValue): String = {
     if (isBoot2DockerEnvironment) {
       print("OSX boot2docker environment detected. Using the docker-machine IP for the container.")
       dockerMachineIp(dockerMachineName)
     } else {
       print("Non-OSX environment detected. Using the host from the container.")
-      compact(render(json \ "NetworkSettings" \ "Gateway")).replaceAll("\"", "")
+
+      //If a custom network for the Compose Container has been created (as is done with Compose 2.0)
+      //then attempt to use that. Otherwise, use the higher-level NetworkSettings Gateway setting
+      val networkHost = json \ "NetworkSettings" \ "Networks" \ s"${instanceName}_$dockerMachineName" \ "Gateway"
+      networkHost match {
+        case JNothing => compact(render(json \ "NetworkSettings" \ "Gateway")).replaceAll("\"", "")
+        case _ => compact(render(networkHost)).replaceAll("\"", "")
+      }
     }
   }
 
