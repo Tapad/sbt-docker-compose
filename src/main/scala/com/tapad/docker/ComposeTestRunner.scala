@@ -49,7 +49,8 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
     val testParams = instance match {
       case Some(inst) => inst.servicesInfo.flatMap(service =>
         service.ports.map(port =>
-          s"-D${service.serviceName}:${port.containerPort}=${service.containerHost}:${port.hostPort}")).mkString(" ")
+          s"-D${service.serviceName}:${port.containerPort}=${service.containerHost}:${port.hostPort}")
+          :+ s"-D${service.serviceName}=${service.containerId}").mkString(" ")
       case None => ""
     }
 
