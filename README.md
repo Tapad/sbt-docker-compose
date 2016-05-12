@@ -108,9 +108,10 @@ The sbt-docker-compose plugin provides the ability to run a suite of ScalaTest t
 The dynamically assigned host and port information are passed into each test case via the 
 ScalaTest [ConfigMap] (http://doc.scalatest.org/2.0/index.html#org.scalatest.ConfigMap).
 
-The key into the map is the "serviceName:containerPort" that is statically defined in the Docker Compose file and it 
+The key into the map is the "serviceName:containerPort" (e.g. "basic:8080") that is statically defined in the Docker Compose file and it 
 will return "host:hostPort" which is the Docker Compose generated and exposed endpoint that can be connected to at runtime
-for testing. See the [**basic-with-tests**] (examples/basic-with-tests) example for more details.
+for testing. There are also keys "serviceName:containerId" (e.g. "basic:containerId") which map to the docker container id.
+See the [**basic-with-tests**] (examples/basic-with-tests) example for more details.
 
 By default all tests will be executed, however you can also [Tag] (http://www.scalatest.org/user_guide/tagging_your_tests)
 test cases and indicate to the plugin to only execute those tests:
