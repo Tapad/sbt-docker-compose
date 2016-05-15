@@ -41,6 +41,11 @@ class BasicAppSpec extends fixture.FunSuite with fixture.ConfigMapFixture with E
     configMap =>
   }
 
+  test("Validate presence of docker config information in system properties", DockerComposeTag) {
+    configMap =>
+      Option(System.getProperty(basicServiceHostKey)) shouldBe defined
+  }
+
   def getHostInfo(configMap: ConfigMap): String = getContainerSetting(configMap, basicServiceHostKey)
   def getContainerId(configMap: ConfigMap): String = getContainerSetting(configMap, basicServiceContainerIdKey)
 
