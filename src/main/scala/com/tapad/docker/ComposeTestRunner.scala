@@ -70,7 +70,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
 
     val testDependencies = getTestDependenciesClassPath
     if (testDependencies.contains("org.scalatest")) {
-      s"java $debugSettings -cp $testDependencies org.scalatest.tools.Runner -o -R ${getSetting(testCasesJar)} $testTags $testParams".!
+      s"java $debugSettings $testParams -cp $testDependencies org.scalatest.tools.Runner -o -R ${getSetting(testCasesJar)} $testTags $testParams".!
     } else {
       printBold("Cannot find a ScalaTest Jar dependency. Please make sure it is added to your sbt projects " +
         "libraryDependencies.")
