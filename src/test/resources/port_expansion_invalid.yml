@@ -1,0 +1,4 @@
+testservice:
+  image: testservice:0.0.1
+  ports:
+    - "4000-4002:4000-4003"

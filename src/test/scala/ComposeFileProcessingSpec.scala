@@ -150,6 +150,36 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     assert(serviceInfo.exists(service => service.imageName == "test:latest" && service.imageSource == definedImageSource))
   }
 
+  test("Validate that Docker Compose file port ranges are expanded") {
+    val composeMock = getComposeFileMock()
+    val composeFilePath = getClass.getResource("port_expansion.yml").getPath
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+
+    assert(serviceInfo.exists(service =>
+      service.ports.exists(p => p.hostPort == "1000" && p.containerPort == "1000") &&
+        service.ports.exists(p => p.hostPort == "2000" && p.containerPort == "2000") &&
+        service.ports.exists(p => p.hostPort == "2001" && p.containerPort == "2001") &&
+        service.ports.exists(p => p.hostPort == "2002" && p.containerPort == "2002") &&
+        service.ports.exists(p => p.hostPort == "3000" && p.containerPort == "3000") &&
+        service.ports.exists(p => p.hostPort == "3001" && p.containerPort == "3001") &&
+        service.ports.exists(p => p.hostPort == "3002" && p.containerPort == "3002") &&
+        service.ports.exists(p => p.hostPort == "5000" && p.containerPort == "4000") &&
+        service.ports.exists(p => p.hostPort == "5001" && p.containerPort == "4001") &&
+        service.ports.exists(p => p.hostPort == "5002" && p.containerPort == "4002") &&
+        service.ports.exists(p => p.hostPort == "6000" && p.containerPort == "6000") &&
+        service.ports.exists(p => p.hostPort == "6001" && p.containerPort == "6001")))
+  }
+
+  test("Validate that an improper port range throws an exception") {
+    val composeMock = getComposeFileMock()
+    val composeFilePath = getClass.getResource("port_expansion_invalid.yml").getPath
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    intercept[IllegalStateException] {
+      composeMock.processCustomTags(null, null, composeYaml)
+    }
+  }
+
   def getComposeFileMock(serviceName: String = "testservice", versionNumber: String = "1.0.0", noBuild: Boolean = false): ComposeFile = {
     val composeMock = spy(new DockerComposePluginLocal)
 

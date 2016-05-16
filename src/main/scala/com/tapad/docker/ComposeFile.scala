@@ -9,6 +9,7 @@ import sbt.Keys._
 import sbt._
 
 import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 import scala.collection.{ Iterable, Seq }
 import scala.io.Source._
 
@@ -36,6 +37,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
    * processCustomTags performs any pre-processing of Custom Tags in the Compose File before the Compose file is used
    * by Docker. This function will also determine any debug ports.
    * This function can be overridden in derived plug-ins to add additional custom tags to process
+   *
    * @param state The sbt state
    * @param args Args passed to sbt command
    * @return The collection of ServiceInfo objects. The Compose Yaml passed in is also modified in-place so the calling
@@ -70,6 +72,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
   /**
    * If the Yaml is in the Docker 1.6 format which includes a new "services" key work with that sub-set of data.
    * Otherwise, return the original Yaml
+   *
    * @param composeYaml Docker Compose yaml to process
    * @return The 'services' section of the Yaml file
    */
@@ -93,6 +96,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
    * transformation on the Docker File based on the tag. The file after transformations are applied is what is used by
    * Docker Compose to launch the instance. This function can be overridden in derived plug-ins to add additional tags
    * pre-processing features.
+   *
    * @param state The sbt state
    * @param args Args passed to sbt command
    * @param imageName The image name and tag to be processed for example "testimage:1.0.0<skipPull>" This plugin just
@@ -105,7 +109,8 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
 
   /**
    * Parses the Port information from the Yaml content for a service. It will also report any ports that are exposed as
-   * Debugging ports
+   * Debugging ports and expand any defined port ranges
+   *
    * @param serviceKeys The Docker Compose Yaml representing a service
    * @return PortInfo collection for all defined ports
    */
@@ -128,6 +133,39 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
 
         if (debugAddress.size == 2) debugAddress(1) else "none"
       }
+
+      //If any port ranges are defined expand them into individual ports
+      val portRangeChar = "-"
+      val (needsExpansion, noExpansion) = serviceKeys.get(portsKey).asInstanceOf[java.util.ArrayList[String]].asScala.partition(_.contains(portRangeChar))
+      val expandedPorts: Seq[String] = needsExpansion.flatMap { p =>
+        val portParts = p.replaceFirst("^0:", "").split(':')
+        val portSplitL = portParts(0).split(portRangeChar)
+        val (rangeStartL, rangeEndL) = (portSplitL(0), portSplitL(1))
+        val startL = rangeStartL.toInt
+        val endL = rangeEndL.toInt
+        val rangeL = endL - startL
+
+        if (portParts.length == 1) {
+          for (i <- 0 to rangeL)
+            yield s"${startL + i}"
+        } else {
+          val portSplitR = portParts(1).split(portRangeChar)
+          val (rangeStartR, rangeEndR) = (portSplitR(0), portSplitR(1))
+          val startR = rangeStartR.toInt
+          val endR = rangeEndR.toInt
+          val rangeR = endR - startR
+
+          if (rangeL != rangeR)
+            throw new IllegalStateException(s"Invalid port range mapping specified for $p")
+
+          for (i <- 0 to rangeR)
+            yield s"${startL + i}:${startR + i}"
+        }
+      }
+
+      //update ports to be the expanded version
+      val list = new java.util.ArrayList[String](expandedPorts ++ noExpansion)
+      serviceKeys.put(portsKey, list)
 
       serviceKeys.get(portsKey).asInstanceOf[java.util.ArrayList[String]].asScala.map(port => {
         val portArray = port.split(':')
@@ -155,6 +193,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
 
   /**
    * Saves the supplied Docker Compose Yaml data to a temporary file
+   *
    * @param finalYaml Compose Yaml to save
    * @return The path to the temporary Compose File
    */

@@ -283,17 +283,6 @@ Currently Unsupported Docker Compose Fields
 
 3) "extends:" - All docker services must be defined in a single docker compose yml file.
 
-4) Port ranges. Instead of defining a port range, for example:
-
-       ports:
-         - "7000-7001:7000-7001"
-
-   Each port must be specified separately:
-
-        ports:
-          - "7000:7000"
-          - "7001:7001"
-
 Other
 -----
 Testing of sbt-docker-compose has been performed starting with docker-compose version: 1.5.1
