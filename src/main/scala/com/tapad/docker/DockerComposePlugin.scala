@@ -76,6 +76,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   //Command line arguments
   val skipPullArg = "skipPull"
   val skipBuildArg = "skipBuild"
+  lazy val dockerComposeVersion = getDockerComposeVersion
 
   lazy val dockerComposeUpCommand = Command.args("dockerComposeUp", ("dockerComposeUp", "Starts a local Docker Compose instance."),
     s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
@@ -166,7 +167,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       dockerComposeUp(instanceName, updatedComposePath)
       val newInstance = getRunningInstanceInfo(state, instanceName, updatedComposePath, servicesInfo)
 
-      printMappedPortInformation(state, newInstance)
+      printMappedPortInformation(state, newInstance, dockerComposeVersion)
       saveInstanceToSbtSession(state, newInstance)
     } getOrElse {
       stopLocalDockerInstance(state, instanceName, updatedComposePath)
@@ -348,7 +349,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     getAttribute(runningInstances)(newState) match {
       case Some(launchedInstances) =>
         //Print all of the connection information for each running instance
-        launchedInstances.foreach(printMappedPortInformation(newState, _))
+        launchedInstances.foreach(printMappedPortInformation(newState, _, dockerComposeVersion))
       case None =>
         print("There are no currently running Docker Compose instances detected.")
     }

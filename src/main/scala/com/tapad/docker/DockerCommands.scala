@@ -16,6 +16,11 @@ trait DockerCommands {
     s"docker-compose -p $instanceName -f $composePath rm -v -f".!
   }
 
+  def getDockerComposeVersion: Version = {
+    val version = "docker-compose version --short".!!
+    Version(version)
+  }
+
   def dockerPull(imageName: String): Unit = {
     s"docker pull $imageName".!
   }

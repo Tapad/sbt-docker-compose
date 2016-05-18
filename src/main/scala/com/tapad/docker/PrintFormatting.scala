@@ -24,7 +24,7 @@ trait PrintFormatting {
     print(RED + input + RESET)
   }
 
-  def printMappedPortInformation(state: State, instance: RunningInstanceInfo): Unit = {
+  def printMappedPortInformation(state: State, instance: RunningInstanceInfo, composeVersion: Version): Unit = {
     printBold(s"\nThe following endpoints are available for your local instance: ${instance.instanceName}")
 
     val tableEntries = getTableOutputList(instance.servicesInfo)
@@ -40,7 +40,9 @@ trait PrintFormatting {
     printSuccess(s"   docker exec -it <Container Id> bash")
 
     print(s"3) To view log files from bash run:")
-    printSuccess(s"   docker-compose -p ${instance.instanceName} -f ${instance.composeFilePath} logs")
+
+    val tailFlag = if (composeVersion.major > 1 || (composeVersion.major == 1 && composeVersion.minor >= 7)) "-f" else ""
+    printSuccess(s"   docker-compose -p ${instance.instanceName} -f ${instance.composeFilePath} logs $tailFlag")
 
     print(s"4) To execute test cases against instance from sbt run:")
     printSuccess(s"   dockerComposeTest ${instance.instanceName}")

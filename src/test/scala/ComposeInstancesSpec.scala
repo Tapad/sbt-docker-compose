@@ -1,5 +1,5 @@
 import sbt._
-import com.tapad.docker.{ DockerComposePluginLocal, RunningInstanceInfo }
+import com.tapad.docker.{ DockerComposePluginLocal, RunningInstanceInfo, Version }
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
@@ -14,7 +14,7 @@ class ComposeInstancesSpec extends FunSuite with BeforeAndAfter with OneInstance
 
     composeMock.printDockerComposeInstances(null, null)
 
-    verify(composeMock, times(0)).printMappedPortInformation(any[State], any[RunningInstanceInfo])
+    verify(composeMock, times(0)).printMappedPortInformation(any[State], any[RunningInstanceInfo], any[Version])
   }
 
   test("Validate that multiple instances across sbt projects are printed when they are running") {
@@ -29,6 +29,6 @@ class ComposeInstancesSpec extends FunSuite with BeforeAndAfter with OneInstance
 
     composeMock.printDockerComposeInstances(null, null)
 
-    verify(composeMock, times(3)).printMappedPortInformation(any[State], any[RunningInstanceInfo])
+    verify(composeMock, times(3)).printMappedPortInformation(any[State], any[RunningInstanceInfo], any[Version])
   }
 }
