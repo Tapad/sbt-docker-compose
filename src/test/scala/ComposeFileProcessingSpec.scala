@@ -1,3 +1,6 @@
+import java.io.File
+import java.util
+
 import com.tapad.docker.DockerComposeKeys._
 import com.tapad.docker.DockerComposePlugin._
 import com.tapad.docker.{ ComposeFile, DockerComposePluginLocal }
@@ -128,7 +131,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
       service.ports.exists(_.containerPort == "5005")))
   }
 
-  test("Validate the Debug port is not found when no exposed") {
+  test("Validate the Debug port is not found when not exposed") {
     val composeMock = getComposeFileMock()
     val composeFilePath = getClass.getResource("debug_port_not_exposed.yml").getPath
     val composeYaml = composeMock.readComposeFile(composeFilePath)
@@ -174,6 +177,34 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate that an improper port range throws an exception") {
     val composeMock = getComposeFileMock()
     val composeFilePath = getClass.getResource("port_expansion_invalid.yml").getPath
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    intercept[IllegalStateException] {
+      composeMock.processCustomTags(null, null, composeYaml)
+    }
+  }
+
+  test("Validate that the env_file settings gets updated with the fully qualified path") {
+    val composeMock = getComposeFileMock()
+    val composeFilePath = getClass.getResource("env_file.yml").getPath
+    val composeFileDir = composeFilePath.substring(0, composeFilePath.lastIndexOf(File.separator))
+    doReturn(composeFilePath).when(composeMock).getSetting(composeFile)(null)
+
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    composeMock.processCustomTags(null, null, composeYaml)
+    val modifiedEnvPath = composeYaml.filter(_._1 == "testservice").head._2.get(composeMock.envFileKey)
+    assert(modifiedEnvPath == s"$composeFileDir/test.env")
+
+    val modifiedEnvPath2 = composeYaml.filter(_._1 == "testservice2").head._2.get(composeMock.envFileKey).asInstanceOf[util.List[String]]
+    assert(modifiedEnvPath2.size() == 2)
+    assert(modifiedEnvPath2.get(0) == s"$composeFileDir/test.env")
+    assert(modifiedEnvPath2.get(1) == s"$composeFileDir/test2.env")
+  }
+
+  test("Validate that an env_file file that cannot be found fails with an exception") {
+    val composeMock = getComposeFileMock()
+    val composeFilePath = getClass.getResource("env_file_invalid.yml").getPath
+    doReturn(composeFilePath).when(composeMock).getSetting(composeFile)(null)
+
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     intercept[IllegalStateException] {
       composeMock.processCustomTags(null, null, composeYaml)

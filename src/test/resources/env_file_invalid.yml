@@ -1,0 +1,3 @@
+testservice:
+  image: myapp:latest<skipPull>
+  env_file: doesnotexist.env

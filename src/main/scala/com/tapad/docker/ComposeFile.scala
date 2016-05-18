@@ -19,6 +19,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
   val environmentKey = "environment"
   val portsKey = "ports"
   val servicesKey = "services"
+  val envFileKey = "env_file"
 
   //Set of values representing the source location of a Docker Compose image
   val cachedImageSource = "cache"
@@ -35,7 +36,8 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
 
   /**
    * processCustomTags performs any pre-processing of Custom Tags in the Compose File before the Compose file is used
-   * by Docker. This function will also determine any debug ports.
+   * by Docker. This function will also determine any debug ports and rename any 'env_file' defined files to use their
+   * fully qualified paths so that they can be accessed from the tmp location the docker-compose.yml is launched from
    * This function can be overridden in derived plug-ins to add additional custom tags to process
    *
    * @param state The sbt state
@@ -64,8 +66,42 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
         (imageName, definedImageSource)
       }
 
+      //Update env_file files to use the fully qualified path so that it can still be accessed from the tmp location
+      if (serviceData.containsKey(envFileKey)) {
+        val composeFileFullPath = new File(getSetting(composeFile)).getAbsolutePath
+        val composeFileDir = composeFileFullPath.substring(0, composeFileFullPath.lastIndexOf(File.separator))
+
+        val entry = serviceData.get(envFileKey)
+        entry match {
+          case e: String =>
+            val updated = getFullyQualifiedPath(e, composeFileDir)
+            serviceData.put(envFileKey, updated)
+          case e: util.ArrayList[_] =>
+            val updated = e.asScala.map(file => getFullyQualifiedPath(file.asInstanceOf[String], composeFileDir))
+            serviceData.put(envFileKey, updated.asJava)
+        }
+      }
+
       serviceData.put(imageKey, updatedImageName)
       ServiceInfo(serviceName, updatedImageName, imageSource, getPortInfo(serviceData))
+    }
+  }
+
+  /**
+   *  Attempt to get the fully qualified path to the environment file. It will first attempt to find the file using the
+   *  path provided. If that fails it will attempt to find the file relative to the docker-compose yml location. Otherwise,
+   *  it will throw an exception with information about the file that could not be located.
+   * @param fileName The file name to find
+   * @param composePath The path to the directory of the docker-compose yml file being used
+   * @return The fully qualified path to the file
+   */
+  def getFullyQualifiedPath(fileName: String, composePath: String): String = {
+    if (new File(fileName).exists) {
+      new File(fileName).getAbsolutePath
+    } else if (new File(s"$composePath/$fileName").exists) {
+      new File(s"$composePath/$fileName").getAbsolutePath
+    } else {
+      throw new IllegalStateException(s"Could not find env_file: '$fileName' either at the specified path or in the '$composePath' directory.")
     }
   }
 

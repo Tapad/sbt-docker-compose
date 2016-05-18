@@ -1,0 +1,8 @@
+testservice:
+  image: myapp:latest<skipPull>
+  env_file: test.env
+testservice2:
+  image: myapp2:latest<skipPull>
+  env_file:
+    - test.env
+    - test2.env
