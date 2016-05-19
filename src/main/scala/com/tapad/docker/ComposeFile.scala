@@ -12,6 +12,7 @@ import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import scala.collection.{ Iterable, Seq }
 import scala.io.Source._
+import scala.util.{ Try, Success, Failure }
 
 trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
   // Compose file Yaml keys
@@ -224,7 +225,10 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
   }
 
   def deleteComposeFile(composePath: String): Boolean = {
-    new File(composePath).delete()
+    Try(new File(composePath).delete()) match {
+      case Success(i) => true
+      case Failure(t) => false
+    }
   }
 
   /**
