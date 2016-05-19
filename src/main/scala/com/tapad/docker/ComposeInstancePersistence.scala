@@ -104,16 +104,13 @@ trait ComposeInstancePersistence extends SettingsHelper {
    */
   def getMatchingRunningInstance(implicit state: State, args: Seq[String]): Option[RunningInstanceInfo] = getAttribute(runningInstances) match {
     case Some(launchedInstances) =>
-      args
-        .zip(launchedInstances)
-        .filter {
-          case (arg, instance) => arg == instance.instanceName
-        }
-        .map {
-          case (arg, instance) => instance
-        }
-        .headOption
+      val matchingInstance = for {
+        arg <- args
+        instance <- launchedInstances
+        if arg == instance.instanceName
+      } yield instance
 
+      matchingInstance.headOption
     case None => None
   }
 

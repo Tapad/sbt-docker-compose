@@ -251,10 +251,12 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     if (getSetting(composeRemoveNetworkOnShutdown)) {
       // If the compose file being used is a version that creates a new network on startup then remove that network on
       // shutdown
-      val composeYaml = readComposeFile(composePath)
-      if (getComposeVersion(composeYaml) >= 2) {
-        val dockerMachine = getSetting(dockerMachineName)
-        dockerRemoveNetwork(instanceName, dockerMachine)
+      if (new File(composePath).exists()) {
+        val composeYaml = readComposeFile(composePath)
+        if (getComposeVersion(composeYaml) >= 2) {
+          val dockerMachine = getSetting(dockerMachineName)
+          dockerRemoveNetwork(instanceName, dockerMachine)
+        }
       }
     }
 
@@ -315,7 +317,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   def composeTestRunner(implicit state: State, args: Seq[String]): State = {
     val newState = getPersistedState(state)
 
-    val requiresShutdown = getMatchingRunningInstance(state, args).isEmpty
+    val requiresShutdown = getMatchingRunningInstance(newState, args).isEmpty
     val (finalState, instance) = getTestPassInstance(newState, args)
 
     runTestPass(finalState, args, instance)

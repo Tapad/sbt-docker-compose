@@ -283,8 +283,6 @@ Currently Unsupported Docker Compose Fields
 
 3) "extends:" - All docker services must be defined in a single docker compose yml file.
 
-4) "env_file:" - The path to the file needs to be fully qualified.
-
 Other
 -----
 Testing of sbt-docker-compose has been performed starting with docker-compose version: 1.5.1
