@@ -57,7 +57,7 @@ trait DockerCommands {
   def dockerRun(command: String): Unit = {
     s"docker run $command".!
   }
-
+  
   def getDockerPortMappings(containerId: String): String = {
     s"docker port $containerId".!!
   }
