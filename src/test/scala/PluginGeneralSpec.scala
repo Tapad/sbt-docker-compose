@@ -44,6 +44,7 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     doReturn(containerId).when(composeMock).getDockerContainerId(instanceName, serviceName)
     doReturn(inspectJson).when(composeMock).getDockerContainerInfo(containerId)
     doReturn(false).when(composeMock).isBoot2DockerEnvironment
+    doReturn(false).when(composeMock).isDockerForMacEnvironment
 
     val port1 = PortInfo("0", "3000/tcp", isDebug = false)
     val port2 = PortInfo("0", "3001/udp", isDebug = false)
@@ -71,6 +72,7 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     doReturn(containerId).when(composeMock).getDockerContainerId(instanceName, serviceName)
     doReturn(inspectJson).when(composeMock).getDockerContainerInfo(containerId)
     doReturn(false).when(composeMock).isBoot2DockerEnvironment
+    doReturn(false).when(composeMock).isDockerForMacEnvironment
 
     val port = PortInfo("0", "3002", isDebug = false)
     val serviceInfo = ServiceInfo(serviceName, "image", "source", List(port))

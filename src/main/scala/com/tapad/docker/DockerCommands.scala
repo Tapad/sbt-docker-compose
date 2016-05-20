@@ -58,6 +58,11 @@ trait DockerCommands {
     s"docker run $command".!
   }
 
+  def isDockerForMacEnvironment: Boolean = {
+    val info = "docker info".!!
+    info.contains("Operating System: Alpine Linux")
+  }
+
   /**
    * If running on Boot2Docker environment on OSX use the machine IP else use the container host
    * @return True if Boot2Docker, Otherwise False
