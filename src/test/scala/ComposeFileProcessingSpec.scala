@@ -197,6 +197,19 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     }
   }
 
+  test("Validate that relative volume settings are updated with the fully qualified path") {
+    val (composeMock, composeFilePath) = getComposeFileMock("volumes.yml")
+    val composeFileDir = composeFilePath.substring(0, composeFilePath.lastIndexOf(File.separator))
+
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    composeMock.processCustomTags(null, null, composeYaml)
+    val modifiedVolumesPaths = composeYaml.filter(_._1 == "testservice").head._2.get(composeMock.volumesKey).asInstanceOf[util.List[String]]
+    assert(modifiedVolumesPaths.size() == 3)
+    assert(modifiedVolumesPaths.get(0) == s"$composeFileDir/data:/data")
+    assert(modifiedVolumesPaths.get(1) == "/absolute/path/1")
+    assert(modifiedVolumesPaths.get(2) == "/absolute/path/2:/mounted/elsewhere")
+  }
+
   test("Validate that the env_file settings gets updated with the fully qualified path") {
     val (composeMock, composeFilePath) = getComposeFileMock("env_file.yml")
     val composeFileDir = composeFilePath.substring(0, composeFilePath.lastIndexOf(File.separator))

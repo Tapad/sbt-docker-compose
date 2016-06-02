@@ -21,6 +21,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   val portsKey = "ports"
   val servicesKey = "services"
   val envFileKey = "env_file"
+  val volumesKey = "volumes"
 
   //Set of values representing the source location of a Docker Compose image
   val cachedImageSource = "cache"
