@@ -90,6 +90,25 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
         }
       }
 
+      //Update relative volumes to use the fully qualified path so they can still be accessed from the tmp location
+      if (serviceData.containsKey(volumesKey)) {
+        val composeFileFullPath = new File(getSetting(composeFile)).getAbsolutePath
+        val composeFileDir = composeFileFullPath.substring(0, composeFileFullPath.lastIndexOf(File.separator))
+
+        val volumes = serviceData.get(volumesKey).asInstanceOf[util.List[String]].asScala
+        val updated = volumes.map { volume =>
+          volume match {
+            case relativeVolume if relativeVolume.startsWith(".") =>
+              val Array(relativeLocalPath, mountPath) = relativeVolume.split(":")
+              val fullyQualifiedLocalPath = getFullyQualifiedPath(relativeLocalPath, composeFileDir)
+              s"$fullyQualifiedLocalPath:$mountPath"
+            case nonRelativeVolume =>
+              nonRelativeVolume
+          }
+        }
+        serviceData.put(volumesKey, updated.asJava)
+      }
+
       serviceData.put(imageKey, updatedImageName)
       ServiceInfo(serviceName, updatedImageName, imageSource, getPortInfo(serviceData))
     }
@@ -101,7 +120,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   }
 
   /**
-   *  Attempt to get the fully qualified path to the environment file. It will first attempt to find the file using the
+   *  Attempt to get the fully qualified path to a file. It will first attempt to find the file using the
    *  path provided. If that fails it will attempt to find the file relative to the docker-compose yml location. Otherwise,
    *  it will throw an exception with information about the file that could not be located.
    *
@@ -111,11 +130,11 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
    */
   def getFullyQualifiedPath(fileName: String, composePath: String): String = {
     if (new File(fileName).exists) {
-      new File(fileName).getAbsolutePath
+      new File(fileName).getCanonicalFile.getAbsolutePath
     } else if (new File(s"$composePath/$fileName").exists) {
-      new File(s"$composePath/$fileName").getAbsolutePath
+      new File(s"$composePath/$fileName").getCanonicalFile.getAbsolutePath
     } else {
-      throw new IllegalStateException(s"Could not find env_file: '$fileName' either at the specified path or in the '$composePath' directory.")
+      throw new IllegalStateException(s"Could not find file: '$fileName' either at the specified path or in the '$composePath' directory.")
     }
   }
 
