@@ -12,8 +12,7 @@ import sbt.Keys._
 class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest with MockitoSugar {
 
   test("Validate Compose field 'build:' results in correct exception thrown and error message printing") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("unsupported_field_build.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("unsupported_field_build.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
 
     val thrown = intercept[ComposeFileFormatException] {
@@ -23,8 +22,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate Compose field 'container_name:' results in correct exception thrown and error message printing") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("unsupported_field_container_name.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("unsupported_field_container_name.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
 
     val thrown = intercept[ComposeFileFormatException] {
@@ -34,8 +32,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate Compose field 'extends:' results in correct exception thrown and error message printing") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("unsupported_field_extends.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("unsupported_field_extends.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
 
     val thrown = intercept[ComposeFileFormatException] {
@@ -45,8 +42,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate Compose <localBuild> tag results in 'build' image source and custom tag is removed") {
-    val composeMock = getComposeFileMock(serviceName = "nomatch")
-    val composeFilePath = getClass.getResource("localbuild_tag.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("localbuild_tag.yml", serviceName = "nomatch")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -54,8 +50,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate Compose <skipPull> tag results in 'cache' image source and custom tag is removed") {
-    val composeMock = getComposeFileMock(serviceName = "nomatch")
-    val composeFilePath = getClass.getResource("skippull_tag.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("skippull_tag.yml", serviceName = "nomatch")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -63,8 +58,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate Compose service name match results in 'build' image source") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("no_custom_tags.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("no_custom_tags.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -72,8 +66,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate Compose no matching compose service name results in 'defined' image source") {
-    val composeMock = getComposeFileMock(serviceName = "nomatch")
-    val composeFilePath = getClass.getResource("no_custom_tags.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("no_custom_tags.yml", serviceName = "nomatch")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -81,8 +74,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate Compose 'composeNoBuild' setting results in image source 'defined' even if service matches the composeServiceName") {
-    val composeMock = getComposeFileMock(noBuild = true)
-    val composeFilePath = getClass.getResource("no_custom_tags.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("no_custom_tags.yml", noBuild = true)
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -90,8 +82,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate Compose 'skipPull' command line argument results in all non-build image sources as 'cache'") {
-    val composeFilePath = getClass.getResource("multi_service_no_tags.yml").getPath
-    val composeMock = getComposeFileMock(serviceName = "nomatch")
+    val (composeMock, composeFilePath) = getComposeFileMock("multi_service_no_tags.yml", serviceName = "nomatch")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, Seq(skipPullArg), composeYaml)
 
@@ -101,8 +92,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
 
   test("Validate Compose 'skipPull' command line argument still leaves the matching compose image as 'build'") {
     val newServiceName = "testservice1"
-    val composeMock = getComposeFileMock(serviceName = newServiceName)
-    val composeFilePath = getClass.getResource("multi_service_no_tags.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("multi_service_no_tags.yml", serviceName = newServiceName)
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, Seq(skipPullArg), composeYaml)
 
@@ -112,8 +102,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
 
   test("Validate Compose 'skipBuild' command line argument still leaves the matching compose image as 'build'") {
     val newServiceName = "testservice1"
-    val composeMock = getComposeFileMock(serviceName = newServiceName)
-    val composeFilePath = getClass.getResource("multi_service_no_tags.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("multi_service_no_tags.yml", serviceName = newServiceName)
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, Seq(skipPullArg), composeYaml)
 
@@ -123,8 +112,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
 
   test("Validate Compose image version number is updated to sbt 'version' when not blank or defined as 'latest'") {
     val newVersion = "9.9.9"
-    val composeMock = getComposeFileMock(versionNumber = newVersion)
-    val composeFilePath = getClass.getResource("version_number.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("version_number.yml", versionNumber = newVersion)
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -132,8 +120,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate the correct Debug port is found when supplied in the 'host:container' format") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("debug_port.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("debug_port.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -143,8 +130,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate the correct Debug port is found when supplied in the 'host' format") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("debug_port_single.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("debug_port_single.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -154,8 +140,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate the correct Debug port is found when the alternate 'environment:' field format is used") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("debug_port_alternate_environment_format.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("debug_port_alternate_environment_format.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -165,8 +150,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate the Debug port is not found when not exposed") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("debug_port_not_exposed.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("debug_port_not_exposed.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -176,8 +160,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate that the 1.6 Docker Compose file format can be properly processed") {
-    val composeMock = getComposeFileMock(serviceName = "nomatch")
-    val composeFilePath = getClass.getResource("compose_1.6_format.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("compose_1.6_format.yml", serviceName = "nomatch")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -187,8 +170,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate that Docker Compose file port ranges are expanded") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("port_expansion.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("port_expansion.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
 
@@ -208,8 +190,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate that an improper port range throws an exception") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("port_expansion_invalid.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("port_expansion_invalid.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     intercept[IllegalStateException] {
       composeMock.processCustomTags(null, null, composeYaml)
@@ -217,10 +198,8 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate that the env_file settings gets updated with the fully qualified path") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("env_file.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("env_file.yml")
     val composeFileDir = composeFilePath.substring(0, composeFilePath.lastIndexOf(File.separator))
-    doReturn(composeFilePath).when(composeMock).getSetting(composeFile)(null)
 
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     composeMock.processCustomTags(null, null, composeYaml)
@@ -234,8 +213,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate that an env_file file that cannot be found fails with an exception") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("env_file_invalid.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("env_file_invalid.yml")
     doReturn(composeFilePath).when(composeMock).getSetting(composeFile)(null)
 
     val composeYaml = composeMock.readComposeFile(composeFilePath)
@@ -245,8 +223,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   test("Validate that docker-compose variables are substituted") {
-    val composeMock = getComposeFileMock()
-    val composeFilePath = getClass.getResource("variable_substitution.yml").getPath
+    val (composeMock, composeFilePath) = getComposeFileMock("variable_substitution.yml")
     doReturn(composeFilePath).when(composeMock).getSetting(composeFile)(null)
 
     val composeYaml = composeMock.readComposeFile(composeFilePath, Vector(("SOURCE_PORT", "5555")))
@@ -255,13 +232,25 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     assert(ports == "5555:5005")
   }
 
-  def getComposeFileMock(serviceName: String = "testservice", versionNumber: String = "1.0.0", noBuild: Boolean = false): ComposeFile = {
+  /**
+   * @return tuple of a mocked ComposeFile, and the path to that file
+   */
+  def getComposeFileMock(
+    composeFileName: String,
+    serviceName: String = "testservice",
+    versionNumber: String = "1.0.0",
+    noBuild: Boolean = false
+  ): (ComposeFile, String) = {
     val composeMock = spy(new DockerComposePluginLocal)
+
+    val composeFilePath = getClass.getResource(composeFileName).getPath
+    doReturn(composeFilePath).when(composeMock).getSetting(composeFile)(null)
 
     doReturn(serviceName).when(composeMock).getSetting(composeServiceName)(null)
     doReturn(versionNumber).when(composeMock).getSetting(version)(null)
     doReturn(noBuild).when(composeMock).getSetting(composeNoBuild)(null)
 
-    composeMock
+    (composeMock, composeFilePath)
   }
+
 }
