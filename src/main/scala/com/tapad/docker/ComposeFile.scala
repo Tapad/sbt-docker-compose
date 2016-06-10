@@ -14,7 +14,7 @@ import scala.collection.{ Iterable, Seq }
 import scala.io.Source._
 import scala.util.{ Try, Success, Failure }
 
-trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
+trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with PrintFormatting {
   // Compose file Yaml keys
   val imageKey = "image"
   val environmentKey = "environment"
@@ -32,6 +32,9 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
   val skipPullTag = "<skippull>"
 
   val environmentDebugKey = "JAVA_TOOL_OPTIONS"
+
+  //Unsupported fields
+  val unSupportedFields = List("build", "container_name", "extends")
 
   type yamlData = Map[String, java.util.LinkedHashMap[String, Any]]
 
@@ -52,6 +55,10 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
 
     getComposeFileServices(composeYaml).map { service =>
       val (serviceName, serviceData) = service
+      for (field <- unSupportedFields if serviceData.containsKey(field)) {
+        val errMsg = s"Compose field '$field:' is not supported. Please check README for all the unsupported fields."
+        throw ComposeFileFormatException(errMsg)
+      }
       val imageName = serviceData.get(imageKey).toString
 
       //Update Compose yaml with any images built as part of dockerComposeUp regardless of how it's defined in the
