@@ -67,6 +67,7 @@ plugin will attempt to locate it in one of three places with the precedence orde
     testTagsToExecute =: // Set of ScalaTest Tags to execute when dockerComposeTest is run. Separate multiple tags by a comma. It defaults to executing all tests.
     testDependenciesClasspath =: // The path to all managed and unmanaged Test and Compile dependencies. This path needs to include the ScalaTest Jar for the tests to execute. This defaults to all managedClasspath and unmanagedClasspath in the Test and fullClasspath in the Compile Scope.
     testCasesJar =: // The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.
+    variablesForSubstitution =: // A Map[String,String] of variables to substitute in your docker-compose file.  These are passed as environment variables when calling docker-compose.
 
 There are several sample projects showing how to configure sbt-docker-compose that can be found in the [**examples**] (examples) folder.
 
