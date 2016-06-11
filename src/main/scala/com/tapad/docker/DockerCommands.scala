@@ -2,18 +2,21 @@ package com.tapad.docker
 
 import sbt._
 import com.tapad.docker.DockerComposeKeys._
+import sys.process.Process
 
 trait DockerCommands {
-  def dockerComposeUp(instanceName: String, composePath: String): Unit = {
-    s"docker-compose -p $instanceName -f $composePath up -d".!
+  def dockerComposeUp(instanceName: String, composePath: String, variables: Vector[(String, String)]): Unit = {
+    Process(s"docker-compose -p $instanceName -f $composePath up -d", None, variables: _*).run(false)
   }
 
-  def dockerComposeStopInstance(instanceName: String, composePath: String): Unit = {
-    s"docker-compose -p $instanceName -f $composePath stop".!
+  def dockerComposeStopInstance(instanceName: String, composePath: String,
+    variables: Vector[(String, String)] = Vector.empty): Unit = {
+    Process(s"docker-compose -p $instanceName -f $composePath stop", None, variables: _*).run(false)
   }
 
-  def dockerComposeRemoveContainers(instanceName: String, composePath: String): Unit = {
-    s"docker-compose -p $instanceName -f $composePath rm -v -f".!
+  def dockerComposeRemoveContainers(instanceName: String, composePath: String,
+    variables: Vector[(String, String)] = Vector.empty): Unit = {
+    Process(s"docker-compose -p $instanceName -f $composePath rm -v -f", None, variables: _*).run(false)
   }
 
   def getDockerComposeVersion: Version = {

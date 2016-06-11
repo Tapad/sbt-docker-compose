@@ -40,6 +40,7 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
       (fullClasspathCompile.files ++ classpathTestManaged.files ++ classpathTestUnmanaged.files).map(_.getAbsoluteFile).mkString(":")
     },
     testCasesJar := artifactPath.in(Test, packageBin).value.getAbsolutePath,
+    variablesForSubstitution := Map[String, String](),
     commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeInstancesCommand, dockerComposeTest)
   )
 }

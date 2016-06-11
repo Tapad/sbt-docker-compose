@@ -8,8 +8,9 @@ class InstanceStoppingSpec extends FunSuite with BeforeAndAfter with OneInstance
     val instanceId = "instanceId"
     val composePath = "path"
     val serviceName = "service"
+    val variables = Vector[(String, String)](("foo", "bar"))
     val composeMock = spy(new DockerComposePluginLocal)
-    val instance = RunningInstanceInfo(instanceId, serviceName, composePath, List.empty)
+    val instance = RunningInstanceInfo(instanceId, serviceName, composePath, List.empty, variables)
 
     mockDockerCommandCalls(composeMock)
     mockSystemSettings(composeMock, serviceName, Some(List(instance)))
@@ -17,8 +18,8 @@ class InstanceStoppingSpec extends FunSuite with BeforeAndAfter with OneInstance
     composeMock.stopRunningInstances(null, Seq.empty)
 
     //Validate that the instance was stopped and cleaned up
-    verify(composeMock, times(1)).dockerComposeStopInstance(instanceId, composePath)
-    verify(composeMock, times(1)).dockerComposeRemoveContainers(instanceId, composePath)
+    verify(composeMock, times(1)).dockerComposeStopInstance(instanceId, composePath, variables)
+    verify(composeMock, times(1)).dockerComposeRemoveContainers(instanceId, composePath, variables)
   }
 
   test("Validate the proper stopping of a multiple instances when no specific instances are passed in as arguments") {
@@ -35,8 +36,8 @@ class InstanceStoppingSpec extends FunSuite with BeforeAndAfter with OneInstance
     composeMock.stopRunningInstances(null, Seq.empty)
 
     //Validate that the instance was stopped and cleaned up
-    verify(composeMock, times(2)).dockerComposeStopInstance(anyString, anyString)
-    verify(composeMock, times(2)).dockerComposeRemoveContainers(anyString, anyString)
+    verify(composeMock, times(2)).dockerComposeStopInstance(anyString, anyString, any[Vector[(String, String)]])
+    verify(composeMock, times(2)).dockerComposeRemoveContainers(anyString, anyString, any[Vector[(String, String)]])
   }
 
   test("Validate the proper stopping of a single instance when multiple instances are running") {
@@ -55,8 +56,8 @@ class InstanceStoppingSpec extends FunSuite with BeforeAndAfter with OneInstance
 
     //Validate that only once instance was Stopped and Removed
     verify(composeMock, times(1)).setAttribute(any, any)(any[sbt.State])
-    verify(composeMock, times(1)).dockerComposeStopInstance(anyString, anyString)
-    verify(composeMock, times(1)).dockerComposeRemoveContainers(anyString, anyString)
+    verify(composeMock, times(1)).dockerComposeStopInstance(anyString, anyString, any[Vector[(String, String)]])
+    verify(composeMock, times(1)).dockerComposeRemoveContainers(anyString, anyString, any[Vector[(String, String)]])
   }
 
   test("Validate that only instances from the current SBT project are stopped when no arguments are supplied to DockerComposeStop") {
@@ -73,8 +74,8 @@ class InstanceStoppingSpec extends FunSuite with BeforeAndAfter with OneInstance
 
     //Validate that only once instance was Stopped and Removed
     verify(composeMock, times(1)).setAttribute(any, any)(any[sbt.State])
-    verify(composeMock, times(2)).dockerComposeStopInstance(anyString, anyString)
-    verify(composeMock, times(2)).dockerComposeRemoveContainers(anyString, anyString)
+    verify(composeMock, times(2)).dockerComposeStopInstance(anyString, anyString, any[Vector[(String, String)]])
+    verify(composeMock, times(2)).dockerComposeRemoveContainers(anyString, anyString, any[Vector[(String, String)]])
   }
 
   test("Validate that instances from any SBT project can be stopped when explicitly passed to DockerComposeStop") {
@@ -91,7 +92,7 @@ class InstanceStoppingSpec extends FunSuite with BeforeAndAfter with OneInstance
 
     //Validate that only once instance was Stopped and Removed
     verify(composeMock, times(1)).setAttribute(any, any)(any[sbt.State])
-    verify(composeMock, times(1)).dockerComposeStopInstance(anyString, anyString)
-    verify(composeMock, times(1)).dockerComposeRemoveContainers(anyString, anyString)
+    verify(composeMock, times(1)).dockerComposeStopInstance(anyString, anyString, any[Vector[(String, String)]])
+    verify(composeMock, times(1)).dockerComposeRemoveContainers(anyString, anyString, any[Vector[(String, String)]])
   }
 }

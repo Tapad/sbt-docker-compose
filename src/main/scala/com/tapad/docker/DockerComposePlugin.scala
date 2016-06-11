@@ -42,10 +42,13 @@ case class ServiceInfo(serviceName: String, imageName: String, imageSource: Stri
  *                          with an SBT project.
  * @param composeFilePath The path to the Docker Compose file used by this instance
  * @param servicesInfo The collection of ServiceInfo objects that define this instance
+ * @param variables A collection of key value pairs passed as environment variables to docker-compose for variable
+ *                  substitution
  * @param instanceData An optional parameter to specify additional information about the instance
  */
 case class RunningInstanceInfo(instanceName: String, composeServiceName: String, composeFilePath: String,
-  servicesInfo: Iterable[ServiceInfo], instanceData: Option[Any] = None)
+  servicesInfo: Iterable[ServiceInfo], variables: Vector[(String, String)] = Vector.empty,
+  instanceData: Option[Any] = None)
 
 object DockerComposePlugin extends DockerComposePluginLocal {
   override def projectSettings = DockerComposeSettings.baseDockerComposeSettings
@@ -65,6 +68,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val testTagsToExecute = DockerComposeKeys.testTagsToExecute
     val testCasesJar = DockerComposeKeys.testCasesJar
     val scalaTestJar = DockerComposeKeys.testDependenciesClasspath
+    val variablesForSubstitution = DockerComposeKeys.variablesForSubstitution
   }
 }
 
@@ -148,6 +152,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
    */
   def startDockerCompose(implicit state: State, args: Seq[String]): (State, String) = {
     val composeFilePath = getSetting(composeFile)
+    val variables = getSetting(variablesForSubstitution).toVector
 
     printBold(s"Creating Local Docker Compose Environment.")
     printBold(s"Reading Compose File: $composeFilePath")
@@ -164,13 +169,13 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     val instanceName = generateInstanceName(state)
 
     val newState = Try {
-      dockerComposeUp(instanceName, updatedComposePath)
-      val newInstance = getRunningInstanceInfo(state, instanceName, updatedComposePath, servicesInfo)
+      dockerComposeUp(instanceName, updatedComposePath, variables)
+      val newInstance = getRunningInstanceInfo(state, instanceName, updatedComposePath, servicesInfo, variables)
 
       printMappedPortInformation(state, newInstance, dockerComposeVersion)
       saveInstanceToSbtSession(state, newInstance)
     } getOrElse {
-      stopLocalDockerInstance(state, instanceName, updatedComposePath)
+      stopLocalDockerInstance(state, instanceName, updatedComposePath, variables)
       throw new IllegalStateException(s"Error starting Docker Compose instance. Shutting down containers...")
     }
 
@@ -180,14 +185,14 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   }
 
   def getRunningInstanceInfo(implicit state: State, instanceName: String, composePath: String,
-    servicesInfo: Iterable[ServiceInfo]): RunningInstanceInfo = {
+    servicesInfo: Iterable[ServiceInfo], variables: Vector[(String, String)]): RunningInstanceInfo = {
     val composeService = getSetting(composeServiceName).toLowerCase
     val composeStartTimeout = getSetting(composeContainerStartTimeoutSeconds)
     val dockerMachine = getSetting(dockerMachineName)
 
     val serviceInfo = populateServiceInfoForInstance(instanceName, dockerMachine, servicesInfo, composeStartTimeout)
 
-    RunningInstanceInfo(instanceName, composeService, composePath, serviceInfo)
+    RunningInstanceInfo(instanceName, composeService, composePath, serviceInfo, variables)
   }
 
   def pullDockerImages(args: Seq[String], services: Iterable[ServiceInfo]): Unit = {
@@ -220,7 +225,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         //Remove all of the stopped instances from the list
         removeList.foreach { instance =>
           printBold(s"Stopping and removing local Docker instance: ${instance.instanceName}")
-          stopLocalDockerInstance(state, instance.instanceName, instance.composeFilePath)
+          stopLocalDockerInstance(state, instance.instanceName, instance.composeFilePath, instance.variables)
         }
 
         if (removeList.isEmpty)
@@ -241,11 +246,12 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     updatedState
   }
 
-  def stopLocalDockerInstance(implicit state: State, instanceName: String, composePath: String): Unit = {
-    dockerComposeStopInstance(instanceName, composePath)
+  def stopLocalDockerInstance(implicit state: State, instanceName: String, composePath: String,
+    variables: Vector[(String, String)]): Unit = {
+    dockerComposeStopInstance(instanceName, composePath, variables)
 
     if (getSetting(composeRemoveContainersOnShutdown)) {
-      dockerComposeRemoveContainers(instanceName, composePath)
+      dockerComposeRemoveContainers(instanceName, composePath, variables)
     }
 
     if (getSetting(composeRemoveNetworkOnShutdown)) {
