@@ -1,0 +1,7 @@
+testservice:
+  image: testservice:latest
+  container_name: my-test-container
+  environment:
+    JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+  ports:
+    - "0:5005"

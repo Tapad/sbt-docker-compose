@@ -1,0 +1,6 @@
+testservice:
+  extends:
+   file: debug_port.yml
+   service: testservice
+  ports:
+   - "8000:8000"

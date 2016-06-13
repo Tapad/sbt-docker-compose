@@ -3,13 +3,46 @@ import java.util
 
 import com.tapad.docker.DockerComposeKeys._
 import com.tapad.docker.DockerComposePlugin._
-import com.tapad.docker.{ ComposeFile, DockerComposePluginLocal }
+import com.tapad.docker.{ ComposeFile, ComposeFileFormatException, DockerComposePluginLocal }
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
 import sbt.Keys._
 
 class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest with MockitoSugar {
+
+  test("Validate Compose field 'build:' results in correct exception thrown and error message printing") {
+    val composeMock = getComposeFileMock()
+    val composeFilePath = getClass.getResource("unsupported_field_build.yml").getPath
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+
+    val thrown = intercept[ComposeFileFormatException] {
+      composeMock.processCustomTags(null, null, composeYaml)
+    }
+    assert(thrown.getMessage == getUnsupportedFieldErrorMsg("build"))
+  }
+
+  test("Validate Compose field 'container_name:' results in correct exception thrown and error message printing") {
+    val composeMock = getComposeFileMock()
+    val composeFilePath = getClass.getResource("unsupported_field_container_name.yml").getPath
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+
+    val thrown = intercept[ComposeFileFormatException] {
+      composeMock.processCustomTags(null, null, composeYaml)
+    }
+    assert(thrown.getMessage == getUnsupportedFieldErrorMsg("container_name"))
+  }
+
+  test("Validate Compose field 'extends:' results in correct exception thrown and error message printing") {
+    val composeMock = getComposeFileMock()
+    val composeFilePath = getClass.getResource("unsupported_field_extends.yml").getPath
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+
+    val thrown = intercept[ComposeFileFormatException] {
+      composeMock.processCustomTags(null, null, composeYaml)
+    }
+    assert(thrown.getMessage == getUnsupportedFieldErrorMsg("extends"))
+  }
 
   test("Validate Compose <localBuild> tag results in 'build' image source and custom tag is removed") {
     val composeMock = getComposeFileMock(serviceName = "nomatch")
