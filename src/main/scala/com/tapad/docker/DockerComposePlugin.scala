@@ -11,6 +11,7 @@ import scala.util.Try
 
 /**
  * The exception type to be thrown when there is a format issue in the Compose file
+ *
  * @param message The error message to be displayed on the console
  */
 case class ComposeFileFormatException(message: String) extends Exception(message)
@@ -88,7 +89,13 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
       s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one.", "") {
       (state: State, args: Seq[String]) =>
-        runWithCustomErrorsHandling(state, args, launchInstanceWithLatestChanges)
+        try {
+          launchInstanceWithLatestChanges(state, args)
+        } catch {
+          case ex: ComposeFileFormatException =>
+            printError(ex.message)
+            state
+        }
     }
 
   lazy val dockerComposeStopCommand = Command.args("dockerComposeStop", ("dockerComposeStop", "Stops all local Docker " +
@@ -114,20 +121,14 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       s"Supply '$testTagOverride:<tagName1,tagName2>' as a parameter to override the tags specified in the testTagsToExecute setting." +
       "To execute a test pass against a previously started dockerComposeUp instance just pass the instance id to the command as a parameter", "") { (state: State, args: Seq[String]) =>
 
-      runWithCustomErrorsHandling(state, args, composeTestRunner(_, _))
-
-    }
-
-  def runWithCustomErrorsHandling(state: State, args: Seq[String], fn: (State, Seq[String]) => State): State = {
-    try {
-      fn(state, args)
-    } catch {
-      case ex: ComposeFileFormatException => {
-        printError(ex.message)
-        state
+      try {
+        composeTestRunner(state, args)
+      } catch {
+        case ex: ComposeFileFormatException =>
+          printError(ex.message)
+          state
       }
     }
-  }
 
   def launchInstanceWithLatestChanges(state: State, args: Seq[String]): State = {
     val newState = getPersistedState(state)

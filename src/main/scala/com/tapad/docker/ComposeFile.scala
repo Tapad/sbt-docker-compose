@@ -33,8 +33,8 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
 
   val environmentDebugKey = "JAVA_TOOL_OPTIONS"
 
-  //Unsupported fields
-  val unSupportedFields = List("build", "container_name", "extends")
+  //List of docker-compose fields that are currently unsupported by the plugin
+  val unsupportedFields = List("build", "container_name", "extends")
 
   type yamlData = Map[String, java.util.LinkedHashMap[String, Any]]
 
@@ -55,9 +55,8 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
 
     getComposeFileServices(composeYaml).map { service =>
       val (serviceName, serviceData) = service
-      for (field <- unSupportedFields if serviceData.containsKey(field)) {
-        val errMsg = s"Compose field '$field:' is not supported. Please check README for all the unsupported fields."
-        throw ComposeFileFormatException(errMsg)
+      for (field <- unsupportedFields if serviceData.containsKey(field)) {
+        throw ComposeFileFormatException(getUnsupportedFieldErrorMsg(field))
       }
       val imageName = serviceData.get(imageKey).toString
 
@@ -95,10 +94,16 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
     }
   }
 
+  def getUnsupportedFieldErrorMsg(fieldName: String): String = {
+    s"Docker Compose field '$fieldName:' is currently not supported by sbt-docker-compose. Please see the README for " +
+      s"more information on the set of unsupported fields."
+  }
+
   /**
    *  Attempt to get the fully qualified path to the environment file. It will first attempt to find the file using the
    *  path provided. If that fails it will attempt to find the file relative to the docker-compose yml location. Otherwise,
    *  it will throw an exception with information about the file that could not be located.
+   *
    * @param fileName The file name to find
    * @param composePath The path to the directory of the docker-compose yml file being used
    * @return The fully qualified path to the file
