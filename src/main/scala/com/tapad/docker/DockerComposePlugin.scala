@@ -42,12 +42,10 @@ case class ServiceInfo(serviceName: String, imageName: String, imageSource: Stri
  *                          with an SBT project.
  * @param composeFilePath The path to the Docker Compose file used by this instance
  * @param servicesInfo The collection of ServiceInfo objects that define this instance
- * @param variables A collection of key value pairs used for docker-compose variable substitution
  * @param instanceData An optional parameter to specify additional information about the instance
  */
 case class RunningInstanceInfo(instanceName: String, composeServiceName: String, composeFilePath: String,
-  servicesInfo: Iterable[ServiceInfo], variables: Vector[(String, String)] = Vector.empty,
-  instanceData: Option[Any] = None)
+  servicesInfo: Iterable[ServiceInfo], instanceData: Option[Any] = None)
 
 object DockerComposePlugin extends DockerComposePluginLocal {
   override def projectSettings = DockerComposeSettings.baseDockerComposeSettings
@@ -169,12 +167,12 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
     val newState = Try {
       dockerComposeUp(instanceName, updatedComposePath)
-      val newInstance = getRunningInstanceInfo(state, instanceName, updatedComposePath, servicesInfo, variables)
+      val newInstance = getRunningInstanceInfo(state, instanceName, updatedComposePath, servicesInfo)
 
       printMappedPortInformation(state, newInstance, dockerComposeVersion)
       saveInstanceToSbtSession(state, newInstance)
     } getOrElse {
-      stopLocalDockerInstance(state, instanceName, updatedComposePath, variables)
+      stopLocalDockerInstance(state, instanceName, updatedComposePath)
       throw new IllegalStateException(s"Error starting Docker Compose instance. Shutting down containers...")
     }
 
@@ -184,14 +182,14 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   }
 
   def getRunningInstanceInfo(implicit state: State, instanceName: String, composePath: String,
-    servicesInfo: Iterable[ServiceInfo], variables: Vector[(String, String)]): RunningInstanceInfo = {
+    servicesInfo: Iterable[ServiceInfo]): RunningInstanceInfo = {
     val composeService = getSetting(composeServiceName).toLowerCase
     val composeStartTimeout = getSetting(composeContainerStartTimeoutSeconds)
     val dockerMachine = getSetting(dockerMachineName)
 
     val serviceInfo = populateServiceInfoForInstance(instanceName, dockerMachine, servicesInfo, composeStartTimeout)
 
-    RunningInstanceInfo(instanceName, composeService, composePath, serviceInfo, variables)
+    RunningInstanceInfo(instanceName, composeService, composePath, serviceInfo)
   }
 
   def pullDockerImages(args: Seq[String], services: Iterable[ServiceInfo]): Unit = {
@@ -224,7 +222,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         //Remove all of the stopped instances from the list
         removeList.foreach { instance =>
           printBold(s"Stopping and removing local Docker instance: ${instance.instanceName}")
-          stopLocalDockerInstance(state, instance.instanceName, instance.composeFilePath, instance.variables)
+          stopLocalDockerInstance(state, instance.instanceName, instance.composeFilePath)
         }
 
         if (removeList.isEmpty)
@@ -245,8 +243,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     updatedState
   }
 
-  def stopLocalDockerInstance(implicit state: State, instanceName: String, composePath: String,
-    variables: Vector[(String, String)]): Unit = {
+  def stopLocalDockerInstance(implicit state: State, instanceName: String, composePath: String): Unit = {
     dockerComposeStopInstance(instanceName, composePath)
 
     if (getSetting(composeRemoveContainersOnShutdown)) {
@@ -257,7 +254,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       // If the compose file being used is a version that creates a new network on startup then remove that network on
       // shutdown
       if (new File(composePath).exists()) {
-        val composeYaml = readComposeFile(composePath, variables)
+        val composeYaml = readComposeFile(composePath)
         if (getComposeVersion(composeYaml) >= 2) {
           val dockerMachine = getSetting(dockerMachineName)
           dockerRemoveNetwork(instanceName, dockerMachine)

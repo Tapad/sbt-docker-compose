@@ -275,6 +275,24 @@ launch a running instance that consists of both images:
 Note how the docker-compose.yml file for the root project tags each image with "\<localBuild\>". This allows dockerComposeUp 
 to know that these images should not be updated from the Docker Registry.
 
+5) [**basic-variable-substitution**] (examples/basic-variable-substitution): This project demonstrates how you can re-use your 
+existing docker-compose.yml with [variable substitution](https://docs.docker.com/compose/compose-file/#variable-substitution) 
+using sbt-docker-compose.  Instead of passing your variables as environment variables you can define them in your build.sbt 
+programmatically.
+
+build.sbt:
+
+    variablesForSubstitution := Map("SOURCE_PORT" -> "5555")
+    
+docker-compose.yml:
+
+    basic:
+      image: basic:1.0.0
+      environment:
+        JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+      ports:
+        - "${SOURCE_PORT}:5005"
+
 Currently Unsupported Docker Compose Fields
 -------------------------------------------
 1) "build:" - All docker compose services need to specify an "image:" field.
