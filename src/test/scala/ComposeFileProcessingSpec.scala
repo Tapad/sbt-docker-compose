@@ -244,6 +244,17 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     }
   }
 
+  test("Validate that docker-compose variables are substituted") {
+    val composeMock = getComposeFileMock()
+    val composeFilePath = getClass.getResource("variable_substitution.yml").getPath
+    doReturn(composeFilePath).when(composeMock).getSetting(composeFile)(null)
+
+    val composeYaml = composeMock.readComposeFile(composeFilePath, Vector(("SOURCE_PORT", "5555")))
+
+    val ports = composeYaml.get("testservice").get.get("ports").asInstanceOf[util.ArrayList[String]].get(0)
+    assert(ports == "5555:5005")
+  }
+
   def getComposeFileMock(serviceName: String = "testservice", versionNumber: String = "1.0.0", noBuild: Boolean = false): ComposeFile = {
     val composeMock = spy(new DockerComposePluginLocal)
 

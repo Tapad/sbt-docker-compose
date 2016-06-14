@@ -72,6 +72,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val testTagsToExecute = DockerComposeKeys.testTagsToExecute
     val testCasesJar = DockerComposeKeys.testCasesJar
     val scalaTestJar = DockerComposeKeys.testDependenciesClasspath
+    val variablesForSubstitution = DockerComposeKeys.variablesForSubstitution
   }
 }
 
@@ -166,11 +167,12 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
    */
   def startDockerCompose(implicit state: State, args: Seq[String]): (State, String) = {
     val composeFilePath = getSetting(composeFile)
+    val variables = getSetting(variablesForSubstitution).toVector
 
     printBold(s"Creating Local Docker Compose Environment.")
     printBold(s"Reading Compose File: $composeFilePath")
 
-    val composeYaml = readComposeFile(composeFilePath)
+    val composeYaml = readComposeFile(composeFilePath, variables)
     val servicesInfo = processCustomTags(state, args, composeYaml)
     val updatedComposePath = saveComposeFile(composeYaml)
     println(s"Created Compose File with Processed Custom Tags: $updatedComposePath")
