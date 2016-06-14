@@ -215,14 +215,24 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers {
     }
   }
 
-  def readComposeFile(composePath: String): yamlData = {
-    val fileReader = fromFile(composePath).reader()
-    try {
-      new Yaml().load(fileReader).asInstanceOf[java.util.Map[String, java.util.LinkedHashMap[String, Any]]].asScala.toMap
-    } finally {
-      fileReader.close()
-    }
+  def readComposeFile(composePath: String, variables: Vector[(String, String)] = Vector.empty): yamlData = {
+    val yamlString = fromFile(composePath).getLines().mkString("\n")
+    val yamlUpdated = processVariableSubstitution(yamlString, variables)
+
+    new Yaml().load(yamlUpdated).asInstanceOf[java.util.Map[String, java.util.LinkedHashMap[String, Any]]].asScala.toMap
   }
+
+  /**
+   * Substitute all docker-compose variables in the YAML file.  This is traditionally done by docker-compose itself,
+   * but is being performed by the plugin to support other functionality.
+   * @param yamlString Stringified docker-compose file.
+   * @param variables Substitution variables.
+   * @return An updated stringified docker-compile file.
+   */
+  def processVariableSubstitution(yamlString: String, variables: Vector[(String, String)]) =
+    variables.foldLeft(yamlString) {
+      case (y, (key, value)) => y.replaceAll("\\$\\{" + key + "\\}", value)
+    }
 
   def deleteComposeFile(composePath: String): Boolean = {
     Try(new File(composePath).delete()) match {

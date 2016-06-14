@@ -42,8 +42,7 @@ case class ServiceInfo(serviceName: String, imageName: String, imageSource: Stri
  *                          with an SBT project.
  * @param composeFilePath The path to the Docker Compose file used by this instance
  * @param servicesInfo The collection of ServiceInfo objects that define this instance
- * @param variables A collection of key value pairs passed as environment variables to docker-compose for variable
- *                  substitution
+ * @param variables A collection of key value pairs used for docker-compose variable substitution
  * @param instanceData An optional parameter to specify additional information about the instance
  */
 case class RunningInstanceInfo(instanceName: String, composeServiceName: String, composeFilePath: String,
@@ -157,7 +156,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     printBold(s"Creating Local Docker Compose Environment.")
     printBold(s"Reading Compose File: $composeFilePath")
 
-    val composeYaml = readComposeFile(composeFilePath)
+    val composeYaml = readComposeFile(composeFilePath, variables)
     val servicesInfo = processCustomTags(state, args, composeYaml)
     val updatedComposePath = saveComposeFile(composeYaml)
     println(s"Created Compose File with Processed Custom Tags: $updatedComposePath")
@@ -169,7 +168,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     val instanceName = generateInstanceName(state)
 
     val newState = Try {
-      dockerComposeUp(instanceName, updatedComposePath, variables)
+      dockerComposeUp(instanceName, updatedComposePath)
       val newInstance = getRunningInstanceInfo(state, instanceName, updatedComposePath, servicesInfo, variables)
 
       printMappedPortInformation(state, newInstance, dockerComposeVersion)
@@ -248,17 +247,17 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
   def stopLocalDockerInstance(implicit state: State, instanceName: String, composePath: String,
     variables: Vector[(String, String)]): Unit = {
-    dockerComposeStopInstance(instanceName, composePath, variables)
+    dockerComposeStopInstance(instanceName, composePath)
 
     if (getSetting(composeRemoveContainersOnShutdown)) {
-      dockerComposeRemoveContainers(instanceName, composePath, variables)
+      dockerComposeRemoveContainers(instanceName, composePath)
     }
 
     if (getSetting(composeRemoveNetworkOnShutdown)) {
       // If the compose file being used is a version that creates a new network on startup then remove that network on
       // shutdown
       if (new File(composePath).exists()) {
-        val composeYaml = readComposeFile(composePath)
+        val composeYaml = readComposeFile(composePath, variables)
         if (getComposeVersion(composeYaml) >= 2) {
           val dockerMachine = getSetting(dockerMachineName)
           dockerRemoveNetwork(instanceName, dockerMachine)

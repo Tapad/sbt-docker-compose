@@ -21,8 +21,7 @@ trait MockHelpers {
    * @param composeMock Mock instance of the Plugin
    */
   def mockDockerCommandCalls(composeMock: DockerComposePluginLocal): Unit = {
-    doNothing().when(composeMock).dockerComposeRemoveContainers(anyString, anyString, any[Vector[(String, String)]])
-    doNothing().when(composeMock).dockerComposeStopInstance(anyString, anyString, any[Vector[(String, String)]])
-    doNothing().when(composeMock).dockerComposeUp(anyString, anyString, any[Vector[(String, String)]])
+    doNothing().when(composeMock).dockerComposeRemoveContainers(anyString, anyString)
+    doNothing().when(composeMock).dockerComposeStopInstance(anyString, anyString)
   }
 }
