@@ -86,6 +86,8 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   val skipBuildArg = "skipBuild"
   lazy val dockerComposeVersion = getDockerComposeVersion
 
+  val restartIdentifier = "dockerComposeRestart"
+
   lazy val dockerComposeUpCommand = Command.args("dockerComposeUp", ("dockerComposeUp", "Starts a local Docker Compose instance."),
     s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
       s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one.", "") {
@@ -105,6 +107,26 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       (state: State, args: Seq[String]) =>
 
         stopRunningInstances(state, args)
+    }
+
+  lazy val dockerComposeRestartCommand = Command.args("dockerComposeRestart", ("dockerComposeRestart", "Restarts a local Docker Compose instance."),
+    s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
+      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one.", "") {
+      (state: State, args: Seq[String]) =>
+
+        try {
+          val newArgs = args :+ restartIdentifier
+          val newState = stopRunningInstances(state, newArgs)
+          launchInstanceWithLatestChanges(newState, newArgs)
+        } catch {
+          case ex: IllegalArgumentException =>
+            printError(ex.getMessage)
+            state
+          case ex: ComposeFileFormatException =>
+            printError(ex.getMessage)
+            state
+
+        }
     }
 
   lazy val dockerComposeInstancesCommand = Command.args("dockerComposeInstances", ("dockerComposeInstances", "Prints a " +
@@ -144,12 +166,18 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   def stopRunningInstances(state: State, args: Seq[String]): State = {
     val newState = getPersistedState(state)
 
+    val isRestart = args.contains(restartIdentifier)
+    val newArgs = args.filter(_ != restartIdentifier)
+
     //If the caller supplied arguments then attempt to stop the instances provided
-    if (args.nonEmpty) {
-      stopDockerCompose(newState, args)
+    if (newArgs.nonEmpty) {
+      stopDockerCompose(newState, newArgs)
     } else {
-      //By default if no arguments are passed stop all instances from current sbt project
       val runningInstances = getServiceRunningInstanceIds(newState)
+      if (isRestart && runningInstances.size > 1)
+        throw new IllegalArgumentException("More than one running instances from current sbt project were found. " +
+          "Please specify instance id as a parameter.")
+      //By default if no arguments are passed stop all instances from current sbt project
       stopDockerCompose(newState, runningInstances)
     }
   }
