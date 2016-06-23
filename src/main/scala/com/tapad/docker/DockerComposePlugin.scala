@@ -165,9 +165,9 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
   def restartRunningInstance(state: State, args: Seq[String]): State = {
     try {
-      restartInstancePrecheck(state, args)
-      val newState = stopRunningInstances(state, args)
-      launchInstanceWithLatestChanges(newState, args)
+      val newState1 = restartInstancePrecheck(state, args)
+      val newState2 = stopRunningInstances(newState1, args)
+      launchInstanceWithLatestChanges(newState2, args)
     } catch {
       case ex: IllegalArgumentException =>
         printError(ex.getMessage)
@@ -178,7 +178,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     }
   }
 
-  def restartInstancePrecheck(state: State, args: Seq[String]): Unit = {
+  def restartInstancePrecheck(state: State, args: Seq[String]): State = {
     val newState = getPersistedState(state)
     val runningInstanceIds = getServiceRunningInstanceIds(newState)
 
@@ -191,6 +191,8 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       if (restartList.isEmpty)
         throw new IllegalArgumentException("No local Docker Compose instances found to restart from current sbt project.")
     }
+
+    newState
   }
 
   /**
