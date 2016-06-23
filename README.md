@@ -97,7 +97,21 @@ To Start a Docker Compose Instance for Testing / Debugging
    
     dockerComposeStop <unique instance id>
 
-3) To display the service connection information for each running Docker Compose instance run:
+3) To restart a particular instance from the project with the Plugin enabled run:
+
+    dockerComposeRestart <unique instance id>
+   
+   You can also supply the 'skipPull' or 'skipBuild' argument as you would for the 'dockerComposeUp' command:
+   
+    dockerComposeRestart <unique instance id> [skipPull or skipBuild]
+    
+   If there is only one running instance from the current sbt project the Instance Id is not required:
+   
+    dockerComposeRestart
+   
+   If there is no running instances from the current sbt project this command will start a new instance from the project.
+       
+4) To display the service connection information for each running Docker Compose instance run:
 
     dockerComposeInstances
     

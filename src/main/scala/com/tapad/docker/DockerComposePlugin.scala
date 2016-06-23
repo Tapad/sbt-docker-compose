@@ -107,6 +107,15 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         stopRunningInstances(state, args)
     }
 
+  lazy val dockerComposeRestartCommand = Command.args("dockerComposeRestart", ("dockerComposeRestart", "Restarts a local Docker Compose instance."),
+    "Supply the Instance Id to restart a particular instance. " +
+      s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
+      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one.", "") {
+      (state: State, args: Seq[String]) =>
+
+        restartRunningInstance(state, args)
+    }
+
   lazy val dockerComposeInstancesCommand = Command.args("dockerComposeInstances", ("dockerComposeInstances", "Prints a " +
     "table of information for all running Docker Compose instances."), "", "") {
     (state: State, args: Seq[String]) =>
@@ -152,6 +161,38 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       val runningInstances = getServiceRunningInstanceIds(newState)
       stopDockerCompose(newState, runningInstances)
     }
+  }
+
+  def restartRunningInstance(state: State, args: Seq[String]): State = {
+    try {
+      val newState1 = restartInstancePrecheck(state, args)
+      val newState2 = stopRunningInstances(newState1, args)
+      launchInstanceWithLatestChanges(newState2, args)
+    } catch {
+      case ex: IllegalArgumentException =>
+        printError(ex.getMessage)
+        state
+      case ex: ComposeFileFormatException =>
+        printError(ex.getMessage)
+        state
+    }
+  }
+
+  def restartInstancePrecheck(state: State, args: Seq[String]): State = {
+    val newState = getPersistedState(state)
+    val runningInstanceIds = getServiceRunningInstanceIds(newState)
+
+    if (args.isEmpty) {
+      if (runningInstanceIds.size > 1)
+        throw new IllegalArgumentException("More than one running instance from the current sbt project was detected. " +
+          "Please provide an Instance Id parameter to the dockerComposeRestart command specifying which instance to stop.")
+    } else {
+      val restartList = runningInstanceIds.filter(args.contains(_))
+      if (restartList.isEmpty)
+        throw new IllegalArgumentException("No local Docker Compose instances found to restart from current sbt project.")
+    }
+
+    newState
   }
 
   /**
