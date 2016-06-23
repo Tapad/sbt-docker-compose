@@ -187,9 +187,9 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         throw new IllegalArgumentException("More than one running instance from the current sbt project was detected. " +
           "Please provide an Instance Id parameter to the dockerComposeRestart command specifying which instance to stop.")
     } else {
-      val restartList = runningInstanceIds.filter(instanceId => args.contains(instanceId))
+      val restartList = runningInstanceIds.filter(args.contains(_))
       if (restartList.isEmpty)
-        throw new IllegalArgumentException(s"No local Docker Compose instances found to restart from current sbt project.")
+        throw new IllegalArgumentException("No local Docker Compose instances found to restart from current sbt project.")
     }
   }
 

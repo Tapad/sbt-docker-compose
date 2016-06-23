@@ -2,10 +2,10 @@ import com.tapad.docker.DockerComposeKeys._
 import com.tapad.docker._
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
+import org.scalatest.{ FunSuite, OneInstancePerTest }
 import scala.collection.Iterable
 
-class InstanceRestartingSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest with MockHelpers {
+class InstanceRestartingSpec extends FunSuite with OneInstancePerTest with MockHelpers {
 
   test("Validate the correct type of exception thrown and error message shown when restarting a non existent instance") {
     val instanceId1 = "instanceId1"
@@ -121,7 +121,7 @@ class InstanceRestartingSpec extends FunSuite with BeforeAndAfter with OneInstan
     verify(composeMock, times(1)).dockerComposeUp(anyString, anyString)
   }
 
-  def getComposeMock(serviceName: String = "testservice") = {
+  def getComposeMock(serviceName: String = "testservice"): DockerComposePluginLocal = {
     val composeMock = spy(new DockerComposePluginLocal)
 
     val composeFilePath = getClass.getResource("debug_port.yml").getPath
@@ -130,6 +130,8 @@ class InstanceRestartingSpec extends FunSuite with BeforeAndAfter with OneInstan
     doReturn(true).when(composeMock).getSetting(composeNoBuild)(null)
     doReturn(Map.empty).when(composeMock).getSetting(variablesForSubstitution)(null)
     doNothing().when(composeMock).dockerComposeUp(anyString, anyString)
+    doNothing().when(composeMock).pullDockerImages(any[Seq[String]], any[Iterable[ServiceInfo]])
+    doNothing().when(composeMock).buildDockerImageTask(null)
 
     composeMock
   }
