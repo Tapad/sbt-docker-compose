@@ -107,9 +107,9 @@ To Start a Docker Compose Instance for Testing / Debugging
 
     dockerComposeRestart <unique instance id>
    
-   You can also supply the 'skipPull' or 'skipBuild' argument as you would for the 'dockerComposeUp' command:
+   You can also supply the 'skipPull', 'skipBuild' or '-useStaticPorts' argument as you would for the 'dockerComposeUp' command:
    
-    dockerComposeRestart <unique instance id> [skipPull or skipBuild]
+    dockerComposeRestart <unique instance id> [skipPull or skipBuild] [-useStaticPorts]
     
    If there is only one running instance from the current sbt project the Instance Id is not required:
    
