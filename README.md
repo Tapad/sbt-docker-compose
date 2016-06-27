@@ -89,6 +89,12 @@ To Start a Docker Compose Instance for Testing / Debugging
     
    You can start multiple compose instances on the same project as the plugin generates a unique name for each instance.
    
+   To use the static host ports instead of the Docker dynamically assigned host ports use the following command:
+   
+    dockerComposeUp -useStaticPorts
+    
+    E.g. A port mapping of "0:3306" defined in the Compose file would be treated as "3306:3306" if this argument is supplied.
+         
 2) To shutdown all instances started from the current project with the Plugin enabled run:
 
     dockerComposeStop
