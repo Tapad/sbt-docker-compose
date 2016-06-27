@@ -129,7 +129,7 @@ class InstanceRestartingSpec extends FunSuite with OneInstancePerTest with MockH
     doReturn(serviceName).when(composeMock).getSetting(composeServiceName)(null)
     doReturn(true).when(composeMock).getSetting(composeNoBuild)(null)
     doReturn(Map.empty).when(composeMock).getSetting(variablesForSubstitution)(null)
-    doNothing().when(composeMock).dockerComposeUp(anyString, anyString)
+    doReturn(0).when(composeMock).dockerComposeUp(anyString, anyString)
     doNothing().when(composeMock).pullDockerImages(any[Seq[String]], any[Iterable[ServiceInfo]])
     doNothing().when(composeMock).buildDockerImageTask(null)
 

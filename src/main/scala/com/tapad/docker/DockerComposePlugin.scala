@@ -88,13 +88,17 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
   lazy val dockerComposeUpCommand = Command.args("dockerComposeUp", ("dockerComposeUp", "Starts a local Docker Compose instance."),
     s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
-      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one.", "") {
+      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
+      s"Supply '$useStaticPortsArg' as a parameter to use static host and container port mappings in the compose file.", "") {
       (state: State, args: Seq[String]) =>
         try {
           launchInstanceWithLatestChanges(state, args)
         } catch {
           case ex: ComposeFileFormatException =>
             printError(ex.message)
+            state
+          case ex: IllegalStateException =>
+            printError(ex.getMessage)
             state
         }
     }
@@ -110,7 +114,8 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   lazy val dockerComposeRestartCommand = Command.args("dockerComposeRestart", ("dockerComposeRestart", "Restarts a local Docker Compose instance."),
     "Supply the Instance Id to restart a particular instance. " +
       s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
-      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one.", "") {
+      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
+      s"Supply '$useStaticPortsArg' as a parameter to use static host and container port mappings in the compose file.", "") {
       (state: State, args: Seq[String]) =>
 
         restartRunningInstance(state, args)
@@ -225,7 +230,9 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     val instanceName = generateInstanceName(state)
 
     val newState = Try {
-      dockerComposeUp(instanceName, updatedComposePath)
+      val ret = dockerComposeUp(instanceName, updatedComposePath)
+      if (ret != 0) throw new IllegalStateException()
+
       val newInstance = getRunningInstanceInfo(state, instanceName, updatedComposePath, servicesInfo)
 
       printMappedPortInformation(state, newInstance, dockerComposeVersion)

@@ -39,6 +39,8 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
 
   type yamlData = Map[String, java.util.LinkedHashMap[String, Any]]
 
+  val useStaticPortsArg = "-useStaticPorts"
+
   /**
    * processCustomTags performs any pre-processing of Custom Tags in the Compose File before the Compose file is used
    * by Docker. This function will also determine any debug ports and rename any 'env_file' defined files to use their
@@ -110,7 +112,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
       }
 
       serviceData.put(imageKey, updatedImageName)
-      ServiceInfo(serviceName, updatedImageName, imageSource, getPortInfo(serviceData))
+      ServiceInfo(serviceName, updatedImageName, imageSource, getPortInfo(serviceData, args.contains(useStaticPortsArg)))
     }
   }
 
@@ -183,7 +185,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
    * @param serviceKeys The Docker Compose Yaml representing a service
    * @return PortInfo collection for all defined ports
    */
-  def getPortInfo(serviceKeys: java.util.LinkedHashMap[String, Any]): List[PortInfo] = {
+  def getPortInfo(serviceKeys: java.util.LinkedHashMap[String, Any], useStatic: Boolean): List[PortInfo] = {
     if (serviceKeys.containsKey(portsKey)) {
       //Determine if there is a debug port set on the service
       val debugPort = if (serviceKeys.containsKey(environmentKey)) {
@@ -232,8 +234,14 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
         }
       }
 
-      //update ports to be the expanded version
-      val list = new java.util.ArrayList[String](expandedPorts ++ noExpansion)
+      val ports = expandedPorts ++ noExpansion
+      val list = {
+        if (useStatic)
+          getStaticPortMappings(ports)
+        else
+          new java.util.ArrayList[String](ports)
+      }
+
       serviceKeys.put(portsKey, list)
 
       serviceKeys.get(portsKey).asInstanceOf[java.util.ArrayList[String]].asScala.map(port => {
@@ -245,6 +253,19 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
     } else {
       List.empty
     }
+  }
+
+  def getStaticPortMappings(ports: Seq[String]): java.util.ArrayList[String] = {
+    val staticPorts = ports.map { port =>
+      val portArray = port.split(":")
+      if (portArray.length == 2) {
+        val portSplitL = { if (portArray(0) == "0") portArray(1) else portArray(0) }
+        s"$portSplitL:${portArray(1)}"
+      } else
+        s"${portArray(0)}:${portArray(0)}"
+    }
+
+    new java.util.ArrayList[String](staticPorts)
   }
 
   def readComposeFile(composePath: String, variables: Vector[(String, String)] = Vector.empty): yamlData = {

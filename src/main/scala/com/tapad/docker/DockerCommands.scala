@@ -4,7 +4,7 @@ import sbt._
 import com.tapad.docker.DockerComposeKeys._
 
 trait DockerCommands {
-  def dockerComposeUp(instanceName: String, composePath: String): Unit = {
+  def dockerComposeUp(instanceName: String, composePath: String): Int = {
     s"docker-compose -p $instanceName -f $composePath up -d".!
   }
 
