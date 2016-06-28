@@ -5,3 +5,27 @@ basic:
   ports:
     - "0:8080"
     - "0:5005"
+    - "1000"
+    - "2000-2002"
+    - "0:3000-3002"
+    - "5000-5002:4000-4002"
+basic2:
+  image: basic:1.0.0
+  environment:
+    JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+  ports:
+    - "0:8080"
+    - "0:5005"
+    - "1000"
+    - "2000-2002"
+    - "0:3000-3002"
+basic3:
+  image: basic:1.0.0
+  environment:
+    JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+  ports:
+    - "0:8080"
+    - "0:5005"
+    - "1000"
+    - "2000-2002"
+    - "0:3000-3002"
