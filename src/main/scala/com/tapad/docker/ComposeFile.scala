@@ -55,6 +55,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   def processCustomTags(implicit state: State, args: Seq[String], composeYaml: yamlData): Iterable[ServiceInfo] = {
     val useExistingImages = getSetting(composeNoBuild)
     val localService = getSetting(composeServiceName)
+    val usedStaticPorts = scala.collection.mutable.Set[String]()
 
     getComposeFileServices(composeYaml).map { service =>
       val (serviceName, serviceData) = service
@@ -112,7 +113,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
       }
 
       serviceData.put(imageKey, updatedImageName)
-      ServiceInfo(serviceName, updatedImageName, imageSource, getPortInfo(serviceData, args.contains(useStaticPortsArg)))
+      ServiceInfo(serviceName, updatedImageName, imageSource, getPortInfo(serviceName, serviceData, args.contains(useStaticPortsArg), usedStaticPorts))
     }
   }
 
@@ -185,7 +186,12 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
    * @param serviceKeys The Docker Compose Yaml representing a service
    * @return PortInfo collection for all defined ports
    */
-  def getPortInfo(serviceKeys: java.util.LinkedHashMap[String, Any], useStatic: Boolean): List[PortInfo] = {
+  def getPortInfo(
+    serviceName: String,
+    serviceKeys: java.util.LinkedHashMap[String, Any],
+    useStatic: Boolean,
+    usedStaticPorts: scala.collection.mutable.Set[String]
+  ): List[PortInfo] = {
     if (serviceKeys.containsKey(portsKey)) {
       //Determine if there is a debug port set on the service
       val debugPort = if (serviceKeys.containsKey(environmentKey)) {
@@ -237,7 +243,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
       val ports = expandedPorts ++ noExpansion
       val list = {
         if (useStatic)
-          getStaticPortMappings(ports)
+          getStaticPortMappings(serviceName, ports, usedStaticPorts)
         else
           new java.util.ArrayList[String](ports)
       }
@@ -255,14 +261,33 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
     }
   }
 
-  def getStaticPortMappings(ports: Seq[String]): java.util.ArrayList[String] = {
-    val staticPorts = ports.map { port =>
-      val portArray = port.split(":")
-      if (portArray.length == 2) {
-        val portSplitL = { if (portArray(0) == "0") portArray(1) else portArray(0) }
-        s"$portSplitL:${portArray(1)}"
-      } else
-        s"${portArray(0)}:${portArray(0)}"
+  def getStaticPortMappings(
+    serviceName: String,
+    ports: Seq[String],
+    usedStaticPorts: scala.collection.mutable.Set[String]
+  ): java.util.ArrayList[String] = {
+    val dynamicPortIdentifier = "0"
+
+    def checkUsed(portMapping: String): String = {
+      if (usedStaticPorts add portMapping)
+        portMapping
+      else {
+        val containerPort = portMapping.split(":").last
+        printWarning(s"Could not define a static host port '$containerPort' for service '$serviceName' " +
+          s"because port '$containerPort' was already in use. A dynamically assigned port will be used instead.")
+        s"$dynamicPortIdentifier:$containerPort"
+      }
+    }
+
+    val Pattern1 = (dynamicPortIdentifier + """:(\d+)""").r
+    val Pattern2 = """(\d+):(\d+)""".r
+    val Pattern3 = """(\d+)""".r
+
+    val staticPorts = ports.map {
+      case Pattern1(container) => checkUsed(s"$container:$container")
+      case Pattern2(host, container) => s"$host:$container"
+      case Pattern3(port) => checkUsed(s"$port:$port")
+      case otherwise => otherwise
     }
 
     new java.util.ArrayList[String](staticPorts)
@@ -278,6 +303,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   /**
    * Substitute all docker-compose variables in the YAML file.  This is traditionally done by docker-compose itself,
    * but is being performed by the plugin to support other functionality.
+   *
    * @param yamlString Stringified docker-compose file.
    * @param variables Substitution variables.
    * @return An updated stringified docker-compile file.

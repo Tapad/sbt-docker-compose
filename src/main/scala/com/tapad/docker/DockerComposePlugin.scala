@@ -94,10 +94,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         try {
           launchInstanceWithLatestChanges(state, args)
         } catch {
-          case ex: ComposeFileFormatException =>
-            printError(ex.message)
-            state
-          case ex: IllegalStateException =>
+          case ex @ (_: ComposeFileFormatException | _: IllegalStateException) =>
             printError(ex.getMessage)
             state
         }
@@ -174,10 +171,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       val newState2 = stopRunningInstances(newState1, args)
       launchInstanceWithLatestChanges(newState2, args)
     } catch {
-      case ex: IllegalArgumentException =>
-        printError(ex.getMessage)
-        state
-      case ex: ComposeFileFormatException =>
+      case ex @ (_: IllegalArgumentException | _: ComposeFileFormatException | _: IllegalStateException) =>
         printError(ex.getMessage)
         state
     }
