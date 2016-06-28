@@ -269,7 +269,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
     val dynamicPortIdentifier = "0"
 
     def checkUsed(portMapping: String): String = {
-      if (usedStaticPorts add portMapping)
+      if (usedStaticPorts.add(portMapping))
         portMapping
       else {
         val containerPort = portMapping.split(":").last
