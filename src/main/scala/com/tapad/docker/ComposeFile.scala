@@ -181,9 +181,13 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
 
   /**
    * Parses the Port information from the Yaml content for a service. It will also report any ports that are exposed as
-   * Debugging ports and expand any defined port ranges
+   * Debugging ports and expand any defined port ranges. Static ports will be used rather than the Docker dynamically
+   * assigned ones when the '-useStaticPorts' argument is supplied.
    *
+   * @param serviceName The service name defined in the Docker Compose file
    * @param serviceKeys The Docker Compose Yaml representing a service
+   * @param useStatic The flag used to indicate whether the '-useStaticPorts' argument is supplied
+   * @param usedStaticPorts The collection of used static port mappings
    * @return PortInfo collection for all defined ports
    */
   def getPortInfo(
