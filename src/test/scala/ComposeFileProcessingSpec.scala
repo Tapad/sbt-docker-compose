@@ -252,19 +252,57 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     composeMock.processCustomTags(null, Seq("-useStaticPorts"), composeYaml)
 
     //Validate that the list of static port mappings is fetched once
-    verify(composeMock, times(1)).getStaticPortMappings(any[Seq[String]])
+    verify(composeMock, times(1)).getStaticPortMappings(anyString, any[Seq[String]], any[scala.collection.mutable.Set[String]])
   }
 
-  test("Validate that the proper creation of a list of static port mappings") {
+  test("Validate that the proper creation of a list of static port mappings when '-useStaticPorts' argument is supplied ") {
     val composeMock = spy(new DockerComposePluginLocal)
-
-    val list = composeMock.getStaticPortMappings(Seq("1000", "2000", "0:3000", "5000:4000"))
+    val usedStaticPorts = scala.collection.mutable.Set[String]()
+    val list = composeMock.getStaticPortMappings("service", Seq("1000", "2000", "0:3000", "5000:4000"), usedStaticPorts)
 
     assert(list.size() == 4 &&
       list.contains("1000:1000") &&
       list.contains("2000:2000") &&
       list.contains("3000:3000") &&
       list.contains("5000:4000"))
+  }
+
+  test("Validate that port conflicts are properly handled when '-useStaticPorts' argument is supplied") {
+    val (composeMock, composeFilePath) = getComposeFileMock("multi_service_no_tags.yml")
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    val serviceInfo = composeMock.processCustomTags(null, Seq("-useStaticPorts"), composeYaml)
+
+    val portsList1 = composeYaml.get("testservice1").get.get("ports").asInstanceOf[java.util.ArrayList[String]]
+    val portsList2 = composeYaml.get("testservice2").get.get("ports").asInstanceOf[java.util.ArrayList[String]]
+
+    //Validate that the static port mapping is used for the first service and dynamically assigned host port for the second one
+    assert(portsList1.size() == 1 &&
+      portsList1.contains("3000:3000") &&
+      portsList2.size() == 1 &&
+      portsList2.contains("0:3000"))
+  }
+
+  test("Validate that port range in Compose file are properly handled when '-useStaticPorts' argument is supplied") {
+    val (composeMock, composeFilePath) = getComposeFileMock("port_expansion.yml")
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    val serviceInfo = composeMock.processCustomTags(null, Seq("-useStaticPorts"), composeYaml)
+
+    val portsList = composeYaml.get("testservice").get.get("ports").asInstanceOf[java.util.ArrayList[String]]
+
+    assert(portsList.size() == 12 &&
+      portsList.contains("1000:1000") &&
+      portsList.contains("2000:2000") &&
+      portsList.contains("2001:2001") &&
+      portsList.contains("2002:2002") &&
+      portsList.contains("3000:3000") &&
+      portsList.contains("3001:3001") &&
+      portsList.contains("3002:3002") &&
+      portsList.contains("5000:4000") &&
+      portsList.contains("5001:4001") &&
+      portsList.contains("5002:4002") &&
+      portsList.contains("6000:6000") &&
+      portsList.contains("6001:6001"))
+
   }
 
   /**
