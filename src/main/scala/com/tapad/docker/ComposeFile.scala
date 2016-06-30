@@ -40,6 +40,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   type yamlData = Map[String, java.util.LinkedHashMap[String, Any]]
 
   val useStaticPortsArg = "-useStaticPorts"
+  val dynamicPortIdentifier = "0"
 
   /**
    * processCustomTags performs any pre-processing of Custom Tags in the Compose File before the Compose file is used
@@ -113,7 +114,25 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
       }
 
       serviceData.put(imageKey, updatedImageName)
-      ServiceInfo(serviceName, updatedImageName, imageSource, getPortInfo(serviceName, serviceData, args.contains(useStaticPortsArg), usedStaticPorts))
+
+      val useStatic = args.contains(useStaticPortsArg)
+      val (updatedPortInfo, updatedPortList) = getPortInfo(serviceData, useStatic).zipped.map { (portInfo, portMapping) =>
+        if (args.contains(useStaticPortsArg)) {
+          if (usedStaticPorts.add(portMapping)) {
+            (portInfo, portMapping)
+          } else {
+            val containerPort = portMapping.split(":").last
+            printWarning(s"Could not define a static host port '$containerPort' for service '$serviceName' " +
+              s"because port '$containerPort' was already in use. A dynamically assigned port will be used instead.")
+            (PortInfo(dynamicPortIdentifier, portInfo.containerPort, portInfo.isDebug), s"$dynamicPortIdentifier:$containerPort")
+          }
+        } else
+          (portInfo, portMapping)
+      }.unzip
+
+      serviceData.put(portsKey, new util.ArrayList[String](updatedPortList))
+
+      ServiceInfo(serviceName, updatedImageName, imageSource, updatedPortInfo)
     }
   }
 
@@ -182,20 +201,13 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   /**
    * Parses the Port information from the Yaml content for a service. It will also report any ports that are exposed as
    * Debugging ports and expand any defined port ranges. Static ports will be used rather than the Docker dynamically
-   * assigned ones when the '-useStaticPorts' argument is supplied.
+   * assigned ports when the '-useStaticPorts' argument is supplied.
    *
-   * @param serviceName The service name defined in the Docker Compose file
    * @param serviceKeys The Docker Compose Yaml representing a service
    * @param useStatic The flag used to indicate whether the '-useStaticPorts' argument is supplied
-   * @param usedStaticPorts The collection of used static port mappings
-   * @return PortInfo collection for all defined ports
+   * @return PortInfo collection and port mapping collection for all defined ports
    */
-  def getPortInfo(
-    serviceName: String,
-    serviceKeys: java.util.LinkedHashMap[String, Any],
-    useStatic: Boolean,
-    usedStaticPorts: scala.collection.mutable.Set[String]
-  ): List[PortInfo] = {
+  def getPortInfo(serviceKeys: java.util.LinkedHashMap[String, Any], useStatic: Boolean): (List[PortInfo], List[String]) = {
     if (serviceKeys.containsKey(portsKey)) {
       //Determine if there is a debug port set on the service
       val debugPort = if (serviceKeys.containsKey(environmentKey)) {
@@ -247,53 +259,33 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
       val ports = expandedPorts ++ noExpansion
       val list = {
         if (useStatic)
-          getStaticPortMappings(serviceName, ports, usedStaticPorts)
+          getStaticPortMappings(ports)
         else
           new java.util.ArrayList[String](ports)
       }
 
       serviceKeys.put(portsKey, list)
 
-      serviceKeys.get(portsKey).asInstanceOf[java.util.ArrayList[String]].asScala.map(port => {
+      (serviceKeys.get(portsKey).asInstanceOf[java.util.ArrayList[String]].asScala.map(port => {
         val portArray = port.split(':')
         val (hostPort, containerPort) = if (portArray.length == 2) (portArray(0), portArray(1)) else (portArray(0), portArray(0))
         val debugMatch = portArray.contains(debugPort)
         PortInfo(hostPort, containerPort, debugMatch)
-      }).toList
+      }).toList, list.toList)
     } else {
-      List.empty
+      (List.empty, List.empty)
     }
   }
 
-  def getStaticPortMappings(
-    serviceName: String,
-    ports: Seq[String],
-    usedStaticPorts: scala.collection.mutable.Set[String]
-  ): java.util.ArrayList[String] = {
-    val dynamicPortIdentifier = "0"
-
-    def checkUsed(portMapping: String): String = {
-      if (usedStaticPorts.add(portMapping))
-        portMapping
-      else {
-        val containerPort = portMapping.split(":").last
-        printWarning(s"Could not define a static host port '$containerPort' for service '$serviceName' " +
-          s"because port '$containerPort' was already in use. A dynamically assigned port will be used instead.")
-        s"$dynamicPortIdentifier:$containerPort"
-      }
-    }
-
+  def getStaticPortMappings(ports: Seq[String]): java.util.ArrayList[String] = {
     val Pattern1 = (dynamicPortIdentifier + """:(\d+)""").r
-    val Pattern2 = """(\d+):(\d+)""".r
-    val Pattern3 = """(\d+)""".r
+    val Pattern2 = """(\d+)""".r
 
     val staticPorts = ports.map {
-      case Pattern1(container) => checkUsed(s"$container:$container")
-      case Pattern2(host, container) => s"$host:$container"
-      case Pattern3(port) => checkUsed(s"$port:$port")
+      case Pattern1(container) => s"$container:$container"
+      case Pattern2(port) => s"$port:$port"
       case otherwise => otherwise
     }
-
     new java.util.ArrayList[String](staticPorts)
   }
 

@@ -252,13 +252,12 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     composeMock.processCustomTags(null, Seq("-useStaticPorts"), composeYaml)
 
     //Validate that the list of static port mappings is fetched once
-    verify(composeMock, times(1)).getStaticPortMappings(anyString, any[Seq[String]], any[scala.collection.mutable.Set[String]])
+    verify(composeMock, times(1)).getStaticPortMappings(any[Seq[String]])
   }
 
   test("Validate that the proper creation of a list of static port mappings when '-useStaticPorts' argument is supplied ") {
     val composeMock = spy(new DockerComposePluginLocal)
-    val usedStaticPorts = scala.collection.mutable.Set[String]()
-    val list = composeMock.getStaticPortMappings("service", Seq("1000", "2000", "0:3000", "5000:4000"), usedStaticPorts)
+    val list = composeMock.getStaticPortMappings(Seq("1000", "2000", "0:3000", "5000:4000"))
 
     assert(list.size() == 4 &&
       list.contains("1000:1000") &&
