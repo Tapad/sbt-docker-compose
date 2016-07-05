@@ -39,10 +39,14 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     val containerId = "123456"
     val dockerMachineName = "default"
     val jsonStream = getClass.getResourceAsStream("docker_inspect.json")
+    val dockerPortStream = getClass.getResourceAsStream("docker_port.txt")
     val inspectJson = Source.fromInputStream(jsonStream).mkString
+    val portMappings = Source.fromInputStream(dockerPortStream).mkString
+    println(portMappings)
     val composeMock = spy(new DockerComposePluginLocal)
     doReturn(containerId).when(composeMock).getDockerContainerId(instanceName, serviceName)
     doReturn(inspectJson).when(composeMock).getDockerContainerInfo(containerId)
+    doReturn(portMappings).when(composeMock).getDockerPortMappings(containerId)
     doReturn(false).when(composeMock).isBoot2DockerEnvironment
 
     val port1 = PortInfo("0", "3000/tcp", isDebug = false)
@@ -55,9 +59,9 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     val portInfo = serviceInfoUpdated.head.ports
 
     assert(portInfo.size == 3)
-    assert(portInfo.exists(port => port.containerPort == "3000/tcp" && port.hostPort == "32803"))
-    assert(portInfo.exists(port => port.containerPort == "3001/udp" && port.hostPort == "32802"))
-    assert(portInfo.exists(port => port.containerPort == "3002" && port.hostPort == "32801"))
+    assert(portInfo.exists(port => port.containerPort.contains("3000") && port.hostPort == "32803"))
+    assert(portInfo.exists(port => port.containerPort.contains("3001") && port.hostPort == "32802"))
+    assert(portInfo.exists(port => port.containerPort.contains("3002") && port.hostPort == "32801"))
   }
 
   test("Validate Docker Compose 2.0 NetworkSettings are read when available") {
@@ -66,10 +70,13 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     val containerId = "123456"
     val dockerMachineName = "default"
     val jsonStream = getClass.getResourceAsStream("docker_inspect2.0.json")
+    val dockerPortStream = getClass.getResourceAsStream("docker_port.txt")
     val inspectJson = Source.fromInputStream(jsonStream).mkString
+    val portMappings = Source.fromInputStream(dockerPortStream).mkString
     val composeMock = spy(new DockerComposePluginLocal)
     doReturn(containerId).when(composeMock).getDockerContainerId(instanceName, serviceName)
     doReturn(inspectJson).when(composeMock).getDockerContainerInfo(containerId)
+    doReturn(portMappings).when(composeMock).getDockerPortMappings(containerId)
     doReturn(false).when(composeMock).isBoot2DockerEnvironment
 
     val port = PortInfo("0", "3002", isDebug = false)

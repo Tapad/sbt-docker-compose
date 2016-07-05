@@ -8,6 +8,7 @@ import scala.Console._
 import scala.collection._
 import scala.concurrent.duration._
 import scala.util.Try
+import scala.util.matching.Regex
 
 /**
  * The exception type to be thrown when there is a format issue in the Compose file
@@ -225,7 +226,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
     val newState = Try {
       val ret = dockerComposeUp(instanceName, updatedComposePath)
-      if (ret != 0) throw new IllegalStateException()
+      if (ret != 0) throw new IllegalStateException
 
       val newInstance = getRunningInstanceInfo(state, instanceName, updatedComposePath, servicesInfo)
 
@@ -363,12 +364,14 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       print(s"Inspecting container $containerId to get the port mappings")
       val containerInspectInfo = getDockerContainerInfo(containerId)
       val jsonInspect = parse(containerInspectInfo)
-      //For each internal container port find its externally mapped host accessible port
-      val portsWithHost = service.ports.map { port =>
-        //If not specified assume it's a tcp port
-        val portFullName = if (port.containerPort.contains("/")) port.containerPort else s"${port.containerPort}/tcp"
-        val hostPort = compact(render(jsonInspect \ "NetworkSettings" \ "Ports" \ portFullName \ "HostPort")).replaceAll("\"", "")
-        PortInfo(hostPort, port.containerPort, port.isDebug)
+
+      val exposedPorts = getDockerPortMappings(containerId)
+      val Pattern1 = """(\d+).*:(\d+)""".r
+      val portsWithHost = {
+        exposedPorts.split("\n").toList.map {
+          case Pattern1(container, host) =>
+            PortInfo(host, container, Try(service.ports.find(_.containerPort == container).get.isDebug).getOrElse(false))
+        }
       }
       val containerHost = getContainerHost(dockerMachineName, instanceName, jsonInspect)
 
