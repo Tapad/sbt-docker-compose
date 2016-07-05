@@ -8,7 +8,6 @@ import scala.Console._
 import scala.collection._
 import scala.concurrent.duration._
 import scala.util.Try
-import scala.util.matching.Regex
 
 /**
  * The exception type to be thrown when there is a format issue in the Compose file
