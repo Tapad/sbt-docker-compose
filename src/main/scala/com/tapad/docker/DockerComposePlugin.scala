@@ -365,10 +365,10 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       val jsonInspect = parse(containerInspectInfo)
 
       val exposedPorts = getDockerPortMappings(containerId)
-      val Pattern1 = """(\d+).*:(\d+)""".r
+      val portMappingPattern = """(\d+).*:(\d+)""".r
       val portsWithHost = {
         exposedPorts.split("\n").toList.map {
-          case Pattern1(container, host) =>
+          case portMappingPattern(container, host) =>
             PortInfo(host, container, Try(service.ports.find(_.containerPort == container).get.isDebug).getOrElse(false))
         }
       }
