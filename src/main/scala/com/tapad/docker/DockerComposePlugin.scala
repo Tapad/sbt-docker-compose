@@ -369,7 +369,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       val portsWithHost = Try {
         exposedPorts.split("\n").toList.map {
           case portMappingPattern(container, proto, host) =>
-            val protocol = if (proto.toLowerCase.contains("tcp")) "" else proto
+            val protocol = proto.replaceAll("(?i)/tcp", "")
             PortInfo(host, s"$container$protocol", service.ports.exists(p => p.containerPort == container && p.isDebug))
         }
       } getOrElse List.empty
