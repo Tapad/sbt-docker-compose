@@ -117,7 +117,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
 
       val useStatic = args.contains(useStaticPortsArg)
       val (updatedPortInfo, updatedPortList) = getPortInfo(serviceData, useStatic).zipped.map { (portInfo, portMapping) =>
-        if (args.contains(useStaticPortsArg)) {
+        if (useStatic) {
           if (usedStaticPorts.add(portMapping)) {
             (portInfo, portMapping)
           } else {
@@ -278,12 +278,12 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   }
 
   def getStaticPortMappings(ports: Seq[String]): java.util.ArrayList[String] = {
-    val Pattern1 = (dynamicPortIdentifier + """:(\d+)""").r
-    val Pattern2 = """(\d+)""".r
+    val Pattern1 = (dynamicPortIdentifier + """:(\d+)(\D*)""").r
+    val Pattern2 = """(\d+)(\D*)""".r
 
     val staticPorts = ports.map {
-      case Pattern1(container) => s"$container:$container"
-      case Pattern2(port) => s"$port:$port"
+      case Pattern1(port, protocol) => s"$port:$port$protocol"
+      case Pattern2(port, protocol) => s"$port:$port$protocol"
       case otherwise => otherwise
     }
     new java.util.ArrayList[String](staticPorts)
