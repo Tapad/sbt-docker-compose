@@ -89,6 +89,13 @@ To Start a Docker Compose Instance for Testing / Debugging
     
    You can start multiple compose instances on the same project as the plugin generates a unique name for each instance.
    
+   When making frequent code changes on your local machine it is often useful to temporarily have the external ports remain the same. 
+   Use the '-useStaticPorts' argument to enable this functionality:
+   
+    dockerComposeUp -useStaticPorts
+    
+    E.g. A port mapping of "0:3306" defined in the Compose file would be treated as "3306:3306" if this argument is supplied.
+         
 2) To shutdown all instances started from the current project with the Plugin enabled run:
 
     dockerComposeStop
@@ -101,9 +108,9 @@ To Start a Docker Compose Instance for Testing / Debugging
 
     dockerComposeRestart <unique instance id>
    
-   You can also supply the 'skipPull' or 'skipBuild' argument as you would for the 'dockerComposeUp' command:
+   You can also supply the 'skipPull', 'skipBuild' or '-useStaticPorts' argument as you would for the 'dockerComposeUp' command:
    
-    dockerComposeRestart <unique instance id> [skipPull or skipBuild]
+    dockerComposeRestart <unique instance id> [skipPull or skipBuild] [-useStaticPorts]
     
    If there is only one running instance from the current sbt project the Instance Id is not required:
    

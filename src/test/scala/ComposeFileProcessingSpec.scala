@@ -4,6 +4,7 @@ import java.util
 import com.tapad.docker.DockerComposeKeys._
 import com.tapad.docker.DockerComposePlugin._
 import com.tapad.docker.{ ComposeFile, ComposeFileFormatException, DockerComposePluginLocal }
+import org.mockito.Matchers._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
 import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
@@ -44,7 +45,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate Compose <localBuild> tag results in 'build' image source and custom tag is removed") {
     val (composeMock, composeFilePath) = getComposeFileMock("localbuild_tag.yml", serviceName = "nomatch")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service => service.imageName == "testservice:latest" && service.imageSource == buildImageSource))
   }
@@ -52,7 +53,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate Compose <skipPull> tag results in 'cache' image source and custom tag is removed") {
     val (composeMock, composeFilePath) = getComposeFileMock("skippull_tag.yml", serviceName = "nomatch")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service => service.imageName == "testservice:latest" && service.imageSource == cachedImageSource))
   }
@@ -60,7 +61,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate Compose service name match results in 'build' image source") {
     val (composeMock, composeFilePath) = getComposeFileMock("no_custom_tags.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service => service.imageName == "testservice:latest" && service.imageSource == buildImageSource))
   }
@@ -68,7 +69,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate Compose no matching compose service name results in 'defined' image source") {
     val (composeMock, composeFilePath) = getComposeFileMock("no_custom_tags.yml", serviceName = "nomatch")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service => service.imageName == "testservice:latest" && service.imageSource == definedImageSource))
   }
@@ -76,7 +77,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate Compose 'composeNoBuild' setting results in image source 'defined' even if service matches the composeServiceName") {
     val (composeMock, composeFilePath) = getComposeFileMock("no_custom_tags.yml", noBuild = true)
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service => service.imageName == "testservice:latest" && service.imageSource == definedImageSource))
   }
@@ -114,7 +115,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     val newVersion = "9.9.9"
     val (composeMock, composeFilePath) = getComposeFileMock("version_number.yml", versionNumber = newVersion)
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service => service.imageName == s"testservice:$newVersion" && service.imageSource == buildImageSource))
   }
@@ -122,7 +123,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate the correct Debug port is found when supplied in the 'host:container' format") {
     val (composeMock, composeFilePath) = getComposeFileMock("debug_port.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service => service.imageName == "testservice:latest" &&
       service.ports.exists(_.isDebug) &&
@@ -132,7 +133,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate the correct Debug port is found when supplied in the 'host' format") {
     val (composeMock, composeFilePath) = getComposeFileMock("debug_port_single.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service => service.imageName == "testservice:latest" &&
       service.ports.exists(_.isDebug) &&
@@ -142,7 +143,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate the correct Debug port is found when the alternate 'environment:' field format is used") {
     val (composeMock, composeFilePath) = getComposeFileMock("debug_port_alternate_environment_format.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service => service.imageName == "testservice:latest" &&
       service.ports.exists(_.isDebug) &&
@@ -152,7 +153,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate the Debug port is not found when not exposed") {
     val (composeMock, composeFilePath) = getComposeFileMock("debug_port_not_exposed.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service => service.imageName == "testservice:latest" &&
       service.ports.exists(_.isDebug == false) &&
@@ -162,7 +163,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate that the 1.6 Docker Compose file format can be properly processed") {
     val (composeMock, composeFilePath) = getComposeFileMock("compose_1.6_format.yml", serviceName = "nomatch")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service => service.imageName == "myapp:latest" && service.imageSource == cachedImageSource))
     assert(serviceInfo.exists(service => service.imageName == "redis:latest" && service.imageSource == buildImageSource))
@@ -172,7 +173,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   test("Validate that Docker Compose file port ranges are expanded") {
     val (composeMock, composeFilePath) = getComposeFileMock("port_expansion.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    val serviceInfo = composeMock.processCustomTags(null, null, composeYaml)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
 
     assert(serviceInfo.exists(service =>
       service.ports.exists(p => p.hostPort == "1000" && p.containerPort == "1000") &&
@@ -193,7 +194,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     val (composeMock, composeFilePath) = getComposeFileMock("port_expansion_invalid.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     intercept[IllegalStateException] {
-      composeMock.processCustomTags(null, null, composeYaml)
+      composeMock.processCustomTags(null, Seq.empty, composeYaml)
     }
   }
 
@@ -202,7 +203,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     val composeFileDir = composeFilePath.substring(0, composeFilePath.lastIndexOf(File.separator))
 
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    composeMock.processCustomTags(null, null, composeYaml)
+    composeMock.processCustomTags(null, Seq.empty, composeYaml)
     val modifiedVolumesPaths = composeYaml.filter(_._1 == "testservice").head._2.get(composeMock.volumesKey).asInstanceOf[util.List[String]]
     assert(modifiedVolumesPaths.size() == 3)
     assert(modifiedVolumesPaths.get(0) == s"$composeFileDir/data:/data")
@@ -215,7 +216,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     val composeFileDir = composeFilePath.substring(0, composeFilePath.lastIndexOf(File.separator))
 
     val composeYaml = composeMock.readComposeFile(composeFilePath)
-    composeMock.processCustomTags(null, null, composeYaml)
+    composeMock.processCustomTags(null, Seq.empty, composeYaml)
     val modifiedEnvPath = composeYaml.filter(_._1 == "testservice").head._2.get(composeMock.envFileKey)
     assert(modifiedEnvPath == s"$composeFileDir/test.env")
 
@@ -231,7 +232,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
 
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     intercept[IllegalStateException] {
-      composeMock.processCustomTags(null, null, composeYaml)
+      composeMock.processCustomTags(null, Seq.empty, composeYaml)
     }
   }
 
@@ -243,6 +244,64 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
 
     val ports = composeYaml.get("testservice").get.get("ports").asInstanceOf[util.ArrayList[String]].get(0)
     assert(ports == "5555:5005")
+  }
+
+  test("Validate that the list of static port mappings is fetched when '-useStaticPorts' argument is supplied") {
+    val (composeMock, composeFilePath) = getComposeFileMock("port_expansion.yml")
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    composeMock.processCustomTags(null, Seq("-useStaticPorts"), composeYaml)
+
+    //Validate that the list of static port mappings is fetched once
+    verify(composeMock, times(1)).getStaticPortMappings(any[Seq[String]])
+  }
+
+  test("Validate that the proper creation of a list of static port mappings when '-useStaticPorts' argument is supplied ") {
+    val composeMock = spy(new DockerComposePluginLocal)
+    val list = composeMock.getStaticPortMappings(Seq("1000", "2000", "0:3000", "5000:4000"))
+
+    assert(list.size() == 4 &&
+      list.contains("1000:1000") &&
+      list.contains("2000:2000") &&
+      list.contains("3000:3000") &&
+      list.contains("5000:4000"))
+  }
+
+  test("Validate that port conflicts are properly handled when '-useStaticPorts' argument is supplied") {
+    val (composeMock, composeFilePath) = getComposeFileMock("multi_service_no_tags.yml")
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    val serviceInfo = composeMock.processCustomTags(null, Seq("-useStaticPorts"), composeYaml)
+
+    val portsList1 = composeYaml.get("testservice1").get.get("ports").asInstanceOf[java.util.ArrayList[String]]
+    val portsList2 = composeYaml.get("testservice2").get.get("ports").asInstanceOf[java.util.ArrayList[String]]
+
+    //Validate that the static port mapping is used for the first service and dynamically assigned host port for the second one
+    assert(portsList1.size() == 1 &&
+      portsList1.contains("3000:3000") &&
+      portsList2.size() == 1 &&
+      portsList2.contains("0:3000"))
+  }
+
+  test("Validate that port range in Compose file are properly handled when '-useStaticPorts' argument is supplied") {
+    val (composeMock, composeFilePath) = getComposeFileMock("port_expansion.yml")
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    val serviceInfo = composeMock.processCustomTags(null, Seq("-useStaticPorts"), composeYaml)
+
+    val portsList = composeYaml.get("testservice").get.get("ports").asInstanceOf[java.util.ArrayList[String]]
+
+    assert(portsList.size() == 12 &&
+      portsList.contains("1000:1000") &&
+      portsList.contains("2000:2000") &&
+      portsList.contains("2001:2001") &&
+      portsList.contains("2002:2002") &&
+      portsList.contains("3000:3000") &&
+      portsList.contains("3001:3001") &&
+      portsList.contains("3002:3002") &&
+      portsList.contains("5000:4000") &&
+      portsList.contains("5001:4001") &&
+      portsList.contains("5002:4002") &&
+      portsList.contains("6000:6000") &&
+      portsList.contains("6001:6001"))
+
   }
 
   /**

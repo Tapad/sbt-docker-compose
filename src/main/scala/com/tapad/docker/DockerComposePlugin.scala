@@ -88,13 +88,14 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
   lazy val dockerComposeUpCommand = Command.args("dockerComposeUp", ("dockerComposeUp", "Starts a local Docker Compose instance."),
     s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
-      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one.", "") {
+      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
+      s"Supply '$useStaticPortsArg' as a parameter to use static host ports instead of the Docker dynamically assigned host ports.", "") {
       (state: State, args: Seq[String]) =>
         try {
           launchInstanceWithLatestChanges(state, args)
         } catch {
-          case ex: ComposeFileFormatException =>
-            printError(ex.message)
+          case ex @ (_: ComposeFileFormatException | _: IllegalStateException) =>
+            printError(ex.getMessage)
             state
         }
     }
@@ -110,7 +111,8 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   lazy val dockerComposeRestartCommand = Command.args("dockerComposeRestart", ("dockerComposeRestart", "Restarts a local Docker Compose instance."),
     "Supply the Instance Id to restart a particular instance. " +
       s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
-      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one.", "") {
+      s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
+      s"Supply '$useStaticPortsArg' as a parameter to use static host ports instead of the Docker dynamically assigned host ports.", "") {
       (state: State, args: Seq[String]) =>
 
         restartRunningInstance(state, args)
@@ -169,10 +171,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       val newState2 = stopRunningInstances(newState1, args)
       launchInstanceWithLatestChanges(newState2, args)
     } catch {
-      case ex: IllegalArgumentException =>
-        printError(ex.getMessage)
-        state
-      case ex: ComposeFileFormatException =>
+      case ex @ (_: IllegalArgumentException | _: ComposeFileFormatException | _: IllegalStateException) =>
         printError(ex.getMessage)
         state
     }
@@ -225,7 +224,9 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     val instanceName = generateInstanceName(state)
 
     val newState = Try {
-      dockerComposeUp(instanceName, updatedComposePath)
+      val ret = dockerComposeUp(instanceName, updatedComposePath)
+      if (ret != 0) throw new IllegalStateException
+
       val newInstance = getRunningInstanceInfo(state, instanceName, updatedComposePath, servicesInfo)
 
       printMappedPortInformation(state, newInstance, dockerComposeVersion)
@@ -362,13 +363,16 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       print(s"Inspecting container $containerId to get the port mappings")
       val containerInspectInfo = getDockerContainerInfo(containerId)
       val jsonInspect = parse(containerInspectInfo)
-      //For each internal container port find its externally mapped host accessible port
-      val portsWithHost = service.ports.map { port =>
-        //If not specified assume it's a tcp port
-        val portFullName = if (port.containerPort.contains("/")) port.containerPort else s"${port.containerPort}/tcp"
-        val hostPort = compact(render(jsonInspect \ "NetworkSettings" \ "Ports" \ portFullName \ "HostPort")).replaceAll("\"", "")
-        PortInfo(hostPort, port.containerPort, port.isDebug)
-      }
+
+      val exposedPorts = getDockerPortMappings(containerId)
+      val portMappingPattern = """(\d+)(\S+).*:(\d+)""".r
+      val portsWithHost = Try {
+        exposedPorts.split("\n").toList.map {
+          case portMappingPattern(container, proto, host) =>
+            val protocol = proto.replaceAll("(?i)/tcp", "")
+            PortInfo(host, s"$container$protocol", service.ports.exists(p => p.containerPort == container && p.isDebug))
+        }
+      } getOrElse List.empty
       val containerHost = getContainerHost(dockerMachineName, instanceName, jsonInspect)
 
       service.copy(ports = portsWithHost, containerId = containerId, containerHost = containerHost)
