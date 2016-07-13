@@ -1,6 +1,8 @@
 import com.tapad.docker.DockerComposeKeys._
 import com.tapad.docker._
+import net.liftweb.json.JValue
 import org.mockito.Mockito._
+import org.mockito.Matchers._
 import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
 import sbt.Keys._
 import scala.io.Source
@@ -64,14 +66,12 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
 
     val composeFilePath = getClass.getResource(composeFileName).getPath
     doReturn(composeFilePath).when(composeMock).getSetting(composeFile)(null)
-
     doReturn(serviceName).when(composeMock).getSetting(composeServiceName)(null)
     doReturn(versionNumber).when(composeMock).getSetting(version)(null)
     doReturn(noBuild).when(composeMock).getSetting(composeNoBuild)(null)
     doReturn(containerId).when(composeMock).getDockerContainerId(instanceName, serviceName)
-    doReturn(containerHost).when(composeMock).getContainerHost(dockerMachineName, instanceName, null)
+    doReturn(containerHost).when(composeMock).getContainerHost(any[String], any[String], any[JValue])
     doReturn("").when(composeMock).getDockerContainerInfo(containerId)
-    doReturn("").when(composeMock).dockerMachineIp(dockerMachineName)
 
     (composeMock, composeFilePath)
   }
