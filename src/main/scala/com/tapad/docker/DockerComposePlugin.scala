@@ -4,9 +4,7 @@ import com.tapad.docker.DockerComposeKeys._
 import net.liftweb.json._
 import sbt._
 import sbt.complete.Parser
-import sbt.complete.DefaultParsers._
-import sbt.complete.Parser.{ token => _, _ }
-
+import sbt.complete.DefaultParsers.{ parse => _, _ }
 import scala.Console._
 import scala.collection._
 import scala.concurrent.duration._
@@ -386,7 +384,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
       print(s"Inspecting container $containerId to get the port mappings")
       val containerInspectInfo = getDockerContainerInfo(containerId)
-      val jsonInspect = net.liftweb.json.parse(containerInspectInfo)
+      val jsonInspect = parse(containerInspectInfo)
 
       val exposedPorts = getDockerPortMappings(containerId)
       val portMappingPattern = """(\d+)(\S+).*:(\d+)""".r
