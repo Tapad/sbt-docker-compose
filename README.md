@@ -124,6 +124,8 @@ To Start a Docker Compose Instance for Testing / Debugging
     
 Instance information is persisted in a temporary file so that it will be available between restarts of an sbt session.
 
+5) You can use tab completion to list out all of the arguments for each command shown above.
+
 To Execute ScalaTest Test Cases Against a Running Instance
 ----------------------------------------------------------
 The sbt-docker-compose plugin provides the ability to run a suite of ScalaTest test cases against a Docker Compose instance.

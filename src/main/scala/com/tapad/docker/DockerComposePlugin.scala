@@ -3,7 +3,8 @@ package com.tapad.docker
 import com.tapad.docker.DockerComposeKeys._
 import net.liftweb.json._
 import sbt._
-
+import sbt.complete.Parser
+import sbt.complete.DefaultParsers.{ parse => _, _ }
 import scala.Console._
 import scala.collection._
 import scala.concurrent.duration._
@@ -86,10 +87,16 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   val skipBuildArg = "skipBuild"
   lazy val dockerComposeVersion = getDockerComposeVersion
 
-  lazy val dockerComposeUpCommand = Command.args("dockerComposeUp", ("dockerComposeUp", "Starts a local Docker Compose instance."),
+  val instanceIdPlaceholder = "<instance id>"
+  val dockerComposeUpArgs = Seq(skipPullArg, skipBuildArg, useStaticPortsArg)
+  val dockerComposeStopArgs = Seq(instanceIdPlaceholder)
+  val dockerComposeRestartArgs = Seq(skipPullArg, skipBuildArg, useStaticPortsArg, instanceIdPlaceholder)
+  val dockerComposeTestArgs = Seq(skipPullArg, skipBuildArg, testDebugPortArg, testTagOverride, instanceIdPlaceholder)
+
+  lazy val dockerComposeUpCommand = Command("dockerComposeUp", ("dockerComposeUp", "Starts a local Docker Compose instance."),
     s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
       s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
-      s"Supply '$useStaticPortsArg' as a parameter to use static host ports instead of the Docker dynamically assigned host ports.", "") {
+      s"Supply '$useStaticPortsArg' as a parameter to use static host ports instead of the Docker dynamically assigned host ports.")(_ => getArgsParser(dockerComposeUpArgs)) {
       (state: State, args: Seq[String]) =>
         try {
           launchInstanceWithLatestChanges(state, args)
@@ -100,19 +107,19 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         }
     }
 
-  lazy val dockerComposeStopCommand = Command.args("dockerComposeStop", ("dockerComposeStop", "Stops all local Docker " +
+  lazy val dockerComposeStopCommand = Command("dockerComposeStop", ("dockerComposeStop", "Stops all local Docker " +
     "Compose instances started in this sbt project."),
-    "Supply the Instance Id to just stop a particular instance", "") {
+    "Supply the Instance Id to just stop a particular instance")(_ => getArgsParser(dockerComposeStopArgs)) {
       (state: State, args: Seq[String]) =>
 
         stopRunningInstances(state, args)
     }
 
-  lazy val dockerComposeRestartCommand = Command.args("dockerComposeRestart", ("dockerComposeRestart", "Restarts a local Docker Compose instance."),
+  lazy val dockerComposeRestartCommand = Command("dockerComposeRestart", ("dockerComposeRestart", "Restarts a local Docker Compose instance."),
     "Supply the Instance Id to restart a particular instance. " +
       s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
       s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
-      s"Supply '$useStaticPortsArg' as a parameter to use static host ports instead of the Docker dynamically assigned host ports.", "") {
+      s"Supply '$useStaticPortsArg' as a parameter to use static host ports instead of the Docker dynamically assigned host ports.")(_ => getArgsParser(dockerComposeRestartArgs)) {
       (state: State, args: Seq[String]) =>
 
         restartRunningInstance(state, args)
@@ -125,22 +132,41 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       printDockerComposeInstances(state, args)
   }
 
-  lazy val dockerComposeTest = Command.args("dockerComposeTest", ("dockerComposeTest", "Executes ScalaTest test " +
+  lazy val dockerComposeTest = Command("dockerComposeTest", ("dockerComposeTest", "Executes ScalaTest test " +
     "cases against a newly started Docker Compose instance."),
     s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry." +
       s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
       s"Supply '$testDebugPortArg:<port> as a parameter to cause the test execution to wait for a debugger to be attached on the specified port" +
       s"Supply '$testTagOverride:<tagName1,tagName2>' as a parameter to override the tags specified in the testTagsToExecute setting." +
-      "To execute a test pass against a previously started dockerComposeUp instance just pass the instance id to the command as a parameter", "") { (state: State, args: Seq[String]) =>
+      "To execute a test pass against a previously started dockerComposeUp instance just pass the instance id to the command as a parameter")(_ => getArgsParser(dockerComposeTestArgs)) {
+      (state: State, args: Seq[String]) =>
 
-      try {
-        composeTestRunner(state, args)
-      } catch {
-        case ex: ComposeFileFormatException =>
-          printError(ex.message)
-          state
-      }
+        try {
+          composeTestRunner(state, args)
+        } catch {
+          case ex: ComposeFileFormatException =>
+            printError(ex.message)
+            state
+        }
     }
+
+  def getArgsParser(args: Seq[String]): Parser[Seq[String]] = {
+    val parsers = args.map { arg =>
+      if (arg == testDebugPortArg)
+        token(arg) ~ token(":") ~ token(IntBasic, "<port>") map (_.toString)
+      else if (arg == testTagOverride)
+        token(arg) ~ token(":") ~ token(NotSpace, "<tagName1,tagName2>") map (_.toString)
+      else if (arg == instanceIdPlaceholder)
+        token(IntBasic, instanceIdPlaceholder) map (_.toString)
+      else
+        token(arg)
+    }
+
+    if (parsers.isEmpty)
+      Parser.success(Seq.empty)
+    else
+      (Space ~> parsers.reduceLeft(_ | _)).*
+  }
 
   def launchInstanceWithLatestChanges(state: State, args: Seq[String]): State = {
     val newState = getPersistedState(state)
