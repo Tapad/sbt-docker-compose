@@ -87,16 +87,18 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   val skipBuildArg = "skipBuild"
   lazy val dockerComposeVersion = getDockerComposeVersion
 
-  val dockerComposeUpRestartArgs = Seq(skipPullArg, skipBuildArg, useStaticPortsArg)
-  val dockerComposeTestArgs = Seq(skipPullArg, skipBuildArg, testDebugPortArg, testTagOverride)
+  val instanceIdPlaceholder = "<instance id>"
+  val dockerComposeUpArgs = Seq(skipPullArg, skipBuildArg, useStaticPortsArg)
+  val dockerComposeStopArgs = Seq(instanceIdPlaceholder)
+  val dockerComposeRestartArgs = Seq(skipPullArg, skipBuildArg, useStaticPortsArg, instanceIdPlaceholder)
+  val dockerComposeTestArgs = Seq(skipPullArg, skipBuildArg, testDebugPortArg, testTagOverride, instanceIdPlaceholder)
 
   lazy val dockerComposeUpCommand = Command("dockerComposeUp", ("dockerComposeUp", "Starts a local Docker Compose instance."),
     s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
       s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
-      s"Supply '$useStaticPortsArg' as a parameter to use static host ports instead of the Docker dynamically assigned host ports.")(_ => getArgsParser(dockerComposeUpRestartArgs)) {
+      s"Supply '$useStaticPortsArg' as a parameter to use static host ports instead of the Docker dynamically assigned host ports.")(_ => getArgsParser(dockerComposeUpArgs)) {
       (state: State, args: Seq[String]) =>
         try {
-
           launchInstanceWithLatestChanges(state, args)
         } catch {
           case ex @ (_: ComposeFileFormatException | _: IllegalStateException) =>
@@ -105,9 +107,9 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         }
     }
 
-  lazy val dockerComposeStopCommand = Command.args("dockerComposeStop", ("dockerComposeStop", "Stops all local Docker " +
+  lazy val dockerComposeStopCommand = Command("dockerComposeStop", ("dockerComposeStop", "Stops all local Docker " +
     "Compose instances started in this sbt project."),
-    "Supply the Instance Id to just stop a particular instance", "") {
+    "Supply the Instance Id to just stop a particular instance")(_ => getArgsParser(dockerComposeStopArgs)) {
       (state: State, args: Seq[String]) =>
 
         stopRunningInstances(state, args)
@@ -117,7 +119,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     "Supply the Instance Id to restart a particular instance. " +
       s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry. " +
       s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
-      s"Supply '$useStaticPortsArg' as a parameter to use static host ports instead of the Docker dynamically assigned host ports.")(_ => getArgsParser(dockerComposeUpRestartArgs)) {
+      s"Supply '$useStaticPortsArg' as a parameter to use static host ports instead of the Docker dynamically assigned host ports.")(_ => getArgsParser(dockerComposeRestartArgs)) {
       (state: State, args: Seq[String]) =>
 
         restartRunningInstance(state, args)
@@ -154,6 +156,8 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         token(arg) ~ token(":") ~ token(IntBasic, "<port>") map (_.toString)
       else if (arg == testTagOverride)
         token(arg) ~ token(":") ~ token(NotSpace, "<tagName1,tagName2>") map (_.toString)
+      else if (arg == instanceIdPlaceholder)
+        token(IntBasic, instanceIdPlaceholder) map (_.toString)
       else
         token(arg)
     }
