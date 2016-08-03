@@ -8,9 +8,9 @@ import scala.collection.Iterable
 class InstanceRestartingSpec extends FunSuite with OneInstancePerTest with MockHelpers {
 
   test("Validate the correct type of exception thrown and error message shown when restarting a non existent instance") {
-    val instanceId1 = "instanceId1"
-    val instanceId2 = "instanceId2"
-    val instanceIdNonExistent = "instanceIdNonExistent"
+    val instanceId1 = "123456"
+    val instanceId2 = "987654"
+    val instanceIdNonExistent = "111111"
     val serviceName = "service"
     val composePath = "path"
 
@@ -29,9 +29,9 @@ class InstanceRestartingSpec extends FunSuite with OneInstancePerTest with MockH
   }
 
   test("Validate the proper restarting of a particular instance when multiple instances are running") {
-    val instanceIdStop = "instanceIdStop"
-    val instanceIdKeep = "instanceIdKeep"
-    val instanceIdLaunch = "instanceIdLaunch"
+    val instanceIdStop = "123456"
+    val instanceIdKeep = "987654"
+    val instanceIdLaunch = "111111"
     val serviceName = "service"
     val composePath = "path"
 
@@ -56,8 +56,8 @@ class InstanceRestartingSpec extends FunSuite with OneInstancePerTest with MockH
   }
 
   test("Validate the proper restarting of an instance when only one instance is running and no instance id is specified") {
-    val instanceIdStop = "instanceIdStop"
-    val instanceIdLaunch = "instanceIdLaunch"
+    val instanceIdStop = "123456"
+    val instanceIdLaunch = "111111"
     val serviceName = "service"
     val composePath = "path"
 
@@ -81,8 +81,8 @@ class InstanceRestartingSpec extends FunSuite with OneInstancePerTest with MockH
   }
 
   test("Validate the correct type of exception thrown and error message shown when multiple instances are running and no instance id is specified") {
-    val instanceId1 = "instanceId1"
-    val instanceId2 = "instanceId2"
+    val instanceId1 = "123456"
+    val instanceId2 = "987654"
     val serviceName = "service"
     val composePath = "path"
 
@@ -103,7 +103,7 @@ class InstanceRestartingSpec extends FunSuite with OneInstancePerTest with MockH
   }
 
   test("Validate the proper starting of a new instance when there is no running instance to restart") {
-    val instanceIdLaunch = "instanceIdLaunch"
+    val instanceIdLaunch = "111111"
     val serviceName = "service"
     val composePath = "path"
 
