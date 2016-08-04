@@ -153,9 +153,9 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   def getArgsParser(args: Seq[String]): Parser[Seq[String]] = {
     val parsers = args.map { arg =>
       if (arg == testDebugPortArg)
-        token(arg) ~ token(":") ~ token(IntBasic, "<port>") map (_.toString)
+        token(s"$arg:") ~ token(IntBasic, "<port>") map (_.productIterator.mkString)
       else if (arg == testTagOverride)
-        token(arg) ~ token(":") ~ token(NotSpace, "<tagName1,tagName2>") map (_.toString)
+        token(s"$arg:") ~ token(NotSpace, "<tagName1,tagName2>") map (_.productIterator.mkString)
       else if (arg == instanceIdPlaceholder)
         token(IntBasic, instanceIdPlaceholder) map (_.toString)
       else
@@ -193,8 +193,9 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
   def restartRunningInstance(state: State, args: Seq[String]): State = {
     try {
-      val newState1 = restartInstancePrecheck(state, args)
-      val newState2 = stopRunningInstances(newState1, args)
+      val instanceId = args.filter(_.matches("""\d+"""))
+      val newState1 = restartInstancePrecheck(state, instanceId)
+      val newState2 = stopRunningInstances(newState1, instanceId)
       launchInstanceWithLatestChanges(newState2, args)
     } catch {
       case ex @ (_: IllegalArgumentException | _: ComposeFileFormatException | _: IllegalStateException) =>
