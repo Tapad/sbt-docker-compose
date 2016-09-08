@@ -32,7 +32,9 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
 
     val tableOutput = composeMock.getTableOutputList(serviceInfoUpdated)
 
-    assert(tableOutput.toList.exists(out => out.contains("<none>")))
+    assert(tableOutput.toList.exists(out =>
+      out.hostWithPort.contains("none")
+        && out.containerPort == "<none>"))
   }
 
   test("Validate the table output displays protocol names for non-tcp protocols") {
@@ -45,33 +47,79 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
     val serviceInfoUpdated = composeMock.populateServiceInfoForInstance("123456", "default", serviceInfo, 1000)
 
     val tableOutput = composeMock.getTableOutputList(serviceInfoUpdated)
+    val expectedContainerPorts = List("3000", "3001/udp", "3002")
+    assert(tableOutput.toList.map(_.containerPort) == expectedContainerPorts)
+  }
 
-    assert(tableOutput.toList.exists(out =>
-      out.contains("3001/udp") &&
-        !out.contains("3000/tcp") &&
-        !out.contains("3002/tcp")))
+  test("Validate the table output is sorted by service name, then by isDebug, and last by container ports, all ascending") {
+    // Set up Compose Mock with Port Mappings
+    val (composeMock, composeFilePath) = getComposeMock(
+      "sort.yml",
+      serviceNames = List("testserviceB", "testserviceA"),
+      containerIds = List("containerId02", "containerId01")
+    )
+    val container1PortMappings =
+      """5005/tcp -> 0.0.0.0:32803
+        |2003/tcp -> 0.0.0.0:32804
+        |12345/tcp -> 0.0.0.0:32805""".stripMargin
+    val container2PortMappings =
+      """5005/tcp -> 0.0.0.0:32806
+        |80/tcp -> 0.0.0.0:32807
+        |10000/tcp -> 0.0.0.0:32808
+        |8000/udp -> 0.0.0.0:32809""".stripMargin
+    doReturn(container1PortMappings).when(composeMock).getDockerPortMappings("containerId01")
+    doReturn(container2PortMappings).when(composeMock).getDockerPortMappings("containerId02")
+
+    // Get a collection of ServiceInfo from docker-compose file (sort.xml)
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+    val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
+    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance("123456", "default", serviceInfo, 1000)
+
+    // Sort the Table Output Rows
+    val tableOutput = composeMock.getTableOutputList(serviceInfoUpdated)
+    val tableOutputSorted = tableOutput.toList.sorted
+
+    // Extract the relevant columns (service name, container port, isDebug) and compare against hard-coded expectations.
+    val expPartialTable = List(
+      ("testserviceA", "2003", false),
+      ("testserviceA", "12345", false),
+      ("testserviceA", "5005", true),
+      ("testserviceB", "80", false),
+      ("testserviceB", "8000/udp", false),
+      ("testserviceB", "10000", false),
+      ("testserviceB", "5005", true)
+    )
+    val actPartialTable = tableOutputSorted.map(row => (row.serviceName, row.containerPort, row.isDebug))
+    assert(actPartialTable == expPartialTable)
   }
 
   def getComposeMock(
     composeFileName: String,
-    serviceName: String = "testservice",
+    serviceNames: List[String] = List("testservice"),
     versionNumber: String = "1.0.0",
     instanceName: String = "123456",
-    containerId: String = "containerId01",
+    containerIds: List[String] = List("containerId01"),
     dockerMachineName: String = "default",
     containerHost: String = "192.168.99.10",
     noBuild: Boolean = false
   ): (DockerComposePluginLocal, String) = {
-    val composeMock = spy(new DockerComposePluginLocal)
 
+    require(serviceNames.length == containerIds.length)
+
+    val composeMock = spy(new DockerComposePluginLocal)
     val composeFilePath = getClass.getResource(composeFileName).getPath
+
     doReturn(composeFilePath).when(composeMock).getSetting(composeFile)(null)
-    doReturn(serviceName).when(composeMock).getSetting(composeServiceName)(null)
+    doReturn(serviceNames.head).when(composeMock).getSetting(composeServiceName)(null)
     doReturn(versionNumber).when(composeMock).getSetting(version)(null)
     doReturn(noBuild).when(composeMock).getSetting(composeNoBuild)(null)
-    doReturn(containerId).when(composeMock).getDockerContainerId(instanceName, serviceName)
     doReturn(containerHost).when(composeMock).getContainerHost(any[String], any[String], any[JValue])
-    doReturn("").when(composeMock).getDockerContainerInfo(containerId)
+
+    serviceNames.zip(containerIds).foreach {
+      case (serviceName, containerId) =>
+        doReturn(containerId).when(composeMock).getDockerContainerId(instanceName, serviceName)
+        doReturn("").when(composeMock).getDockerContainerInfo(containerId)
+    }
 
     (composeMock, composeFilePath)
   }
