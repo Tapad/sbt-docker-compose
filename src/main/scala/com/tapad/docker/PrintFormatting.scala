@@ -24,12 +24,28 @@ trait PrintFormatting {
     print(RED + input + RESET)
   }
 
+  def printTable(rows: Iterable[OutputTableRow]): Unit = {
+    val tableHeader = List(
+      "Service",
+      "Host:Port",
+      "Tag Version",
+      "Image Source",
+      "Container Port",
+      "Container Id",
+      "IsDebug"
+    )
+    val sortedTableEntries = rows
+      .toList
+      .sorted
+    val outputTable = OutputTable(tableHeader :: sortedTableEntries.map(_.toStringList))
+
+    printSuccess(outputTable.toString)
+  }
+
   def printMappedPortInformation(state: State, instance: RunningInstanceInfo, composeVersion: Version): Unit = {
     printBold(s"\nThe following endpoints are available for your local instance: ${instance.instanceName}")
 
-    val tableEntries = getTableOutputList(instance.servicesInfo)
-
-    printSuccess(OutputTable(List("Service", "Host:Port", "Tag Version", "Image Source", "Container Port", "Container Id", "IsDebug") :: tableEntries.toList sortBy (_.head)).toString)
+    printTable(getTableOutputList(instance.servicesInfo))
 
     print("Instance commands:")
 
@@ -48,13 +64,30 @@ trait PrintFormatting {
     printSuccess(s"   dockerComposeTest ${instance.instanceName}")
   }
 
-  def getTableOutputList(servicesInfo: Iterable[ServiceInfo]): Iterable[List[String]] = {
+  def getTableOutputList(servicesInfo: Iterable[ServiceInfo]): Iterable[OutputTableRow] = {
     servicesInfo.flatMap { service =>
       if (service.ports.isEmpty) {
-        List(List(service.serviceName, service.containerHost + ":" + "<none>", service.versionTag, service.imageSource, "<none>", service.containerId, ""))
+        List(
+          OutputTableRow(
+            service.serviceName,
+            service.containerHost + ":" + "<none>",
+            service.versionTag, service.imageSource,
+            "<none>",
+            service.containerId,
+            false
+          )
+        )
       } else {
         service.ports.map { port =>
-          List(service.serviceName, service.containerHost + ":" + port.hostPort, service.versionTag, service.imageSource, port.containerPort, service.containerId, if (port.isDebug) "YES" else "")
+          OutputTableRow(
+            service.serviceName,
+            service.containerHost + ":" + port.hostPort,
+            service.versionTag,
+            service.imageSource,
+            port.containerPort,
+            service.containerId,
+            port.isDebug
+          )
         }
       }
     }
