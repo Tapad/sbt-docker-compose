@@ -1,8 +1,8 @@
-import com.tapad.docker.{ RunningInstanceInfo, DockerComposePluginLocal }
+import com.tapad.docker.{RunningInstanceInfo, DockerComposePluginLocal}
 import com.tapad.docker.DockerComposeKeys._
 import org.mockito.Mockito._
 import org.scalatest.mock.MockitoSugar
-import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
+import org.scalatest.{BeforeAndAfter, FunSuite, OneInstancePerTest}
 
 class InstancePersistenceSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest with MockitoSugar {
 

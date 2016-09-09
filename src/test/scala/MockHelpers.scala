@@ -1,5 +1,5 @@
 import com.tapad.docker.DockerComposeKeys._
-import com.tapad.docker.{ RunningInstanceInfo, DockerComposePluginLocal }
+import com.tapad.docker.{RunningInstanceInfo, DockerComposePluginLocal}
 import org.mockito.Matchers._
 import org.mockito.Mockito._
 

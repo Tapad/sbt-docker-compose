@@ -1,5 +1,5 @@
 import com.tapad.docker.Version
-import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
+import org.scalatest.{BeforeAndAfter, FunSuite, OneInstancePerTest}
 
 class VersionSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest with MockHelpers {
   test("Validate version information is parsed correctly") {

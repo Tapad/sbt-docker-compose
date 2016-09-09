@@ -4,7 +4,7 @@ import com.tapad.docker.DockerComposeKeys._
 import net.liftweb.json._
 import sbt._
 import sbt.complete.Parser
-import sbt.complete.DefaultParsers.{ parse => _, _ }
+import sbt.complete.DefaultParsers.{parse => _, _}
 import scala.Console._
 import scala.collection._
 import scala.concurrent.duration._
