@@ -3,7 +3,7 @@ package com.tapad.docker
 import java.io._
 
 import com.tapad.docker.DockerComposeKeys._
-import sbt.{ State, _ }
+import sbt.{State, _}
 
 import scala.collection.Seq
 import scala.util.Try
