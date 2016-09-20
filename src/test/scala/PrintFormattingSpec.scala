@@ -3,7 +3,7 @@ import com.tapad.docker._
 import net.liftweb.json.JValue
 import org.mockito.Mockito._
 import org.mockito.Matchers._
-import org.scalatest.{BeforeAndAfter, FunSuite, OneInstancePerTest}
+import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
 import sbt.Keys._
 import scala.io.Source
 

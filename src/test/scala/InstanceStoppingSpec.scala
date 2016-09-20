@@ -1,7 +1,7 @@
-import com.tapad.docker.{DockerComposePluginLocal, RunningInstanceInfo}
+import com.tapad.docker.{ DockerComposePluginLocal, RunningInstanceInfo }
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.{BeforeAndAfter, FunSuite, OneInstancePerTest}
+import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
 
 class InstanceStoppingSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest with MockHelpers {
   test("Validate the proper stopping of a single instance when only one instance is running and no specific instances are passed in as arguments") {

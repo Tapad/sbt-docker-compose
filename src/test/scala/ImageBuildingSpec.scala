@@ -2,7 +2,7 @@ import com.tapad.docker.DockerComposeKeys._
 import com.tapad.docker.DockerComposePlugin._
 import com.tapad.docker.DockerComposePluginLocal
 import org.mockito.Mockito._
-import org.scalatest.{OneInstancePerTest, BeforeAndAfter, FunSuite}
+import org.scalatest.{ OneInstancePerTest, BeforeAndAfter, FunSuite }
 
 class ImageBuildingSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest {
   test("Validate that a Docker image is built when 'skipBuild' and 'noBuild' are not set") {

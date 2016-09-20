@@ -1,6 +1,6 @@
 package com.tapad.docker
 
-import java.io.{File, FileWriter}
+import java.io.{ File, FileWriter }
 import java.util
 
 import com.tapad.docker.DockerComposeKeys._
@@ -10,9 +10,9 @@ import sbt._
 
 import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
-import scala.collection.{Iterable, Seq}
+import scala.collection.{ Iterable, Seq }
 import scala.io.Source._
-import scala.util.{Try, Success, Failure}
+import scala.util.{ Try, Success, Failure }
 
 trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with PrintFormatting {
   // Compose file Yaml keys

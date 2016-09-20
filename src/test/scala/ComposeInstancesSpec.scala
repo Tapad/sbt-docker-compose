@@ -1,8 +1,8 @@
 import sbt._
-import com.tapad.docker.{DockerComposePluginLocal, RunningInstanceInfo, Version}
+import com.tapad.docker.{ DockerComposePluginLocal, RunningInstanceInfo, Version }
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.{BeforeAndAfter, FunSuite, OneInstancePerTest}
+import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
 
 class ComposeInstancesSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest with MockHelpers {
   test("Validate that no instances are printed when none are running") {

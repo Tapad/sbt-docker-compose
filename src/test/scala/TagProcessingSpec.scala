@@ -1,5 +1,5 @@
 import com.tapad.docker.DockerComposePlugin._
-import org.scalatest.{BeforeAndAfter, FunSuite, OneInstancePerTest}
+import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
 
 class TagProcessingSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest {
 
