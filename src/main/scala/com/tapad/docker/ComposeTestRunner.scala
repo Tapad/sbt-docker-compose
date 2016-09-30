@@ -69,7 +69,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
     }).split(',').filter(_.nonEmpty).map(tag => s"-n $tag").mkString(" ")
 
     val testDependencies = getTestDependenciesClassPath
-    if (testDependencies.contains("org.scalatest")) {
+    if (testDependencies.matches(".*org.scalatest.*")) {
       val testParamsList = testParams.split(" ").toSeq
       val testRunnerCommand = (Seq("java", debugSettings) ++
         testParamsList ++
