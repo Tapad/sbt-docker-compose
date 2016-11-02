@@ -410,9 +410,9 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     val newState = getPersistedState(state)
 
     val requiresShutdown = getMatchingRunningInstance(newState, args).isEmpty
-    val (finalState, instance) = getTestPassInstance(newState, args)
+    val (preTestState, instance) = getTestPassInstance(newState, args)
 
-    runTestPass(finalState, args, instance)
+    val finalState = runTestPass(preTestState, args, instance)
 
     if (requiresShutdown)
       stopDockerCompose(finalState, Seq(instance.get.instanceName))

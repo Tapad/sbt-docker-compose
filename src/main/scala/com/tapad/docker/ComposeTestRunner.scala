@@ -43,7 +43,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    * @param args The command line arguments
    * @param instance The running Docker Compose instance to test against
    */
-  def runTestPass(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): Unit = {
+  def runTestPass(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
     //Build the list of Docker Compose connection endpoints to pass as a ConfigMap to the ScalaTest Runner
     //format: <-Dservice:containerPort=host:hostPort>
     val testParams = instance match {
@@ -76,10 +76,12 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
         Seq("-cp", testDependencies, "org.scalatest.tools.Runner", "-o", "-R", s"${getSetting(testCasesJar).replace(" ", "\\ ")}") ++
         testTags.split(" ").toSeq ++
         testParamsList).filter(_.nonEmpty)
-      testRunnerCommand.!
+      if (testRunnerCommand.! == 0) state
+      else state.fail
     } else {
       printBold("Cannot find a ScalaTest Jar dependency. Please make sure it is added to your sbt projects " +
         "libraryDependencies.")
+      state
     }
   }
 }
