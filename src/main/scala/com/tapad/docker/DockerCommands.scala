@@ -76,4 +76,13 @@ trait DockerCommands {
     val extracted = Project.extract(state)
     extracted.runTask(dockerImageCreationTask, state)
   }
+
+  /**
+   * Gets variables to use for docker-compose file substitution
+   * @param state The sbt state
+   */
+  def runVariablesForSubstitutionTask(state: State): Vector[(String, String)] = {
+    val extracted = Project.extract(state)
+    extracted.runTask(variablesForSubstitutionTask, state)._2.toVector
+  }
 }

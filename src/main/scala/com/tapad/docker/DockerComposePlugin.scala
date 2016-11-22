@@ -74,6 +74,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val testCasesJar = DockerComposeKeys.testCasesJar
     val scalaTestJar = DockerComposeKeys.testDependenciesClasspath
     val variablesForSubstitution = DockerComposeKeys.variablesForSubstitution
+    val variablesForSubstitutionTask = DockerComposeKeys.variablesForSubstitutionTask
   }
 }
 
@@ -234,7 +235,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
    */
   def startDockerCompose(implicit state: State, args: Seq[String]): (State, String) = {
     val composeFilePath = getSetting(composeFile)
-    val variables = getSetting(variablesForSubstitution).toVector
+    val variables = runVariablesForSubstitutionTask(state) ++ getSetting(variablesForSubstitution).toVector
 
     printBold(s"Creating Local Docker Compose Environment.")
     printBold(s"Reading Compose File: $composeFilePath")

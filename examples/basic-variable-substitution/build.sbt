@@ -8,4 +8,8 @@ enablePlugins(JavaAppPackaging, DockerComposePlugin)
 
 dockerImageCreationTask := (publishLocal in Docker).value
 
-variablesForSubstitution := Map("SOURCE_PORT" -> "5555")
+variablesForSubstitutionTask := {
+  val configDataPath = (fullClasspath in Compile).value
+  println(s"Get config data from $configDataPath and create Map to assign to variablesForSubstitution")
+  Map("SOURCE_PORT" -> "5555")
+}

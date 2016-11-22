@@ -41,6 +41,7 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
     },
     testCasesJar := artifactPath.in(Test, packageBin).value.getAbsolutePath,
     variablesForSubstitution := Map[String, String](),
+    variablesForSubstitutionTask := Map[String, String](),
     commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeRestartCommand, dockerComposeInstancesCommand, dockerComposeTest)
   )
 }
