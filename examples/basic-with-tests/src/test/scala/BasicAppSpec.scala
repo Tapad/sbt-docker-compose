@@ -10,7 +10,7 @@ import java.io.{ByteArrayOutputStream, PrintWriter}
 //Use you define a specific tag to indicate which test should be run against the Docker Compose instance
 object DockerComposeTag extends Tag("DockerComposeTag")
 
-class BasicAppSpec extends fixture.FunSuite with fixture.ConfigMapFixture with Eventually with IntegrationPatience with ShouldMatchers {
+class BasicAppSpec extends fixture.FunSuite with fixture.ConfigMapFixture with Eventually with IntegrationPatience with Matchers {
 
   // The configMap passed to each test case will contain the connection information for the running Docker Compose
   // services. The key into the map is "serviceName:containerPort" and it will return "host:hostPort" which is the
