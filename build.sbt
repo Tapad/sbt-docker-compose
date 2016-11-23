@@ -12,7 +12,7 @@ scalaVersion := "2.10.6"
 
 libraryDependencies ++= Seq("net.liftweb" %% "lift-json" % "2.5-RC5",
   "org.yaml" % "snakeyaml" % "1.15",
-  "org.scalatest" %% "scalatest" % "2.2.6" % "test",
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "org.mockito" % "mockito-all" % "1.9.5" % "test")
 
 publishTo := {
