@@ -68,6 +68,7 @@ plugin will attempt to locate it in one of three places with the precedence orde
     testDependenciesClasspath =: // The path to all managed and unmanaged Test and Compile dependencies. This path needs to include the ScalaTest Jar for the tests to execute. This defaults to all managedClasspath and unmanagedClasspath in the Test and fullClasspath in the Compile Scope.
     testCasesJar =: // The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.
     variablesForSubstitution =: // A Map[String,String] of variables to substitute in your docker-compose file. These are substituted substituted by the plugin and not using environment variables.
+    variablesForSubstitutionTask =: // An sbt task that returns a Map[String,String] of variables to substitute in your docker-compose file. These are substituted by the plugin and not using environment variables.
 
 There are several sample projects showing how to configure sbt-docker-compose that can be found in the [**examples**] (examples) folder.
 
@@ -306,6 +307,10 @@ programmatically.
 build.sbt:
 
     variablesForSubstitution := Map("SOURCE_PORT" -> "5555")
+    
+    or
+    
+    variablesForSubstitutionTask := { /* code */ Map("SOURCE_PORT" -> "5555") }
     
 docker-compose.yml:
 
