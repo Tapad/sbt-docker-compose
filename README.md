@@ -306,7 +306,11 @@ programmatically.
 
 build.sbt:
 
-    variablesForSubstitutionTask := Map("SOURCE_PORT" -> "5555")
+    variablesForSubstitution := Map("SOURCE_PORT" -> "5555")
+    
+    or
+    
+    variablesForSubstitutionTask := { /* code */ Map("SOURCE_PORT" -> "5555") }
     
 docker-compose.yml:
 
