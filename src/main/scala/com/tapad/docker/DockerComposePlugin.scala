@@ -71,6 +71,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val dockerImageCreationTask = DockerComposeKeys.dockerImageCreationTask
     val testDependenciesClasspath = DockerComposeKeys.testDependenciesClasspath
     val testTagsToExecute = DockerComposeKeys.testTagsToExecute
+    val testExecutionArgs = DockerComposeKeys.testExecutionArgs
     val testCasesJar = DockerComposeKeys.testCasesJar
     val scalaTestJar = DockerComposeKeys.testDependenciesClasspath
     val variablesForSubstitution = DockerComposeKeys.variablesForSubstitution
