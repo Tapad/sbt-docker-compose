@@ -14,6 +14,7 @@ enablePlugins(DockerPlugin, DockerComposePlugin)
 //Only execute tests tagged as the following
 testTagsToExecute := "DockerComposeTag"
 
+//Specify that an html report should be created for the test pass
 testExecutionArgs := "-h target/htmldir"
 
 //Set the image creation Task to be the one used by sbt-docker
