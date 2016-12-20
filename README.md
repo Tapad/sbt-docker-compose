@@ -65,6 +65,7 @@ plugin will attempt to locate it in one of three places with the precedence orde
     dockerMachineName := // If running on OSX the name of the Docker Machine Virtual machine being used. If not overridden it is set to 'default'
     dockerImageCreationTask := // The sbt task used to create a Docker image. For sbt-docker this should be set to 'docker.value' for the sbt-native-packager this should be set to '(publishLocal in Docker).value'.
     testTagsToExecute =: // Set of ScalaTest Tags to execute when dockerComposeTest is run. Separate multiple tags by a comma. It defaults to executing all tests.
+    testExecutionArgs = // Additional ScalaTest Runner argument options to pass into the test runner. For example, this can be used for the generation of test reports.
     testDependenciesClasspath =: // The path to all managed and unmanaged Test and Compile dependencies. This path needs to include the ScalaTest Jar for the tests to execute. This defaults to all managedClasspath and unmanagedClasspath in the Test and fullClasspath in the Compile Scope.
     testCasesJar =: // The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.
     variablesForSubstitution =: // A Map[String,String] of variables to substitute in your docker-compose file. These are substituted substituted by the plugin and not using environment variables.
@@ -269,7 +270,12 @@ Run the following to execute a test case against the running instance:
 Run the following to start a new instance, run tests and shutdown the instance:
 
     dockerComposeTest
-    
+
+Note how this example project shows how the testExecutionArgs setting can be used to create an html test pass report.
+
+    //Specify that an html report should be created for the test pass
+    testExecutionArgs := "-h target/htmldir"
+
 2) [**basic-native-packager**] (examples/basic-native-packager): This project outlines a very basic example of how to
 enable the plugin on a simple application. From sbt run the following to compile the code, build a Docker image and 
 launch a Docker Compose instance. In this example the sbt-native-packager is used to build the Docker image instead of 
