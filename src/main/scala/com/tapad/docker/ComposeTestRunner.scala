@@ -68,12 +68,15 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
       case None => getSetting(testTagsToExecute)
     }).split(',').filter(_.nonEmpty).map(tag => s"-n $tag").mkString(" ")
 
+    val testArgs = getSetting(testExecutionArgs).split(" ").toSeq
     val testDependencies = getTestDependenciesClassPath
     if (testDependencies.matches(".*org.scalatest.*")) {
       val testParamsList = testParams.split(" ").toSeq
       val testRunnerCommand = (Seq("java", debugSettings) ++
         testParamsList ++
-        Seq("-cp", testDependencies, "org.scalatest.tools.Runner", "-o", "-R", s"${getSetting(testCasesJar).replace(" ", "\\ ")}") ++
+        Seq("-cp", testDependencies, "org.scalatest.tools.Runner", "-o") ++
+        testArgs ++
+        Seq("-R", s"${getSetting(testCasesJar).replace(" ", "\\ ")}") ++
         testTags.split(" ").toSeq ++
         testParamsList).filter(_.nonEmpty)
       if (testRunnerCommand.! == 0) state
