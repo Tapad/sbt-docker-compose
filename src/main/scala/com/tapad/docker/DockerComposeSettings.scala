@@ -38,7 +38,8 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
       val fullClasspathCompile = (fullClasspath in Compile).value
       val classpathTestManaged = (managedClasspath in Test).value
       val classpathTestUnmanaged = (unmanagedClasspath in Test).value
-      (fullClasspathCompile.files ++ classpathTestManaged.files ++ classpathTestUnmanaged.files).map(_.getAbsoluteFile).mkString(":")
+      val testResources = (resources in Test).value
+      (fullClasspathCompile.files ++ classpathTestManaged.files ++ classpathTestUnmanaged.files ++ testResources).map(_.getAbsoluteFile).mkString(":")
     },
     testCasesJar := artifactPath.in(Test, packageBin).value.getAbsolutePath,
     variablesForSubstitution := Map[String, String](),
