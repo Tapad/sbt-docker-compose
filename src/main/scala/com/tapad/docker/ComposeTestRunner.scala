@@ -16,7 +16,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    */
   def binPackageTests(implicit state: State): Unit = {
     val extracted = Project.extract(state)
-    extracted.runTask(sbt.Keys.packageBin in Test, state)
+    extracted.runTask(testCasesPackageTask, state)
   }
 
   /**

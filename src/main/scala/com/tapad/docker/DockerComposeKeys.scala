@@ -1,6 +1,7 @@
 package com.tapad.docker
 
 import sbt._
+import java.io._
 
 object DockerComposeKeys extends DockerComposeKeysLocal
 
@@ -17,6 +18,7 @@ trait DockerComposeKeysLocal {
   val testTagsToExecute = settingKey[String]("Set of ScalaTest Tags to execute when dockerComposeTest is run. Separate multiple tags by a comma. It defaults to executing all tests.")
   val testExecutionArgs = settingKey[String]("Additional ScalaTest Runner argument options to pass into the test runner. For example, this can be used for the generation of test reports.")
   val testCasesJar = settingKey[String]("The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.")
+  val testCasesPackageTask = taskKey[File]("The sbt TaskKey to package the test cases used when running 'dockerComposeTest'. This defaults to the 'packageBin' task in the 'Test' Scope.")
   val testDependenciesClasspath = taskKey[String]("The path to all managed and unmanaged Test and Compile dependencies. This path needs to include the ScalaTest Jar for the tests to execute. This defaults to all managedClasspath and unmanagedClasspath in the Test and fullClasspath in the Compile Scope.")
   val runningInstances = AttributeKey[List[RunningInstanceInfo]]("For Internal Use: Contains information on the set of running Docker Compose instances.")
   val variablesForSubstitution = settingKey[Map[String, String]]("A Map[String,String] of variables to substitute in your docker-compose file. These are substituted by the plugin and not using environment variables.")
