@@ -22,7 +22,7 @@ Steps to Enable and Configure sbt-docker-compose
 
 1) Add the sbt-docker-compose plugin to your projects plugins.sbt file:
 
-    addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.17")
+    addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.18")
     
    sbt-docker-compose is an auto-plugin which requires that sbt version 0.13.5 or higher be used.
    
@@ -254,7 +254,7 @@ See the test case execution section above for information on how to attach a deb
 
 Examples
 --------
-In the [**examples**] (examples) folder there are four different projects showing different uses for the 
+In the [**examples**] (examples) folder there are six different projects showing different uses for the 
 sbt-docker-compose plugin.
 
 1) [**basic-with-tests**] (examples/basic-with-tests): This project outlines a very basic example of how to enable the
@@ -329,6 +329,10 @@ docker-compose.yml:
       ports:
         - "${SOURCE_PORT}:5005"
 
+6) [**basic-with-tests-integration**] (examples/basic-with-tests-integration): This project shows how to change the default sbt Scope of the
+tests being executed from 'Test' to 'IntegrationTest' when 'dockerComposeTest' is run.
+
+    
 Currently Unsupported Docker Compose Fields
 -------------------------------------------
 1) "build:" - All docker compose services need to specify an "image:" field.
