@@ -7,7 +7,7 @@ import org.scalatest.concurrent._
 import org.scalatest.exceptions._
 import java.io.{ByteArrayOutputStream, PrintWriter}
 
-//Use you define a specific tag to indicate which test should be run against the Docker Compose instance
+//You can define a specific tag to indicate which test should be run against the Docker Compose instance
 object DockerComposeTag extends Tag("DockerComposeTag")
 
 class BasicAppSpec extends fixture.FunSuite with fixture.ConfigMapFixture with Eventually with IntegrationPatience with Matchers {
