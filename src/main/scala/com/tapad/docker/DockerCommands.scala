@@ -57,14 +57,14 @@ trait DockerCommands {
   def dockerRun(command: String): Unit = {
     s"docker run $command".!
   }
-  
+
   def getDockerPortMappings(containerId: String): String = {
     s"docker port $containerId".!!
   }
 
   def isDockerForMacEnvironment: Boolean = {
     val info = "docker info".!!
-    info.contains("Operating System: Alpine Linux")
+    info.contains("Operating System: Alpine Linux") && info.matches("(?s).*Kernel Version:.*-moby.*")
   }
 
   /**
