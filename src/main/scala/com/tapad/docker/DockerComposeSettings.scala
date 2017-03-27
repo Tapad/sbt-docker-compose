@@ -1,5 +1,7 @@
 package com.tapad.docker
 
+import java.io.File
+
 import sbt._
 import sbt.Keys._
 import com.tapad.docker.DockerComposeKeys._
@@ -39,7 +41,7 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
       val classpathTestManaged = (managedClasspath in Test).value
       val classpathTestUnmanaged = (unmanagedClasspath in Test).value
       val testResources = (resources in Test).value
-      (fullClasspathCompile.files ++ classpathTestManaged.files ++ classpathTestUnmanaged.files ++ testResources).map(_.getAbsoluteFile).mkString(":")
+      (fullClasspathCompile.files ++ classpathTestManaged.files ++ classpathTestUnmanaged.files ++ testResources).map(_.getAbsoluteFile).mkString(File.pathSeparator)
     },
     testCasesJar := artifactPath.in(Test, packageBin).value.getAbsolutePath,
     testCasesPackageTask := (sbt.Keys.packageBin in Test).value,

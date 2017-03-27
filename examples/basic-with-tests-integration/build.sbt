@@ -1,3 +1,4 @@
+import java.io.File
 
 name := "basic"
 
@@ -27,7 +28,7 @@ testDependenciesClasspath := {
   val classpathTestManaged = (managedClasspath in IntegrationTest).value
   val classpathTestUnmanaged = (unmanagedClasspath in IntegrationTest).value
   val testResources = (resources in IntegrationTest).value
-  (fullClasspathCompile.files ++ classpathTestManaged.files ++ classpathTestUnmanaged.files ++ testResources).map(_.getAbsoluteFile).mkString(":")
+  (fullClasspathCompile.files ++ classpathTestManaged.files ++ classpathTestUnmanaged.files ++ testResources).map(_.getAbsoluteFile).mkString(File.pathSeparator)
 }
 
 //Set the image creation Task to be the one used by sbt-docker

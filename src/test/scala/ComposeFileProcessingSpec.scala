@@ -1,4 +1,5 @@
 import java.io.File
+import java.nio.file.Paths
 import java.util
 
 import com.tapad.docker.DockerComposeKeys._
@@ -206,7 +207,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     composeMock.processCustomTags(null, Seq.empty, composeYaml)
     val modifiedVolumesPaths = composeYaml.filter(_._1 == "testservice").head._2.get(composeMock.volumesKey).asInstanceOf[util.List[String]]
     assert(modifiedVolumesPaths.size() == 3)
-    assert(modifiedVolumesPaths.get(0) == s"$composeFileDir/data:/data")
+    assert(modifiedVolumesPaths.get(0) == s"$composeFileDir${File.separator}data:/data")
     assert(modifiedVolumesPaths.get(1) == "/absolute/path/1")
     assert(modifiedVolumesPaths.get(2) == "/absolute/path/2:/mounted/elsewhere")
   }
@@ -218,12 +219,12 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     composeMock.processCustomTags(null, Seq.empty, composeYaml)
     val modifiedEnvPath = composeYaml.filter(_._1 == "testservice").head._2.get(composeMock.envFileKey)
-    assert(modifiedEnvPath == s"$composeFileDir/test.env")
+    assert(modifiedEnvPath == s"$composeFileDir${File.separator}test.env")
 
     val modifiedEnvPath2 = composeYaml.filter(_._1 == "testservice2").head._2.get(composeMock.envFileKey).asInstanceOf[util.List[String]]
     assert(modifiedEnvPath2.size() == 2)
-    assert(modifiedEnvPath2.get(0) == s"$composeFileDir/test.env")
-    assert(modifiedEnvPath2.get(1) == s"$composeFileDir/test2.env")
+    assert(modifiedEnvPath2.get(0) == s"$composeFileDir${File.separator}test.env")
+    assert(modifiedEnvPath2.get(1) == s"$composeFileDir${File.separator}test2.env")
   }
 
   test("Validate that an env_file file that cannot be found fails with an exception") {
@@ -315,7 +316,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   ): (ComposeFile, String) = {
     val composeMock = spy(new DockerComposePluginLocal)
 
-    val composeFilePath = getClass.getResource(composeFileName).getPath
+    val composeFilePath = Paths.get(getClass.getResource(composeFileName).toURI).toString
     doReturn(composeFilePath).when(composeMock).getSetting(composeFile)(null)
 
     doReturn(serviceName).when(composeMock).getSetting(composeServiceName)(null)
