@@ -5,7 +5,7 @@ sbt-docker-compose
 
 About
 -----
-sbt-docker-compose is an sbt plugin that integrates the functionality of [Docker Compose] (https://docs.docker.com/compose/) 
+sbt-docker-compose is an sbt plugin that integrates the functionality of [Docker Compose](https://docs.docker.com/compose/) 
 directly into the sbt build environment. This allows you to make code changes and with one sbt command start up a local 
 running instance of your latest changes connected to all of its dependencies for live testing and debugging. This plugin 
 is designed to be extended to allow for instances to be launched in non-local environments such as AWS and Mesos.
@@ -14,8 +14,8 @@ is designed to be extended to allow for instances to be launched in non-local en
 
 Prerequisites
 -------------
-You must have [Docker] (https://docs.docker.com/engine/installation/) and 
-[Docker-Compose] (https://docs.docker.com/compose/install/) installed.
+You must have [Docker](https://docs.docker.com/engine/installation/) and 
+[Docker-Compose](https://docs.docker.com/compose/install/) installed.
 
 Steps to Enable and Configure sbt-docker-compose
 ------------------------------------------------
@@ -32,18 +32,18 @@ Steps to Enable and Configure sbt-docker-compose
 
 3) Configure your sbt project(s) to build Docker images by setting the 'dockerImageCreationTask':
  
-  - The [sbt-docker] (https://github.com/marcuslonnberg/sbt-docker) plugin can be used by setting:
+  - The [sbt-docker](https://github.com/marcuslonnberg/sbt-docker) plugin can be used by setting:
     ```
     dockerImageCreationTask := docker.value
     ```
     
-  - The [sbt-native-packager] (https://github.com/sbt/sbt-native-packager) plugin can be used by setting:
+  - The [sbt-native-packager](https://github.com/sbt/sbt-native-packager) plugin can be used by setting:
     ```
     dockerImageCreationTask := (publishLocal in Docker).value
     ```
-   See the [basic-native-packager] (examples/basic-native-packager) example for more details.
+   See the [basic-native-packager](examples/basic-native-packager) example for more details.
    
-4) Define a [docker-compose.yml] (https://docs.docker.com/compose/compose-file/) file which describes your component, 
+4) Define a [docker-compose.yml](https://docs.docker.com/compose/compose-file/) file which describes your component, 
 its dependent images and the links between them. This path to this file can be explicitly defined or by default the
 plugin will attempt to locate it in one of three places with the precedence order:
    
@@ -72,7 +72,7 @@ plugin will attempt to locate it in one of three places with the precedence orde
     variablesForSubstitution =: // A Map[String,String] of variables to substitute in your docker-compose file. These are substituted substituted by the plugin and not using environment variables.
     variablesForSubstitutionTask =: // An sbt task that returns a Map[String,String] of variables to substitute in your docker-compose file. These are substituted by the plugin and not using environment variables.
 
-There are several sample projects showing how to configure sbt-docker-compose that can be found in the [**examples**] (examples) folder.
+There are several sample projects showing how to configure sbt-docker-compose that can be found in the [**examples**](examples) folder.
 
 To Start a Docker Compose Instance for Testing / Debugging
 ----------------------------------------------------------
@@ -133,14 +133,14 @@ To Execute ScalaTest Test Cases Against a Running Instance
 ----------------------------------------------------------
 The sbt-docker-compose plugin provides the ability to run a suite of ScalaTest test cases against a Docker Compose instance.
 The dynamically assigned host and port information are passed into each test case via the 
-ScalaTest [ConfigMap] (http://doc.scalatest.org/2.0/index.html#org.scalatest.ConfigMap).
+ScalaTest [ConfigMap](http://doc.scalatest.org/2.0/index.html#org.scalatest.ConfigMap).
 
 The key into the map is the "serviceName:containerPort" (e.g. "basic:8080") that is statically defined in the Docker Compose file and it 
 will return "host:hostPort" which is the Docker Compose generated and exposed endpoint that can be connected to at runtime
 for testing. There is also the key "serviceName:containerId" (e.g. "basic:containerId") which maps to the docker container id.
-See the [**basic-with-tests**] (examples/basic-with-tests) example for more details.
+See the [**basic-with-tests**](examples/basic-with-tests) example for more details.
 
-By default all tests will be executed, however you can also [Tag] (http://www.scalatest.org/user_guide/tagging_your_tests)
+By default all tests will be executed, however you can also [Tag](http://www.scalatest.org/user_guide/tagging_your_tests)
 test cases and indicate to the plugin to only execute those tests:
  
     testTagsToExecute := "DockerComposeTag"
@@ -164,7 +164,7 @@ tests from running until you attach a debugger to the specified port. For exampl
     dockerComposeTest <instance id> -debug:<debug port>
     
 **Note:** The test pass is started using the using the 'java' process that exists on your command line PATH to launch the
-[ScalaTest Test Runner] (http://www.scalatest.org/user_guide/using_the_runner). For this to work the classpath of your
+[ScalaTest Test Runner](http://www.scalatest.org/user_guide/using_the_runner). For this to work the classpath of your
 project needs to be built with the version of scala used by the project. If this is not configured correctly you may see
 an issue with the Test Runner failing to load classes.
 
@@ -183,7 +183,7 @@ instead of pulling the latest available from the Docker Registry.
    
 2) Define "\<localBuild\>" to launch the locally built version of the image instead of pulling from the public Docker 
 Registry. This is how associated images from multi-project builds should be tagged. 
-See the [**multi-project**] (examples/multi-project) example.
+See the [**multi-project**](examples/multi-project) example.
    
     image: service:latest<localBuild>
     
@@ -248,16 +248,16 @@ In the ports section you will also need to expose the port value defined in the 
 
 Once the container is started you can to attach to it remotely. The instance connection table will mark 'YES' in the 'IsDebug'
 column for any exposed ports that can be attached to with the debugger. 
-See the [basic] (examples/basic-with-tests/docker/docker-compose.yml) example for a project configured with debugging enabled.
+See the [basic](examples/basic-with-tests/docker/docker-compose.yml) example for a project configured with debugging enabled.
 
 See the test case execution section above for information on how to attach a debugger to running test cases.
 
 Examples
 --------
-In the [**examples**] (examples) folder there are six different projects showing different uses for the 
+In the [**examples**](examples) folder there are six different projects showing different uses for the 
 sbt-docker-compose plugin.
 
-1) [**basic-with-tests**] (examples/basic-with-tests): This project outlines a very basic example of how to enable the
+1) [**basic-with-tests**](examples/basic-with-tests): This project outlines a very basic example of how to enable the
 plugin on a simple application that will echo back "Hello, World!". The examples also shows how to create a ScalaTest 
 test case that can run against the dynamically assigned endpoints. From sbt run the following to compile the code, 
 build a Docker image and launch a Docker Compose instance.
@@ -273,26 +273,26 @@ Run the following to start a new instance, run tests and shutdown the instance:
     dockerComposeTest
 
 Note how this example project shows how the testExecutionArgs setting can be used to create an html test pass report by
-by providing additional ScalaTest Runner defined [arguments] (http://www.scalatest.org/user_guide/using_the_runner).
+by providing additional ScalaTest Runner defined [arguments](http://www.scalatest.org/user_guide/using_the_runner).
 
     //Specify that an html report should be created for the test pass
     testExecutionArgs := "-h target/htmldir"
 
-2) [**basic-native-packager**] (examples/basic-native-packager): This project outlines a very basic example of how to
+2) [**basic-native-packager**](examples/basic-native-packager): This project outlines a very basic example of how to
 enable the plugin on a simple application. From sbt run the following to compile the code, build a Docker image and 
 launch a Docker Compose instance. In this example the sbt-native-packager is used to build the Docker image instead of 
 sbt-docker.
 
     dockerComposeUp
 
-3) [**no-build**] (examples/no-build): This project shows how sbt-docker-compose can be used to launch instances of 
+3) [**no-build**](examples/no-build): This project shows how sbt-docker-compose can be used to launch instances of 
 images that are already published and do not need to be built locally. This example uses the official Redis image 
 from Docker Hub. Once the instance is started Redis will be available on the displayed "Host:Port". The port is
 dynamically assigned so that multiple instances can be started.
 
     dockerComposeUp
 
-4) [**multi-project**] (examples/multi-project): This project shows how more advanced multi-project builds are supported.
+4) [**multi-project**](examples/multi-project): This project shows how more advanced multi-project builds are supported.
 From sbt you can build the Docker image and launch a running instance of a single project by executing:
 
     project sample1
@@ -307,7 +307,7 @@ launch a running instance that consists of both images:
 Note how the docker-compose.yml file for the root project tags each image with "\<localBuild\>". This allows dockerComposeUp 
 to know that these images should not be updated from the Docker Registry.
 
-5) [**basic-variable-substitution**] (examples/basic-variable-substitution): This project demonstrates how you can re-use your 
+5) [**basic-variable-substitution**](examples/basic-variable-substitution): This project demonstrates how you can re-use your 
 existing docker-compose.yml with [variable substitution](https://docs.docker.com/compose/compose-file/#variable-substitution) 
 using sbt-docker-compose.  Instead of passing your variables as environment variables you can define them in your build.sbt 
 programmatically.
@@ -329,7 +329,7 @@ docker-compose.yml:
       ports:
         - "${SOURCE_PORT}:5005"
 
-6) [**basic-with-tests-integration**] (examples/basic-with-tests-integration): This project shows how to change the default sbt Scope of the
+6) [**basic-with-tests-integration**](examples/basic-with-tests-integration): This project shows how to change the default sbt Scope of the
 tests being executed from 'Test' to 'IntegrationTest' when 'dockerComposeTest' is run.
 
     
