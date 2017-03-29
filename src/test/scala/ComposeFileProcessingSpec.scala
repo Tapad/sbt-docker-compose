@@ -7,7 +7,7 @@ import com.tapad.docker.DockerComposePlugin._
 import com.tapad.docker.{ ComposeFile, ComposeFileFormatException, DockerComposePluginLocal }
 import org.mockito.Matchers._
 import org.mockito.Mockito._
-import org.scalatest.mock.MockitoSugar
+import org.scalatest.mockito.MockitoSugar
 import org.scalatest.{ BeforeAndAfter, FunSuite, OneInstancePerTest }
 import sbt.Keys._
 
