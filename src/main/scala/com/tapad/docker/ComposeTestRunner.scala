@@ -42,8 +42,9 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    * @param state The sbt state
    * @param args The command line arguments
    * @param instance The running Docker Compose instance to test against
+   * @param extraEnv extra environment variables to be passed to scalatest (and ConfigMap)
    */
-  def runTestPass(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
+  def runTestPass(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo], extraEnv: Map[String, String]): State = {
     //Build the list of Docker Compose connection endpoints to pass as a ConfigMap to the ScalaTest Runner
     //format: <-Dservice:containerPort=host:hostPort>
     val testParams = instance match {
@@ -53,6 +54,8 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
           :+ s"-D${service.serviceName}:containerId=${service.containerId}").mkString(" ")
       case None => ""
     }
+
+    val extraTestParams = extraEnv.map { case (k, v) => s"-D$k=$v" }
 
     print("Compiling and Packaging test cases...")
     binPackageTests
@@ -71,7 +74,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
     val testArgs = getSetting(testExecutionArgs).split(" ").toSeq
     val testDependencies = getTestDependenciesClassPath
     if (testDependencies.matches(".*org.scalatest.*")) {
-      val testParamsList = testParams.split(" ").toSeq
+      val testParamsList = testParams.split(" ").toSeq ++ extraTestParams
       val testRunnerCommand = (Seq("java", debugSettings) ++
         testParamsList ++
         Seq("-cp", testDependencies, "org.scalatest.tools.Runner", "-o") ++

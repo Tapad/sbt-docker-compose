@@ -90,4 +90,9 @@ trait DockerCommands {
     val extracted = Project.extract(state)
     extracted.runTask(variablesForSubstitutionTask, state)._2.toVector
   }
+
+  def runVariablesForTestEnvTask(state: State): Map[String, String] = {
+    val extracted = Project.extract(state)
+    extracted.runTask(testExecutionExtraEnvironment, state)._2
+  }
 }
