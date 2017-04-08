@@ -88,11 +88,13 @@ trait DockerCommands {
    */
   def runVariablesForSubstitutionTask(state: State): Vector[(String, String)] = {
     val extracted = Project.extract(state)
-    extracted.runTask(variablesForSubstitutionTask, state)._2.toVector
+    val (_, value) = extracted.runTask(variablesForSubstitutionTask, state)
+    value.toVector
   }
 
   def runVariablesForTestEnvTask(state: State): Map[String, String] = {
     val extracted = Project.extract(state)
-    extracted.runTask(testExecutionExtraEnvironment, state)._2
+    val (_, value) = extracted.runTask(testExecutionExtraEnvironment, state)
+    value
   }
 }
