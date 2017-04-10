@@ -34,8 +34,9 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
   /**
    * Gets extra key value pairs to pass to ScalaTest in the configMap.
    * @param state The sbt state
+   * @return A Map[String,String] of variables to pass into the ScalaTest Runner ConfigMap
    */
-  def runVariablesForTestEnvTask(state: State): Map[String, String] = {
+  def runTestExecutionExtraConfigTask(state: State): Map[String, String] = {
     val extracted = Project.extract(state)
     val (_, value) = extracted.runTask(testExecutionExtraConfigTask, state)
     value
@@ -64,7 +65,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
       case None => ""
     }
 
-    val extraTestParams = runVariablesForTestEnvTask(state).map { case (k, v) => s"-D$k=$v" }
+    val extraTestParams = runTestExecutionExtraConfigTask(state).map { case (k, v) => s"-D$k=$v" }
 
     print("Compiling and Packaging test cases...")
     binPackageTests
