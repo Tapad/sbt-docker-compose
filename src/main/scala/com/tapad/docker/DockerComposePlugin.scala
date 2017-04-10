@@ -72,7 +72,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val testDependenciesClasspath = DockerComposeKeys.testDependenciesClasspath
     val testCasesPackageTask = DockerComposeKeys.testCasesPackageTask
     val testTagsToExecute = DockerComposeKeys.testTagsToExecute
-    val testExecutionExtraEnvironment = DockerComposeKeys.testExecutionExtraEnvironment
+    val testExecutionExtraConfigTask = DockerComposeKeys.testExecutionExtraConfigTask
     val testExecutionArgs = DockerComposeKeys.testExecutionArgs
     val testCasesJar = DockerComposeKeys.testCasesJar
     val scalaTestJar = DockerComposeKeys.testDependenciesClasspath
@@ -416,7 +416,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     val requiresShutdown = getMatchingRunningInstance(newState, args).isEmpty
     val (preTestState, instance) = getTestPassInstance(newState, args)
 
-    val finalState = runTestPass(preTestState, args, instance, runVariablesForTestEnvTask(state))
+    val finalState = runTestPass(preTestState, args, instance)
 
     if (requiresShutdown)
       stopDockerCompose(finalState, Seq(instance.get.instanceName))

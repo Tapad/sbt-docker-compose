@@ -67,6 +67,7 @@ plugin will attempt to locate it in one of three places with the precedence orde
     dockerImageCreationTask := // The sbt task used to create a Docker image. For sbt-docker this should be set to 'docker.value' for the sbt-native-packager this should be set to '(publishLocal in Docker).value'.
     testTagsToExecute =: // Set of ScalaTest Tags to execute when dockerComposeTest is run. Separate multiple tags by a comma. It defaults to executing all tests.
     testExecutionArgs =: // Additional ScalaTest Runner argument options to pass into the test runner. For example, this can be used for the generation of test reports.
+    testExecutionExtraConfigTask =: // An sbt task that returns a Map[String,String] of variables which should be passed into the ScalaTest Runner ConfigMap (in addition to standard service/port mappings).
     testDependenciesClasspath =: // The path to all managed and unmanaged Test and Compile dependencies. This path needs to include the ScalaTest Jar for the tests to execute. This defaults to all managedClasspath and unmanagedClasspath in the Test and fullClasspath in the Compile Scope.
     testCasesJar =: // The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.
     testCasesPackageTask := // The sbt Task to package the test cases used when running 'dockerComposeTest'. This defaults to the 'packageBin' task in the 'Test' Scope.
