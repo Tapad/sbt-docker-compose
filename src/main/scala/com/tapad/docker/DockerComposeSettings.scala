@@ -35,6 +35,7 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
     dockerImageCreationTask := printError("***Warning: The 'dockerImageCreationTask' has not been defined. " +
       "Please configure this setting to have Docker images built.***"),
     testTagsToExecute := "",
+    testExecutionExtraConfigTask := Map.empty[String, String],
     testExecutionArgs := "",
     testDependenciesClasspath := {
       val fullClasspathCompile = (fullClasspath in Compile).value

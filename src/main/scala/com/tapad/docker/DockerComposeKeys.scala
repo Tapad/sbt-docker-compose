@@ -16,6 +16,7 @@ trait DockerComposeKeysLocal {
   val dockerMachineName = settingKey[String]("If running on OSX the name of the Docker Machine Virtual machine being used. If not overridden it is set to 'default'")
   val dockerImageCreationTask = taskKey[Any]("The sbt task used to create a Docker image. For sbt-docker this should be set to 'docker.value' for the sbt-native-packager this should be set to '(publishLocal in Docker).value'.")
   val testTagsToExecute = settingKey[String]("Set of ScalaTest Tags to execute when dockerComposeTest is run. Separate multiple tags by a comma. It defaults to executing all tests.")
+  val testExecutionExtraConfigTask = taskKey[Map[String, String]]("Additional ScalaTest Runner configuration to pass into the ConfigMap.")
   val testExecutionArgs = settingKey[String]("Additional ScalaTest Runner argument options to pass into the test runner. For example, this can be used for the generation of test reports.")
   val testCasesJar = settingKey[String]("The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.")
   val testCasesPackageTask = taskKey[File]("The sbt TaskKey to package the test cases used when running 'dockerComposeTest'. This defaults to the 'packageBin' task in the 'Test' Scope.")

@@ -32,6 +32,17 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
   }
 
   /**
+   * Gets extra key value pairs to pass to ScalaTest in the configMap.
+   * @param state The sbt state
+   * @return A Map[String,String] of variables to pass into the ScalaTest Runner ConfigMap
+   */
+  def runTestExecutionExtraConfigTask(state: State): Map[String, String] = {
+    val extracted = Project.extract(state)
+    val (_, value) = extracted.runTask(testExecutionExtraConfigTask, state)
+    value
+  }
+
+  /**
    * Build up a set of parameters to pass to ScalaTest as a configMap.
    * Generates the list of ScalaTest Tests to execute.
    * Compiles and binPackages the latest Test code.
@@ -54,6 +65,8 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
       case None => ""
     }
 
+    val extraTestParams = runTestExecutionExtraConfigTask(state).map { case (k, v) => s"-D$k=$v" }
+
     print("Compiling and Packaging test cases...")
     binPackageTests
 
@@ -71,7 +84,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
     val testArgs = getSetting(testExecutionArgs).split(" ").toSeq
     val testDependencies = getTestDependenciesClassPath
     if (testDependencies.matches(".*org.scalatest.*")) {
-      val testParamsList = testParams.split(" ").toSeq
+      val testParamsList = testParams.split(" ").toSeq ++ extraTestParams
       val testRunnerCommand = (Seq("java", debugSettings) ++
         testParamsList ++
         Seq("-cp", testDependencies, "org.scalatest.tools.Runner", "-o") ++
