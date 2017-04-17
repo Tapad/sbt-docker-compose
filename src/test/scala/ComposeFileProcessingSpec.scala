@@ -321,6 +321,20 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
         }
     }
 
+  Map(
+    "default" -> Set.empty,
+    "single" -> Set("single"),
+    "multiple" -> Set("first", "second", "third")
+  ).foreach {
+      case (networkType, networks) =>
+        test(s"Read $networkType networks") {
+          val (composeMock, composeFilePath) = getComposeFileMock(s"networks/$networkType.yml")
+          val composeYaml = composeMock.readComposeFile(composeFilePath)
+
+          assert(networks == getComposeNetworks(composeYaml))
+        }
+    }
+
   /**
    * @return tuple of a mocked ComposeFile, and the path to that file
    */

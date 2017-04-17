@@ -348,7 +348,12 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         val composeYaml = readComposeFile(composePath)
         if (getComposeVersion(composeYaml).major >= 2) {
           val dockerMachine = getSetting(dockerMachineName)
-          dockerRemoveNetwork(instanceName, dockerMachine)
+
+          // If no networks are defined, remove the 'default' network.
+          Option(getComposeNetworks(composeYaml))
+            .filterNot(_.isEmpty)
+            .getOrElse(Set(dockerMachine))
+            .foreach(dockerRemoveNetwork(instanceName, _))
         }
       }
     }

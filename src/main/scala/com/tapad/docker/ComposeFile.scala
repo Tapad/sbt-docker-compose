@@ -21,6 +21,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   val portsKey = "ports"
   val servicesKey = "services"
   val versionKey = "version"
+  val networksKey = "networks"
   val envFileKey = "env_file"
   val volumesKey = "volumes"
 
@@ -185,12 +186,16 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
     }
   }
 
-  def getComposeVersion(composeYaml: yamlData): ComposeFileVersion = {
+  def getComposeVersion(composeYaml: yamlData): ComposeFileVersion =
     composeYaml.get(versionKey).asInstanceOf[Option[String]] match {
       case None => ComposeFileVersion(1)
       case Some(versionValue) => ComposeFileVersion(versionValue)
     }
-  }
+
+  def getComposeNetworks(composeYaml: yamlData): Set[String] =
+    composeYaml.get(networksKey)
+      .map(_.keys.toSet)
+      .getOrElse(Set())
 
   /**
    * Function that reads plug-in defined "<customTag>" fields from the Docker Compose file and performs some
