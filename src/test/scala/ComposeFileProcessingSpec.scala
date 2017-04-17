@@ -309,7 +309,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     val (composeMock, composeFilePath) = getComposeFileMock("custom_network.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
 
-    val detectedNetworks = composeMock.getComposeInternalNetworkNames(composeYaml)
+    val detectedNetworks = composeMock.composeInternalNetworkNames(composeYaml)
 
     assert(detectedNetworks.length == 1)
     assert(detectedNetworks.contains("testnetwork"))
@@ -319,7 +319,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     val (composeMock, composeFilePath) = getComposeFileMock("custom_network_external.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
 
-    val detectedNetworks = composeMock.getComposeInternalNetworkNames(composeYaml)
+    val detectedNetworks = composeMock.composeInternalNetworkNames(composeYaml)
 
     assert(detectedNetworks.isEmpty)
   }
@@ -328,7 +328,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     val (composeMock, composeFilePath) = getComposeFileMock("custom_network_multiple.yml")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
 
-    val detectedNetworks = composeMock.getComposeInternalNetworkNames(composeYaml)
+    val detectedNetworks = composeMock.composeInternalNetworkNames(composeYaml)
 
     assert(detectedNetworks.length == 2)
     assert(detectedNetworks.contains("testnetwork"))

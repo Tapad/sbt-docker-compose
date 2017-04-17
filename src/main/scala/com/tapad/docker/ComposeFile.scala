@@ -188,11 +188,11 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
    * @param composeYaml Docker Compose yaml to process
    * @return The keys for the internal 'networks' section of the Yaml file
    */
-  def getComposeInternalNetworkNames(composeYaml: yamlData): Seq[String] = {
+  def composeInternalNetworkNames(composeYaml: yamlData): Seq[String] = {
     composeYaml.get(networksKey) match {
       case Some(networks) => networks.filterNot { network =>
         val (_, networkData) = network
-        Option(networkData).isDefined && networkData.asInstanceOf[java.util.Map[String, Any]].containsKey("external")
+        Option(networkData).exists(_.asInstanceOf[java.util.Map[String, Any]].containsKey("external"))
       }.keys.toSeq
       case None => Seq.empty
     }
