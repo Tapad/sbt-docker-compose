@@ -306,10 +306,10 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
   }
 
   Map(
-    "version/v1.yml" -> ComposeFileVersion(1, 0),
-    "version/v2.yml" -> ComposeFileVersion(2, 0),
+    "version/v1.yml" -> ComposeFileVersion(1),
+    "version/v2.yml" -> ComposeFileVersion(2),
     "version/v2.1.yml" -> ComposeFileVersion(2, 1),
-    "version/v3.yml" -> ComposeFileVersion(3, 0),
+    "version/v3.yml" -> ComposeFileVersion(3),
     "version/v3.1.yml" -> ComposeFileVersion(3, 1)
   ).foreach {
       case (yamlPath, version) =>
@@ -317,7 +317,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
           val (composeMock, composeFilePath) = getComposeFileMock(yamlPath)
           val composeYaml = composeMock.readComposeFile(composeFilePath)
 
-          assert(version == getComposeVersion(composeYaml))
+          assert(version == ComposeFileVersion(composeYaml))
         }
     }
 
@@ -331,7 +331,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
           val (composeMock, composeFilePath) = getComposeFileMock(s"networks/$networkType.yml")
           val composeYaml = composeMock.readComposeFile(composeFilePath)
 
-          assert(networks == getComposeNetworks(composeYaml))
+          assert(networks == composeNetworks(composeYaml))
         }
     }
 

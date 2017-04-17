@@ -183,16 +183,17 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
     def apply(v: String): ComposeFileVersion = v.split('.') match {
       case Array(major) => ComposeFileVersion(major.toInt)
       case Array(major, minor, _*) => ComposeFileVersion(major.toInt, minor.toInt)
+      case _ => ComposeFileVersion(1)
     }
+
+    def apply(composeYaml: yamlData): ComposeFileVersion =
+      composeYaml.get(versionKey).asInstanceOf[Option[String]] match {
+        case None => ComposeFileVersion(1)
+        case Some(versionValue) => ComposeFileVersion(versionValue)
+      }
   }
 
-  def getComposeVersion(composeYaml: yamlData): ComposeFileVersion =
-    composeYaml.get(versionKey).asInstanceOf[Option[String]] match {
-      case None => ComposeFileVersion(1)
-      case Some(versionValue) => ComposeFileVersion(versionValue)
-    }
-
-  def getComposeNetworks(composeYaml: yamlData): Set[String] =
+  def composeNetworks(composeYaml: yamlData): Set[String] =
     composeYaml.get(networksKey)
       .map(_.keys.toSet)
       .getOrElse(Set())
