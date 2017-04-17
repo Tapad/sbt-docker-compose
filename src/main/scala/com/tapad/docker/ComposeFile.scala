@@ -190,9 +190,10 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
    */
   def getComposeInternalNetworkNames(composeYaml: yamlData): Seq[String] = {
     composeYaml.get(networksKey) match {
-      case Some(services) =>
-        services.asInstanceOf[java.util.Map[String, java.util.LinkedHashMap[String, Any]]].
-          asScala.filterNot(network => network._2 != null && network._2.containsKey("external")).keys.toSeq
+      case Some(networks) => networks.filterNot { network =>
+        val (_, networkData) = network
+        Option(networkData).isDefined && networkData.asInstanceOf[java.util.Map[String, Any]].containsKey("external")
+      }.keys.toSeq
       case None => Seq.empty
     }
   }
