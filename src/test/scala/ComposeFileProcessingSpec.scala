@@ -305,6 +305,22 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
 
   }
 
+  Map(
+    "version/v1.yml" -> ComposeFileVersion(1, 0),
+    "version/v2.yml" -> ComposeFileVersion(2, 0),
+    "version/v2.1.yml" -> ComposeFileVersion(2, 1),
+    "version/v3.yml" -> ComposeFileVersion(3, 0),
+    "version/v3.1.yml" -> ComposeFileVersion(3, 1)
+  ).foreach {
+      case (yamlPath, version) =>
+        test(s"Read version ${version.major}.${version.minor} compose file") {
+          val (composeMock, composeFilePath) = getComposeFileMock(yamlPath)
+          val composeYaml = composeMock.readComposeFile(composeFilePath)
+
+          assert(version == getComposeVersion(composeYaml))
+        }
+    }
+
   /**
    * @return tuple of a mocked ComposeFile, and the path to that file
    */

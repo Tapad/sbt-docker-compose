@@ -8,6 +8,10 @@ trait DockerCommands {
     s"docker-compose -p $instanceName -f $composePath up -d".!
   }
 
+  def dockerComposeDown(instanceName: String, composePath: String): Int = {
+    s"docker-compose -p $instanceName -f $composePath down".!
+  }
+
   def dockerComposeStopInstance(instanceName: String, composePath: String): Unit = {
     s"docker-compose -p $instanceName -f $composePath stop".!
   }

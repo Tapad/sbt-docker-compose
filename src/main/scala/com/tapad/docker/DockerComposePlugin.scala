@@ -346,7 +346,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       // shutdown
       if (new File(composePath).exists()) {
         val composeYaml = readComposeFile(composePath)
-        if (getComposeVersion(composeYaml) >= 2) {
+        if (getComposeVersion(composeYaml).major >= 2) {
           val dockerMachine = getSetting(dockerMachineName)
           dockerRemoveNetwork(instanceName, dockerMachine)
         }
