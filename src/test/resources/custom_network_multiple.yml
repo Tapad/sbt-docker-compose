@@ -1,0 +1,11 @@
+version: "2"
+
+services:
+  testservice:
+    image: testservice:0.0.1
+    networks:
+      - testnetwork
+      - testnetwork2
+networks:
+  testnetwork:
+  testnetwork2:
