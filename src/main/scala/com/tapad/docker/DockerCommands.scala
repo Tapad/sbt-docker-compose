@@ -16,6 +16,11 @@ trait DockerCommands {
     s"docker-compose -p $instanceName -f $composePath rm -v -f".!
   }
 
+  def dockerNetworkExists(instanceName: String, networkName: String): Boolean = {
+    //Docker replaces '/' with '_' in the identifier string so search for replaced version
+    s"docker network ls --filter=name=${instanceName.replace('/', '_')}_$networkName --format={{.ID}}".!!.trim().nonEmpty
+  }
+
   def getDockerComposeVersion: Version = {
     val version = "docker-compose version --short".!!
     Version(version)
@@ -42,8 +47,8 @@ trait DockerCommands {
     s"docker rmi $imageName".!!
   }
 
-  def dockerRemoveNetwork(networkName: String, dockerMachineName: String): Unit = {
-    s"docker network rm ${networkName}_$dockerMachineName".!
+  def dockerRemoveNetwork(instanceName: String, networkName: String): Unit = {
+    s"docker network rm ${instanceName}_$networkName".!
   }
 
   def dockerTagImage(currentImageName: String, newImageName: String): Unit = {

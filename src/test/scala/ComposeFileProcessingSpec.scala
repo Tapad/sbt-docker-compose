@@ -305,6 +305,36 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
 
   }
 
+  test("Validate that a single custom internal network is property detected in the Compose file ") {
+    val (composeMock, composeFilePath) = getComposeFileMock("custom_network.yml")
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+
+    val detectedNetworks = composeMock.composeInternalNetworkNames(composeYaml)
+
+    assert(detectedNetworks.length == 1)
+    assert(detectedNetworks.contains("testnetwork"))
+  }
+
+  test("Validate that custom external networks are ignored when processing the Compose file ") {
+    val (composeMock, composeFilePath) = getComposeFileMock("custom_network_external.yml")
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+
+    val detectedNetworks = composeMock.composeInternalNetworkNames(composeYaml)
+
+    assert(detectedNetworks.isEmpty)
+  }
+
+  test("Validate that multiple internal networks are detected when processing the Compose file ") {
+    val (composeMock, composeFilePath) = getComposeFileMock("custom_network_multiple.yml")
+    val composeYaml = composeMock.readComposeFile(composeFilePath)
+
+    val detectedNetworks = composeMock.composeInternalNetworkNames(composeYaml)
+
+    assert(detectedNetworks.length == 2)
+    assert(detectedNetworks.contains("testnetwork"))
+    assert(detectedNetworks.contains("testnetwork2"))
+  }
+
   /**
    * @return tuple of a mocked ComposeFile, and the path to that file
    */

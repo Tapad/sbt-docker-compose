@@ -22,6 +22,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   val servicesKey = "services"
   val envFileKey = "env_file"
   val volumesKey = "volumes"
+  val networksKey = "networks"
 
   //Set of values representing the source location of a Docker Compose image
   val cachedImageSource = "cache"
@@ -179,6 +180,21 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
     composeYaml.get(servicesKey) match {
       case Some(services) => 2
       case None => 1
+    }
+  }
+
+  /**
+   * Get all non-external network names defined under the 'networks' key in the docker-compose file.
+   * @param composeYaml Docker Compose yaml to process
+   * @return The keys for the internal 'networks' section of the Yaml file
+   */
+  def composeInternalNetworkNames(composeYaml: yamlData): Seq[String] = {
+    composeYaml.get(networksKey) match {
+      case Some(networks) => networks.filterNot { network =>
+        val (_, networkData) = network
+        Option(networkData).exists(_.asInstanceOf[java.util.Map[String, Any]].containsKey("external"))
+      }.keys.toSeq
+      case None => Seq.empty
     }
   }
 
