@@ -20,6 +20,8 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   val environmentKey = "environment"
   val portsKey = "ports"
   val servicesKey = "services"
+  val versionKey = "version"
+  val networksKey = "networks"
   val envFileKey = "env_file"
   val volumesKey = "volumes"
 
@@ -175,12 +177,26 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
     }
   }
 
-  def getComposeVersion(composeYaml: yamlData): Int = {
-    composeYaml.get(servicesKey) match {
-      case Some(services) => 2
-      case None => 1
+  case class ComposeFileVersion(major: Int, minor: Int = 0)
+
+  object ComposeFileVersion {
+    def apply(v: String): ComposeFileVersion = v.split('.') match {
+      case Array(major) => ComposeFileVersion(major.toInt)
+      case Array(major, minor, _*) => ComposeFileVersion(major.toInt, minor.toInt)
+      case _ => ComposeFileVersion(1)
     }
+
+    def apply(composeYaml: yamlData): ComposeFileVersion =
+      composeYaml.get(versionKey).asInstanceOf[Option[String]] match {
+        case None => ComposeFileVersion(1)
+        case Some(versionValue) => ComposeFileVersion(versionValue)
+      }
   }
+
+  def composeNetworks(composeYaml: yamlData): Set[String] =
+    composeYaml.get(networksKey)
+      .map(_.keys.toSet)
+      .getOrElse(Set())
 
   /**
    * Function that reads plug-in defined "<customTag>" fields from the Docker Compose file and performs some
@@ -293,7 +309,10 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
     val yamlString = fromFile(composePath).getLines().mkString("\n")
     val yamlUpdated = processVariableSubstitution(yamlString, variables)
 
-    new Yaml().load(yamlUpdated).asInstanceOf[java.util.Map[String, java.util.LinkedHashMap[String, Any]]].asScala.toMap
+    // Yaml returns an null when the string is empty
+    Option(new Yaml().load(yamlUpdated).asInstanceOf[java.util.Map[String, java.util.LinkedHashMap[String, Any]]])
+      .map(_.asScala.toMap)
+      .getOrElse(Map.empty)
   }
 
   /**
