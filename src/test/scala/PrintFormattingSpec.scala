@@ -9,18 +9,22 @@ import scala.io.Source
 
 class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstancePerTest {
   test("Validate table printing succeeds when no Ports are exposed") {
-    val plugin = new DockerComposePluginLocal
-    val service = new ServiceInfo("service", "image", "source", List.empty)
-    val instance = new RunningInstanceInfo("instance", "service", "composePath", List(service))
-    plugin.printMappedPortInformation(null, instance, Version(1, 1, 11))
+    val composeMock = spy(new DockerComposePluginLocal)
+    doReturn(false).when(composeMock).getSetting(suppressColorFormatting)(null)
+
+    val service = ServiceInfo("service", "image", "source", List.empty)
+    val instance = RunningInstanceInfo("instance", "service", "composePath", List(service))
+    composeMock.printMappedPortInformation(null, instance, Version(1, 1, 11))
   }
 
   test("Validate table printing succeeds when Ports are exposed") {
-    val plugin = new DockerComposePluginLocal
-    val port = new PortInfo("host", "container", false)
-    val service = new ServiceInfo("service", "image", "source", List(port))
-    val instance = new RunningInstanceInfo("instance", "service", "composePath", List(service))
-    plugin.printMappedPortInformation(null, instance, Version(1, 1, 11))
+    val composeMock = spy(new DockerComposePluginLocal)
+    doReturn(false).when(composeMock).getSetting(suppressColorFormatting)(null)
+
+    val port = PortInfo("host", "container", false)
+    val service = ServiceInfo("service", "image", "source", List(port))
+    val instance = RunningInstanceInfo("instance", "service", "composePath", List(service))
+    composeMock.printMappedPortInformation(null, instance, Version(1, 1, 11))
   }
 
   test("Validate the table output shows '<none>' when no Ports are exposed") {
@@ -28,7 +32,7 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
     doReturn("").when(composeMock).getDockerPortMappings("containerId01")
-    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance("123456", "default", serviceInfo, 1000)
+    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance(null, "123456", "default", serviceInfo, 1000)
 
     val tableOutput = composeMock.getTableOutputList(serviceInfoUpdated)
 
@@ -44,7 +48,7 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
     doReturn(portMappings).when(composeMock).getDockerPortMappings("containerId01")
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
-    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance("123456", "default", serviceInfo, 1000)
+    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance(null, "123456", "default", serviceInfo, 1000)
 
     val tableOutput = composeMock.getTableOutputList(serviceInfoUpdated)
     val expectedContainerPorts = List("3000", "3001/udp", "3002")
@@ -73,7 +77,7 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
     // Get a collection of ServiceInfo from docker-compose file (sort.xml)
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, Seq.empty, composeYaml)
-    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance("123456", "default", serviceInfo, 1000)
+    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance(null, "123456", "default", serviceInfo, 1000)
 
     // Sort the Table Output Rows
     val tableOutput = composeMock.getTableOutputList(serviceInfoUpdated)

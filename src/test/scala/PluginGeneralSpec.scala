@@ -23,11 +23,12 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     val instanceName = "instance"
     val dockerMachineName = "default"
     val composeMock = spy(new DockerComposePluginLocal)
+    doReturn(false).when(composeMock).getSetting(suppressColorFormatting)(null)
     doReturn("").when(composeMock).getDockerContainerId(instanceName, serviceName)
 
     val serviceInfo = ServiceInfo(serviceName, "image", "source", null)
     val thrown = intercept[IllegalStateException] {
-      composeMock.populateServiceInfoForInstance(instanceName, dockerMachineName, List(serviceInfo), 0)
+      composeMock.populateServiceInfoForInstance(null, instanceName, dockerMachineName, List(serviceInfo), 0)
     }
 
     assert(thrown.getMessage === s"Cannot determine container Id for service: $serviceName")
@@ -54,7 +55,7 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
     val port2 = PortInfo("0", "3001/udp", isDebug = false)
     val port3 = PortInfo("0", "3002", isDebug = false)
     val serviceInfo = ServiceInfo(serviceName, "image", "source", List(port1, port2, port3))
-    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance(instanceName, dockerMachineName, List(serviceInfo), 60)
+    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance(null, instanceName, dockerMachineName, List(serviceInfo), 60)
 
     assert(serviceInfoUpdated.size == 1)
     val portInfo = serviceInfoUpdated.head.ports
@@ -83,7 +84,7 @@ class PluginGeneralSpec extends FunSuite with BeforeAndAfter with OneInstancePer
 
     val port = PortInfo("0", "3002", isDebug = false)
     val serviceInfo = ServiceInfo(serviceName, "image", "source", List(port))
-    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance(instanceName, dockerMachineName, List(serviceInfo), 60)
+    val serviceInfoUpdated = composeMock.populateServiceInfoForInstance(null, instanceName, dockerMachineName, List(serviceInfo), 60)
     assert(serviceInfoUpdated.head.containerHost == "172.18.0.1")
   }
 
@@ -102,5 +103,5 @@ trait MockOutput extends PrintFormatting {
   var messages: Seq[String] = Seq()
 
   override def print(s: String) = messages = messages :+ s
-  override def printBold(s: String) = messages = messages :+ s
+  override def printBold(s: String, noColor: Boolean) = messages = messages :+ s
 }

@@ -8,6 +8,7 @@ class ImageBuildingSpec extends FunSuite with BeforeAndAfter with OneInstancePer
   test("Validate that a Docker image is built when 'skipBuild' and 'noBuild' are not set") {
     val composeMock = spy(new DockerComposePluginLocal)
 
+    doReturn(false).when(composeMock).getSetting(suppressColorFormatting)(null)
     doReturn(false).when(composeMock).getSetting(composeNoBuild)(null)
     doNothing().when(composeMock).buildDockerImageTask(null)
 
@@ -19,6 +20,7 @@ class ImageBuildingSpec extends FunSuite with BeforeAndAfter with OneInstancePer
   test("Validate that a Docker image is not built when 'skipBuild' is passed as an argument") {
     val composeMock = spy(new DockerComposePluginLocal)
 
+    doReturn(false).when(composeMock).getSetting(suppressColorFormatting)(null)
     doReturn(false).when(composeMock).getSetting(composeNoBuild)(null)
     doNothing().when(composeMock).buildDockerImageTask(null)
 
@@ -30,6 +32,7 @@ class ImageBuildingSpec extends FunSuite with BeforeAndAfter with OneInstancePer
   test("Validate that a Docker image is not built when the 'noBuild' setting is true") {
     val composeMock = spy(new DockerComposePluginLocal)
 
+    doReturn(false).when(composeMock).getSetting(suppressColorFormatting)(null)
     doReturn(true).when(composeMock).getSetting(composeNoBuild)(null)
     doNothing().when(composeMock).buildDockerImageTask(null)
 

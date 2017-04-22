@@ -10,6 +10,7 @@ trait MockHelpers {
     doReturn(true).when(composeMock).getSetting(composeRemoveContainersOnShutdown)(null)
     doReturn(false).when(composeMock).getSetting(composeRemoveNetworkOnShutdown)(null)
     doReturn(false).when(composeMock).getSetting(composeRemoveTempFileOnShutdown)(null)
+    doReturn(false).when(composeMock).getSetting(suppressColorFormatting)(null)
     doReturn(instances).when(composeMock).getAttribute(runningInstances)(null)
     doReturn(null).when(composeMock).removeAttribute(runningInstances)(null)
     doReturn(null).when(composeMock).setAttribute(any, any)(any[sbt.State])

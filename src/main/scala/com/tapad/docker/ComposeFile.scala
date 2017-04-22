@@ -124,7 +124,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
           } else {
             val containerPort = portMapping.split(":").last
             printWarning(s"Could not define a static host port '$containerPort' for service '$serviceName' " +
-              s"because port '$containerPort' was already in use. A dynamically assigned port will be used instead.")
+              s"because port '$containerPort' was already in use. A dynamically assigned port will be used instead.", getSetting(suppressColorFormatting)(state))
             (PortInfo(dynamicPortIdentifier, portInfo.containerPort, portInfo.isDebug), s"$dynamicPortIdentifier:$containerPort")
           }
         } else

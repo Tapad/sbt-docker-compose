@@ -96,7 +96,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
       else state.fail
     } else {
       printBold("Cannot find a ScalaTest Jar dependency. Please make sure it is added to your sbt projects " +
-        "libraryDependencies.")
+        "libraryDependencies.", getSetting(suppressColorFormatting))
       state
     }
   }
