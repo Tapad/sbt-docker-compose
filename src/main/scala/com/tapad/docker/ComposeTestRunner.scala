@@ -81,13 +81,15 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
       case None => getSetting(testTagsToExecute)
     }).split(',').filter(_.nonEmpty).map(tag => s"-n $tag").mkString(" ")
 
+    val suppressColor = getSetting(suppressColorFormatting)
+    val noColorOption = if (suppressColor) "W" else ""
     val testArgs = getSetting(testExecutionArgs).split(" ").toSeq
     val testDependencies = getTestDependenciesClassPath
     if (testDependencies.matches(".*org.scalatest.*")) {
       val testParamsList = testParams.split(" ").toSeq ++ extraTestParams
       val testRunnerCommand = (Seq("java", debugSettings) ++
         testParamsList ++
-        Seq("-cp", testDependencies, "org.scalatest.tools.Runner", "-o") ++
+        Seq("-cp", testDependencies, "org.scalatest.tools.Runner", s"-o$noColorOption") ++
         testArgs ++
         Seq("-R", s"${getSetting(testCasesJar).replace(" ", "\\ ")}") ++
         testTags.split(" ").toSeq ++
@@ -96,7 +98,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
       else state.fail
     } else {
       printBold("Cannot find a ScalaTest Jar dependency. Please make sure it is added to your sbt projects " +
-        "libraryDependencies.", getSetting(suppressColorFormatting))
+        "libraryDependencies.", suppressColor)
       state
     }
   }
