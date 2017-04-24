@@ -1,0 +1,7 @@
+version: '2'
+services:
+  testservice:
+    image: testservice:0.0.1
+    volumes:
+      - ./data:/data:ro
+      - /absolute/path/2:/mounted/elsewhere:rw

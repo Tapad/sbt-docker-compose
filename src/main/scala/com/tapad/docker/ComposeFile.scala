@@ -104,7 +104,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
         val updated = volumes.map { volume =>
           volume match {
             case relativeVolume if relativeVolume.startsWith(".") =>
-              val Array(relativeLocalPath, mountPath) = relativeVolume.split(":")
+              val Array(relativeLocalPath, mountPath) = relativeVolume.split(":", 2)
               val fullyQualifiedLocalPath = getFullyQualifiedPath(relativeLocalPath, composeFileDir)
               s"$fullyQualifiedLocalPath:$mountPath"
             case nonRelativeVolume =>
