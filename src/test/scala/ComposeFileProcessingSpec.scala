@@ -256,8 +256,23 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
 
     val composeYaml = composeMock.readComposeFile(composeFilePath, Vector(("SOURCE_PORT", "5555")))
 
-    val ports = composeYaml.get("testservice").get.get("ports").asInstanceOf[util.ArrayList[String]].get(0)
+    val ports = composeYaml("testservice").get("ports").asInstanceOf[util.ArrayList[String]].get(0)
     assert(ports == "5555:5005")
+  }
+
+  test("Validate that docker-compose variables are substituted properly when default values are provided") {
+    val (composeMock, composeFilePath) = getComposeFileMock("variable_substitution_default_value.yml")
+    doReturn(composeFilePath).when(composeMock).getSetting(composeFile)(null)
+
+    val composeYaml = composeMock.readComposeFile(composeFilePath, Vector(("SOURCE_PORT", "5555"), ("SOURCE_PORT2", "7777")))
+
+    val yaml = composeYaml("testservice")
+    assert(yaml.get("image") == "testservice:latest")
+
+    val ports = yaml.get("ports").asInstanceOf[util.ArrayList[String]]
+    assert(ports.get(0) == "5555:5005")
+    assert(ports.get(1) == "7777:5006")
+    assert(ports.get(2) == "${SOURCE_PORT3}:5007")
   }
 
   test("Validate that the list of static port mappings is fetched when '-useStaticPorts' argument is supplied") {
@@ -285,8 +300,8 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, Seq("-useStaticPorts"), composeYaml)
 
-    val portsList1 = composeYaml.get("testservice1").get.get("ports").asInstanceOf[java.util.ArrayList[String]]
-    val portsList2 = composeYaml.get("testservice2").get.get("ports").asInstanceOf[java.util.ArrayList[String]]
+    val portsList1 = composeYaml("testservice1").get("ports").asInstanceOf[java.util.ArrayList[String]]
+    val portsList2 = composeYaml("testservice2").get("ports").asInstanceOf[java.util.ArrayList[String]]
 
     //Validate that the static port mapping is used for the first service and dynamically assigned host port for the second one
     assert(portsList1.size() == 1 &&
@@ -300,7 +315,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     val composeYaml = composeMock.readComposeFile(composeFilePath)
     val serviceInfo = composeMock.processCustomTags(null, Seq("-useStaticPorts"), composeYaml)
 
-    val portsList = composeYaml.get("testservice").get.get("ports").asInstanceOf[java.util.ArrayList[String]]
+    val portsList = composeYaml("testservice").get("ports").asInstanceOf[java.util.ArrayList[String]]
 
     assert(portsList.size() == 12 &&
       portsList.contains("1000:1000") &&

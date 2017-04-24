@@ -1,0 +1,6 @@
+testservice:
+  image: testservice:${APP_DOCKER_IMAGE_TAG:-latest}
+  ports:
+    - "${SOURCE_PORT:-6666}:5005"
+    - "${SOURCE_PORT2}:5006"
+    - "${SOURCE_PORT3}:5007"
