@@ -46,7 +46,7 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
     },
     testCasesJar := artifactPath.in(Test, packageBin).value.getAbsolutePath,
     testCasesPackageTask := (sbt.Keys.packageBin in Test).value,
-    suppressColorFormatting := false,
+    suppressColorFormatting := System.getProperty("sbt.log.noformat", "false") == "true",
     variablesForSubstitution := Map[String, String](),
     variablesForSubstitutionTask := Map[String, String](),
     commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeRestartCommand, dockerComposeInstancesCommand, dockerComposeTest)
