@@ -75,6 +75,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val testExecutionExtraConfigTask = DockerComposeKeys.testExecutionExtraConfigTask
     val testExecutionArgs = DockerComposeKeys.testExecutionArgs
     val testCasesJar = DockerComposeKeys.testCasesJar
+    val suppressColorFormatting = DockerComposeKeys.suppressColorFormatting
     val scalaTestJar = DockerComposeKeys.testDependenciesClasspath
     val variablesForSubstitution = DockerComposeKeys.variablesForSubstitution
     val variablesForSubstitutionTask = DockerComposeKeys.variablesForSubstitutionTask
@@ -106,7 +107,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
           launchInstanceWithLatestChanges(state, args)
         } catch {
           case ex @ (_: ComposeFileFormatException | _: IllegalStateException) =>
-            printError(ex.getMessage)
+            printError(ex.getMessage, getSetting(suppressColorFormatting)(state))
             state
         }
     }
@@ -149,7 +150,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
           composeTestRunner(state, args)
         } catch {
           case ex: ComposeFileFormatException =>
-            printError(ex.message)
+            printError(ex.message, getSetting(suppressColorFormatting)(state))
             state
         }
     }
@@ -203,7 +204,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       launchInstanceWithLatestChanges(newState2, args)
     } catch {
       case ex @ (_: IllegalArgumentException | _: ComposeFileFormatException | _: IllegalStateException) =>
-        printError(ex.getMessage)
+        printError(ex.getMessage, getSetting(suppressColorFormatting)(state))
         state
     }
   }
@@ -239,16 +240,17 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   def startDockerCompose(implicit state: State, args: Seq[String]): (State, String) = {
     val composeFilePath = getSetting(composeFile)
     val variables = runVariablesForSubstitutionTask(state) ++ getSetting(variablesForSubstitution).toVector
+    val suppressColor = getSetting(suppressColorFormatting)
 
-    printBold(s"Creating Local Docker Compose Environment.")
-    printBold(s"Reading Compose File: $composeFilePath")
+    printBold(s"Creating Local Docker Compose Environment.", suppressColor)
+    printBold(s"Reading Compose File: $composeFilePath", suppressColor)
 
     val composeYaml = readComposeFile(composeFilePath, variables)
     val servicesInfo = processCustomTags(state, args, composeYaml)
     val updatedComposePath = saveComposeFile(composeYaml)
     println(s"Created Compose File with Processed Custom Tags: $updatedComposePath")
 
-    pullDockerImages(args, servicesInfo)
+    pullDockerImages(args, servicesInfo, suppressColor)
 
     //Generate random instance name so that it won't collide with other instances running and so that it can be uniquely
     //identified from the list of running containers
@@ -278,22 +280,22 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     val composeStartTimeout = getSetting(composeContainerStartTimeoutSeconds)
     val dockerMachine = getSetting(dockerMachineName)
 
-    val serviceInfo = populateServiceInfoForInstance(instanceName, dockerMachine, servicesInfo, composeStartTimeout)
+    val serviceInfo = populateServiceInfoForInstance(state, instanceName, dockerMachine, servicesInfo, composeStartTimeout)
 
     RunningInstanceInfo(instanceName, composeService, composePath, serviceInfo)
   }
 
-  def pullDockerImages(args: Seq[String], services: Iterable[ServiceInfo]): Unit = {
+  def pullDockerImages(args: Seq[String], services: Iterable[ServiceInfo], suppressColor: Boolean): Unit = {
     if (containsArg(skipPullArg, args)) {
       print(s"'$skipPullArg' argument supplied. Skipping Docker Repository Pull for all images. Using locally cached " +
         s"version of images.")
     } else {
       //Pull down the dependent images ignoring locally built images since we want to test the local changes and not
       // what has been already published
-      printBold(s"Pulling Docker images except for locally built images and images defined as <skipPull> or <localBuild>.")
+      printBold(s"Pulling Docker images except for locally built images and images defined as <skipPull> or <localBuild>.", suppressColor)
 
       val (skipPull, pull) = services.partition(service => service.imageSource == buildImageSource || service.imageSource == cachedImageSource)
-      skipPull.foreach(service => printBold(s"Skipping Pull of image: ${service.imageName}"))
+      skipPull.foreach(service => printBold(s"Skipping Pull of image: ${service.imageName}", suppressColor))
       pull.foreach(service => dockerPull(service.imageName))
     }
   }
@@ -312,12 +314,12 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         val (removeList, keepList) = launchedInstances.partition(instance => args.contains(instance.instanceName))
         //Remove all of the stopped instances from the list
         removeList.foreach { instance =>
-          printBold(s"Stopping and removing local Docker instance: ${instance.instanceName}")
+          printBold(s"Stopping and removing local Docker instance: ${instance.instanceName}", getSetting(suppressColorFormatting))
           stopLocalDockerInstance(state, instance.instanceName, instance.composeFilePath)
         }
 
         if (removeList.isEmpty)
-          printWarning(s"No local Docker Compose instances found to stop from current sbt project.")
+          printWarning(s"No local Docker Compose instances found to stop from current sbt project.", getSetting(suppressColorFormatting))
 
         if (keepList.nonEmpty) {
           setAttribute(runningInstances, keepList)
@@ -368,13 +370,13 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       if (containsArg(skipBuildArg, args)) {
         print(s"'$skipBuildArg' argument supplied. Using the current local Docker image instead of building a new one.")
       } else {
-        printBold("Building a new Docker image.")
+        printBold("Building a new Docker image.", getSetting(suppressColorFormatting))
         buildDockerImageTask(state)
       }
     }
   }
 
-  def populateServiceInfoForInstance(instanceName: String, dockerMachineName: String, services: Iterable[ServiceInfo],
+  def populateServiceInfoForInstance(state: State, instanceName: String, dockerMachineName: String, services: Iterable[ServiceInfo],
     timeout: Int): Iterable[ServiceInfo] = {
     //For all of the defined ports in the compose file get the port information from the locally running Docker containers
     services.map { service =>
@@ -388,7 +390,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       } while (containerId.isEmpty && deadline.hasTimeLeft)
 
       if (!deadline.hasTimeLeft) {
-        printError(s"Cannot determine container Id for service: $serviceName")
+        printError(s"Cannot determine container Id for service: $serviceName", getSetting(suppressColorFormatting)(state))
         throw new IllegalStateException(s"Cannot determine container Id for service: $serviceName")
       }
 
@@ -432,10 +434,10 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     //stopping a new instance
     getMatchingRunningInstance(state, args) match {
       case Some(runningInstance) =>
-        printBold(s"Starting Test Pass against the running local Docker Compose instance: ${runningInstance.instanceName}")
+        printBold(s"Starting Test Pass against the running local Docker Compose instance: ${runningInstance.instanceName}", getSetting(suppressColorFormatting)(state))
         (state, getMatchingRunningInstance(state, Seq(runningInstance.instanceName)))
       case None =>
-        printBold(s"Starting Test Pass against a new local Docker Compose instance.")
+        printBold(s"Starting Test Pass against a new local Docker Compose instance.", getSetting(suppressColorFormatting)(state))
         buildDockerImage(state, args)
         //Get the set of decorated endpoints and the randomly generated name of the project
         val (newState2, instanceId) = startDockerCompose(state, args)

@@ -7,7 +7,7 @@ class ImagePullingSpec extends FunSuite with BeforeAndAfter with OneInstancePerT
   test("Validate that when the 'skipPull' argument is passed in no imaged are pull from the Docker registry") {
     val instanceMock = new DockerComposePluginLocal with MockOutput
 
-    instanceMock.pullDockerImages(Seq(skipPullArg), null)
+    instanceMock.pullDockerImages(Seq(skipPullArg), null, suppressColor = false)
     assert(instanceMock.messages.exists(_.contains("Skipping Docker Repository Pull for all images.")))
   }
 
@@ -16,7 +16,7 @@ class ImagePullingSpec extends FunSuite with BeforeAndAfter with OneInstancePerT
     val imageName = "buildImageName"
     val serviceInfo = ServiceInfo("serviceName", imageName, buildImageSource, null)
 
-    instanceMock.pullDockerImages(null, List(serviceInfo))
+    instanceMock.pullDockerImages(null, List(serviceInfo), suppressColor = false)
     assert(instanceMock.messages.contains(s"Skipping Pull of image: $imageName"))
   }
 
@@ -27,7 +27,7 @@ class ImagePullingSpec extends FunSuite with BeforeAndAfter with OneInstancePerT
 
     doNothing().when(instanceMock).dockerPull(imageName)
 
-    instanceMock.pullDockerImages(null, List(serviceInfo))
+    instanceMock.pullDockerImages(null, List(serviceInfo), suppressColor = false)
 
     verify(instanceMock, times(1)).dockerPull(imageName)
   }
@@ -37,7 +37,7 @@ class ImagePullingSpec extends FunSuite with BeforeAndAfter with OneInstancePerT
     val imageName = "cacheImageName"
     val serviceInfo = ServiceInfo("serviceName", imageName, cachedImageSource, null)
 
-    instanceMock.pullDockerImages(null, List(serviceInfo))
+    instanceMock.pullDockerImages(null, List(serviceInfo), suppressColor = false)
     assert(instanceMock.messages.contains(s"Skipping Pull of image: $imageName"))
   }
 }

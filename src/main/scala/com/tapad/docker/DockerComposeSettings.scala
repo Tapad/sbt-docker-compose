@@ -33,7 +33,7 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
     composeContainerStartTimeoutSeconds := 500,
     dockerMachineName := "default",
     dockerImageCreationTask := printError("***Warning: The 'dockerImageCreationTask' has not been defined. " +
-      "Please configure this setting to have Docker images built.***"),
+      "Please configure this setting to have Docker images built.***", suppressColorFormatting.value),
     testTagsToExecute := "",
     testExecutionExtraConfigTask := Map.empty[String, String],
     testExecutionArgs := "",
@@ -46,6 +46,7 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
     },
     testCasesJar := artifactPath.in(Test, packageBin).value.getAbsolutePath,
     testCasesPackageTask := (sbt.Keys.packageBin in Test).value,
+    suppressColorFormatting := System.getProperty("sbt.log.noformat", "false") == "true",
     variablesForSubstitution := Map[String, String](),
     variablesForSubstitutionTask := Map[String, String](),
     commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeRestartCommand, dockerComposeInstancesCommand, dockerComposeTest)

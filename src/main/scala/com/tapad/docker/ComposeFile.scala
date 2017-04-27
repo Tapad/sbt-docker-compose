@@ -2,6 +2,7 @@ package com.tapad.docker
 
 import java.io.{ File, FileWriter }
 import java.util
+import java.util.regex.Pattern
 
 import com.tapad.docker.DockerComposeKeys._
 import org.yaml.snakeyaml.Yaml
@@ -12,7 +13,7 @@ import scala.collection.JavaConverters._
 import scala.collection.JavaConversions._
 import scala.collection.{ Iterable, Seq }
 import scala.io.Source._
-import scala.util.{ Try, Success, Failure }
+import scala.util.{ Failure, Success, Try }
 
 trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with PrintFormatting {
   // Compose file Yaml keys
@@ -104,7 +105,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
         val updated = volumes.map { volume =>
           volume match {
             case relativeVolume if relativeVolume.startsWith(".") =>
-              val Array(relativeLocalPath, mountPath) = relativeVolume.split(":")
+              val Array(relativeLocalPath, mountPath) = relativeVolume.split(":", 2)
               val fullyQualifiedLocalPath = getFullyQualifiedPath(relativeLocalPath, composeFileDir)
               s"$fullyQualifiedLocalPath:$mountPath"
             case nonRelativeVolume =>
@@ -124,7 +125,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
           } else {
             val containerPort = portMapping.split(":").last
             printWarning(s"Could not define a static host port '$containerPort' for service '$serviceName' " +
-              s"because port '$containerPort' was already in use. A dynamically assigned port will be used instead.")
+              s"because port '$containerPort' was already in use. A dynamically assigned port will be used instead.", getSetting(suppressColorFormatting)(state))
             (PortInfo(dynamicPortIdentifier, portInfo.containerPort, portInfo.isDebug), s"$dynamicPortIdentifier:$containerPort")
           }
         } else
@@ -320,10 +321,25 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
    * @param variables Substitution variables.
    * @return An updated stringified docker-compile file.
    */
-  def processVariableSubstitution(yamlString: String, variables: Vector[(String, String)]) =
-    variables.foldLeft(yamlString) {
-      case (y, (key, value)) => y.replaceAll("\\$\\{" + key + "\\}", value)
+  def processVariableSubstitution(yamlString: String, variables: Vector[(String, String)]): String = {
+    //Substitute all defined environment variables allowing for the optional default value syntax ':-'
+    val substitutedCompose = variables.foldLeft(yamlString) {
+      case (y, (key, value)) => y.replaceAll("\\$\\{" + key + "(:-.*)?\\}", value)
     }
+
+    //Find all remaining undefined environment variables which have a corresponding default value
+    val defaultEnvRegex = "\\$\\{.*:-.*\\}".r
+    val envToReplace = defaultEnvRegex.findAllIn(substitutedCompose).map { env =>
+      env.split(":-") match {
+        case Array(_, default) => env -> default.replace("}", "")
+      }
+    }
+
+    //Replace all undefined environment variables with the corresponding default value
+    envToReplace.foldLeft(substitutedCompose) {
+      case (y, (key, value)) => y.replaceAll(Pattern.quote(key), value)
+    }
+  }
 
   def deleteComposeFile(composePath: String): Boolean = {
     Try(new File(composePath).delete()) match {

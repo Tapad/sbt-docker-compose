@@ -18,7 +18,8 @@ trait DockerCommands {
 
   def dockerNetworkExists(instanceName: String, networkName: String): Boolean = {
     //Docker replaces '/' with '_' in the identifier string so search for replaced version
-    s"docker network ls --filter=name=${instanceName.replace('/', '_')}_$networkName --format={{.ID}}".!!.trim().nonEmpty
+    //Use '-q' instead of '--format' as format was only introduced in Docker v1.13.0-rc1
+    s"docker network ls -q --filter=name=${instanceName.replace('/', '_')}_$networkName".!!.trim().nonEmpty
   }
 
   def getDockerComposeVersion: Version = {
