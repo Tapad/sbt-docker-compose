@@ -1,1 +1,1 @@
-addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.23-SNAPSHOT")
+addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.22")
