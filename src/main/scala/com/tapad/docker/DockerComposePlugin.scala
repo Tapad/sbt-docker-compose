@@ -473,7 +473,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       print("OSX boot2docker environment detected. Using the docker-machine IP for the container.")
       dockerMachineIp(dockerMachineName)
     } else if (isDockerForMacEnvironment) {
-      print("Docker for Mac environment detected. Using the localhost for the container.")
+      print("Docker for Mac/Windows environment detected. Using the localhost for the container.")
       "localhost"
     } else {
       print("Non-OSX environment detected. Using the host from the container.")
