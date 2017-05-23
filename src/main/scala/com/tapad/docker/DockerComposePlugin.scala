@@ -381,18 +381,14 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     //For all of the defined ports in the compose file get the port information from the locally running Docker containers
     services.map { service =>
       val serviceName = service.serviceName
-      val deadline = timeout.seconds.fromNow
-      var containerId = ""
-      do {
-        print(s"Waiting for container Id to be available for service '$serviceName' time remaining: ${deadline.timeLeft.toSeconds}")
-        containerId = getDockerContainerId(instanceName, serviceName)
-        if (containerId.isEmpty) Thread.sleep(2000)
-      } while (containerId.isEmpty && deadline.hasTimeLeft)
-
-      if (!deadline.hasTimeLeft) {
-        printError(s"Cannot determine container Id for service: $serviceName", getSetting(suppressColorFormatting)(state))
-        throw new IllegalStateException(s"Cannot determine container Id for service: $serviceName")
-      }
+      val containerId =
+        tryGetContainerId(state, instanceName, serviceName, timeout.seconds.fromNow) match {
+          case Some(id) => id
+          case None => {
+            printError(s"Cannot determine container Id for service: $serviceName", getSetting(suppressColorFormatting)(state))
+            throw new IllegalStateException(s"Cannot determine container Id for service: $serviceName")
+          }
+        }
 
       print(s"$serviceName Container Id: $containerId")
 
@@ -400,15 +396,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       val containerInspectInfo = getDockerContainerInfo(containerId)
       val jsonInspect = parse(containerInspectInfo)
 
-      val exposedPorts = getDockerPortMappings(containerId)
-      val portMappingPattern = """(\d+)(\S+).*:(\d+)""".r
-      val portsWithHost = Try {
-        exposedPorts.linesIterator.map {
-          case portMappingPattern(container, proto, host) =>
-            val protocol = proto.replaceAll("(?i)/tcp", "")
-            PortInfo(host, s"$container$protocol", service.ports.exists(p => p.containerPort == container && p.isDebug))
-        }.toList
-      } getOrElse List.empty
+      val portsWithHost = getPorts(service, containerId)
       val containerHost = getContainerHost(dockerMachineName, instanceName, jsonInspect)
 
       service.copy(ports = portsWithHost, containerId = containerId, containerHost = containerHost)
@@ -447,17 +435,40 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
   }
 
   def printDockerComposeInstances(state: State, args: Seq[String]): State = {
-    val newState = getPersistedState(state)
+    val persistedState = getPersistedState(state)
 
-    getAttribute(runningInstances)(newState) match {
-      case Some(launchedInstances) =>
-        //Print all of the connection information for each running instance
-        launchedInstances.foreach(printMappedPortInformation(newState, _, dockerComposeVersion))
-      case None =>
+    val updatedState = getAttribute(runningInstances)(persistedState) match {
+      case Some(launchedInstances) => {
+        val updatedInstances = launchedInstances
+          .map(instance => {
+            val updatedServices = instance.servicesInfo.map(service => {
+              val timeout = getSetting(composeContainerStartTimeoutSeconds)(persistedState)
+              val containerId = tryGetContainerId(persistedState, instance.instanceName, service.serviceName, timeout.seconds.fromNow, verbose = false) match {
+                case Some(id) => id
+                case None => throw new IllegalStateException(s"Cannot determine container Id for service: ${service.serviceName}")
+              }
+
+              val ports = getPorts(service, containerId)
+
+              service.copy(ports = ports, containerId = containerId)
+            })
+
+            instance.copy(servicesInfo = updatedServices)
+          })
+
+        updatedInstances.foreach(printMappedPortInformation(persistedState, _, dockerComposeVersion))
+
+        setAttribute(runningInstances, updatedInstances)(persistedState)
+      }
+      case None => {
         print("There are no currently running Docker Compose instances detected.")
+        persistedState
+      }
     }
 
-    newState
+    // Save new Instance State to file.
+    saveInstanceState(updatedState)
+    updatedState
   }
 
   /**
@@ -507,5 +518,41 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
     val runningIds = getAllRunningInstanceIds(state)
     generateInstanceNameRec(runningIds)
+  }
+
+  private def tryGetContainerId(
+    state: State,
+    instanceName: String,
+    serviceName: String,
+    deadline: Deadline,
+    verbose: Boolean = true
+  ): Option[String] = deadline.hasTimeLeft match {
+    case true => {
+      if (verbose)
+        print(s"Waiting for container Id to be available for service '$serviceName' time remaining: ${deadline.timeLeft.toSeconds}")
+
+      val containerId = getDockerContainerId(instanceName, serviceName)
+
+      if (containerId.isEmpty) {
+        Thread.sleep(2000)
+        tryGetContainerId(state, instanceName, serviceName, deadline)
+      } else {
+        Some(containerId)
+      }
+    }
+    case false => None
+  }
+
+  private def getPorts(service: ServiceInfo, containerId: String): List[PortInfo] = {
+    val exposedPorts = getDockerPortMappings(containerId)
+    val portMappingPattern = """(\d+)(\S+).*:(\d+)""".r
+
+    Try {
+      exposedPorts.linesIterator.map {
+        case portMappingPattern(container, proto, host) =>
+          val protocol = proto.replaceAll("(?i)/tcp", "")
+          PortInfo(host, s"$container$protocol", service.ports.exists(p => p.containerPort == container && p.isDebug))
+      }.toList
+    } getOrElse List.empty
   }
 }
