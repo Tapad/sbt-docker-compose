@@ -147,6 +147,11 @@ ScalaTest [ConfigMap](http://doc.scalatest.org/2.0/index.html#org.scalatest.Conf
 The key into the map is the "serviceName:containerPort" (e.g. "basic:8080") that is statically defined in the Docker Compose file and it 
 will return "host:hostPort" which is the Docker Compose generated and exposed endpoint that can be connected to at runtime
 for testing. There is also the key "serviceName:containerId" (e.g. "basic:containerId") which maps to the docker container id.
+
+The same ConfigMap key/value pairs are also available in the underlying JVM as system properties. For example,
+System.getProperty("serviceName:containerPort"), which is useful when the application uses system properties to set configuration
+during boot, which is a common pattern in Play Framework using TypeSafe's ConfigFactory.
+
 See the [**basic-with-tests**](examples/basic-with-tests) example for more details.
 
 By default all tests will be executed, however you can also [Tag](http://www.scalatest.org/user_guide/tagging_your_tests)
