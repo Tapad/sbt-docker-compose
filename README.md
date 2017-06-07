@@ -26,7 +26,7 @@ Steps to Enable and Configure sbt-docker-compose
    ``` 
    sbt-docker-compose is an auto-plugin which requires that sbt version 0.13.5 or higher be used.
    
-2) Enable the plugin on the sbt projects you would like to test:
+2) Enable the plugin on the root project in `build.sbt`:
    ```
    enablePlugins(DockerComposePlugin)
    ``` 
