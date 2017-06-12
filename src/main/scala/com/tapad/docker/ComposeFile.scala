@@ -2,7 +2,7 @@ package com.tapad.docker
 
 import java.io.{ File, FileWriter }
 import java.util
-import java.util.regex.Pattern
+import java.util.regex.{ Matcher, Pattern }
 
 import com.tapad.docker.DockerComposeKeys._
 import org.yaml.snakeyaml.Yaml
@@ -336,7 +336,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   def processVariableSubstitution(yamlString: String, variables: Vector[(String, String)]): String = {
     //Substitute all defined environment variables allowing for the optional default value syntax ':-'
     val substitutedCompose = variables.foldLeft(yamlString) {
-      case (y, (key, value)) => y.replaceAll("\\$\\{" + key + "(:-.*)?\\}", value)
+      case (y, (key, value)) => y.replaceAll("\\$\\{" + key + "(:-.*)?\\}", Matcher.quoteReplacement(value))
     }
 
     //Find all remaining undefined environment variables which have a corresponding default value
@@ -349,7 +349,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
 
     //Replace all undefined environment variables with the corresponding default value
     envToReplace.foldLeft(substitutedCompose) {
-      case (y, (key, value)) => y.replaceAll(Pattern.quote(key), value)
+      case (y, (key, value)) => y.replaceAll(Pattern.quote(key), Matcher.quoteReplacement(value.replace("$", "$$")))
     }
   }
 
