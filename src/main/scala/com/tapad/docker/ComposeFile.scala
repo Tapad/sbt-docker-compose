@@ -2,7 +2,7 @@ package com.tapad.docker
 
 import java.io.{ File, FileWriter }
 import java.util
-import java.util.regex.Pattern
+import java.util.regex.{ Matcher, Pattern }
 
 import com.tapad.docker.DockerComposeKeys._
 import org.yaml.snakeyaml.Yaml
@@ -200,6 +200,18 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   }
 
   /**
+   * Get all named volumes defined under the 'volumes' key in the docker-compose file.
+   * @param composeYaml Docker Compose yaml to process
+   * @return The keys for the 'volumes' section of the Yaml file
+   */
+  def composeNamedVolumes(composeYaml: yamlData): Seq[String] = {
+    composeYaml.get(volumesKey) match {
+      case Some(volumes) => volumes.keys.toSeq
+      case None => Seq.empty
+    }
+  }
+
+  /**
    * Function that reads plug-in defined "<customTag>" fields from the Docker Compose file and performs some
    * transformation on the Docker File based on the tag. The file after transformations are applied is what is used by
    * Docker Compose to launch the instance. This function can be overridden in derived plug-ins to add additional tags
@@ -324,7 +336,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
   def processVariableSubstitution(yamlString: String, variables: Vector[(String, String)]): String = {
     //Substitute all defined environment variables allowing for the optional default value syntax ':-'
     val substitutedCompose = variables.foldLeft(yamlString) {
-      case (y, (key, value)) => y.replaceAll("\\$\\{" + key + "(:-.*)?\\}", value)
+      case (y, (key, value)) => y.replaceAll("\\$\\{" + key + "(:-.*)?\\}", Matcher.quoteReplacement(value))
     }
 
     //Find all remaining undefined environment variables which have a corresponding default value
@@ -337,7 +349,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
 
     //Replace all undefined environment variables with the corresponding default value
     envToReplace.foldLeft(substitutedCompose) {
-      case (y, (key, value)) => y.replaceAll(Pattern.quote(key), value)
+      case (y, (key, value)) => y.replaceAll(Pattern.quote(key), Matcher.quoteReplacement(value.replace("$", "$$")))
     }
   }
 

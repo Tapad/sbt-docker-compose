@@ -358,6 +358,15 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       }
     }
 
+    // Remove named volumes
+    if (new File(composePath).exists()) {
+      val composeYaml = readComposeFile(composePath)
+      val namedVolumes = composeNamedVolumes(composeYaml)
+      namedVolumes
+        .filter(dockerVolumeExists(instanceName, _))
+        .foreach(dockerRemoveVolume(instanceName, _))
+    }
+
     //When shutting down the instance remove the tag processed compose file by default. This is an option as it can be
     //useful to have this file for debugging purposes.
     if (getSetting(composeRemoveTempFileOnShutdown)) {

@@ -22,6 +22,11 @@ trait DockerCommands {
     s"docker network ls -q --filter=name=${instanceName.replace('/', '_')}_$networkName".!!.trim().nonEmpty
   }
 
+  def dockerVolumeExists(instanceName: String, volumeName: String): Boolean = {
+    //Docker replaces '/' with '_' in the identifier string so search for replaced version
+    s"docker volume ls -q --filter=name=${instanceName.replace('/', '_')}_$volumeName".!!.trim().nonEmpty
+  }
+
   def getDockerComposeVersion: Version = {
     val version = "docker-compose version --short".!!
     Version(version)
@@ -50,6 +55,10 @@ trait DockerCommands {
 
   def dockerRemoveNetwork(instanceName: String, networkName: String): Unit = {
     s"docker network rm ${instanceName}_$networkName".!
+  }
+
+  def dockerRemoveVolume(instanceName: String, volumeName: String): Unit = {
+    s"docker volume rm ${instanceName}_$volumeName".!
   }
 
   def dockerTagImage(currentImageName: String, newImageName: String): Unit = {
