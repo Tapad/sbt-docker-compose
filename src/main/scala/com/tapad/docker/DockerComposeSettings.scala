@@ -42,10 +42,12 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
       val classpathTestManaged = (managedClasspath in Test).value
       val classpathTestUnmanaged = (unmanagedClasspath in Test).value
       val testResources = (resources in Test).value
-      (testResources ++ fullClasspathCompile.files ++ classpathTestManaged.files ++ classpathTestUnmanaged.files).map(_.getAbsoluteFile).mkString(File.pathSeparator)
+      val testPath = Seq((classDirectory in Test).value)
+      (testResources ++ testPath ++ fullClasspathCompile.files ++ classpathTestManaged.files ++ classpathTestUnmanaged.files).map(_.getAbsoluteFile).mkString(File.pathSeparator)
     },
     testCasesJar := artifactPath.in(Test, packageBin).value.getAbsolutePath,
     testCasesPackageTask := (sbt.Keys.packageBin in Test).value,
+    testPassUseSpecs2 := false,
     suppressColorFormatting := System.getProperty("sbt.log.noformat", "false") == "true",
     variablesForSubstitution := Map[String, String](),
     variablesForSubstitutionTask := Map[String, String](),

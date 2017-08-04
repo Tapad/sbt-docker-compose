@@ -102,4 +102,54 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
       state
     }
   }
+
+  /**
+   * Build up a set of parameters to pass as System Properties that can be accessed from Specs2
+   * Compiles and binPackages the latest Test code.
+   * Starts a test pass using the Specs2 Files Runner
+   * @param state The sbt state
+   * @param args The command line arguments
+   * @param instance The running Docker Compose instance to test against
+   */
+  def runTestPassSpecs2(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
+    //Build the list of Docker Compose connection endpoints to pass as System Properties
+    //format: <-Dservice:containerPort=host:hostPort>
+    val testParams = instance match {
+      case Some(inst) => inst.servicesInfo.flatMap(service =>
+        service.ports.map(port =>
+          s"-D${service.serviceName}:${port.containerPort}=${service.containerHost}:${port.hostPort}")
+          :+ s"-D${service.serviceName}:containerId=${service.containerId}").mkString(" ")
+      case None => ""
+    }
+
+    val extraTestParams = runTestExecutionExtraConfigTask(state).map { case (k, v) => s"-D$k=$v" }
+
+    print("Compiling and Packaging test cases...")
+    binPackageTests
+
+    // Looks for the <-debug:port> argument and will suspend test case execution until a debugger is attached
+    val debugSettings = getArgValue(testDebugPortArg, args) match {
+      case Some(port) => s"-J-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$port"
+      case None => ""
+    }
+
+    val suppressColor = getSetting(suppressColorFormatting)
+    val noColorOption = if (suppressColor) "-Dspecs2.color=false" else ""
+    val testArgs = getSetting(testExecutionArgs).split(" ").toSeq
+    val testDependencies = getTestDependenciesClassPath
+    if (testDependencies.matches(".*org.specs2.*")) {
+      val testParamsList = testParams.split(" ").toSeq ++ extraTestParams
+      val testRunnerCommand = (Seq("java", debugSettings, noColorOption) ++
+        testParamsList ++
+        Seq("-cp", testDependencies, "org.specs2.runner.files") ++
+        testArgs ++
+        testParamsList).filter(_.nonEmpty)
+      if (testRunnerCommand.! == 0) state
+      else state.fail
+    } else {
+      printBold("Cannot find a Specs2 Jar dependency. Please make sure it is added to your sbt projects " +
+        "libraryDependencies.", suppressColor)
+      state
+    }
+  }
 }
