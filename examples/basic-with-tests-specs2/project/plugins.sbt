@@ -1,3 +1,3 @@
 addSbtPlugin("se.marcuslonnberg" % "sbt-docker" % "1.4.1")
 
-addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.26-SNAPSHOT-SPECS2")
+addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.26-SPECS2-SNAPSHOT")
