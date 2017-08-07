@@ -16,6 +16,8 @@ dockerImageCreationTask := docker.value
 
 testPassUseSpecs2 := true
 
+testExecutionExtraConfigTask := Map("filesrunner.verbose" -> s"true")
+
 dockerfile in docker := {
   new Dockerfile {
     val dockerAppPath = "/app/"
