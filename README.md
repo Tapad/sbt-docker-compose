@@ -72,6 +72,7 @@ plugin will attempt to locate it in one of three places with the precedence orde
     testDependenciesClasspath := // The path to all managed and unmanaged Test and Compile dependencies. This path needs to include the ScalaTest Jar for the tests to execute. This defaults to all managedClasspath and unmanagedClasspath in the Test and fullClasspath in the Compile Scope.
     testCasesJar := // The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.
     testCasesPackageTask := // The sbt Task to package the test cases used when running 'dockerComposeTest'. This defaults to the 'packageBin' task in the 'Test' Scope.
+    testPassUseSpecs2 := // True if Specs2 is to be used to execute the test pass. This defaults to False and ScalaTest is used.
     variablesForSubstitution := // A Map[String,String] of variables to substitute in your docker-compose file. These are substituted substituted by the plugin and not using environment variables.
     variablesForSubstitutionTask := // An sbt task that returns a Map[String,String] of variables to substitute in your docker-compose file. These are substituted by the plugin and not using environment variables.
    ```
@@ -346,7 +347,19 @@ docker-compose.yml:
 6) [**basic-with-tests-integration**](examples/basic-with-tests-integration): This project shows how to change the default sbt Scope of the
 tests being executed from 'Test' to 'IntegrationTest' when 'dockerComposeTest' is run.
 
-    
+7) [**basic-with-tests-spec2**](examples/basic-with-tests-specs2): This project shows how to execute Specs2 based test cases via the 'specs2.files' runner
+by setting the following property in build.sbt:
+
+   ```
+    testPassUseSpecs2 := true
+   ```
+   
+Additionally, you can override the default Specs2 file runner properties as follows:
+
+   ```
+    testExecutionExtraConfigTask := Map("filesrunner.verbose" -> s"true")
+   ```
+
 Currently Unsupported Docker Compose Fields
 -------------------------------------------
 1) "build:" - All docker compose services need to specify an "image:" field.
