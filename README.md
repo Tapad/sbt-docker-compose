@@ -22,7 +22,7 @@ Steps to Enable and Configure sbt-docker-compose
 
 1) Add the sbt-docker-compose plugin to your projects plugins.sbt file:
    ```
-   addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.25")
+   addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.26")
    ``` 
    sbt-docker-compose is an auto-plugin which requires that sbt version 0.13.5 or higher be used.
    
@@ -183,6 +183,10 @@ tests from running until you attach a debugger to the specified port. For exampl
 project needs to be built with the version of scala used by the project. If this is not configured correctly you may see
 an issue with the Test Runner failing to load classes.
 
+There is also support for running [Specs2](https://etorreborre.github.io/specs2/) test cases. For these tests only the 
+JVM system properties will be available for accessing information about the Docker Compose instance under test.
+
+See the [**basic-with-tests-specs2**](examples/basic-with-tests-specs2) example for more details.
 
 Docker Compose File Custom Tags
 -------------------------------
