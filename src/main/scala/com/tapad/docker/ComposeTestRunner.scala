@@ -5,6 +5,7 @@ import sbt._
 import sbt.Project
 
 import scala.collection.Seq
+import scala.sys.process.Process
 
 trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
   val testDebugPortArg = "-debug"
@@ -94,7 +95,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
         Seq("-R", s"${getSetting(testCasesJar).replace(" ", "\\ ")}") ++
         testTags.split(" ").toSeq ++
         testParamsList).filter(_.nonEmpty)
-      if (testRunnerCommand.! == 0) state
+      if (Process(testRunnerCommand).! == 0) state
       else state.fail
     } else {
       printBold("Cannot find a ScalaTest Jar dependency. Please make sure it is added to your sbt projects " +
@@ -144,7 +145,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
         Seq("-cp", testDependencies, "org.specs2.runner.files") ++
         testArgs ++
         testParamsList).filter(_.nonEmpty)
-      if (testRunnerCommand.! == 0) state
+      if (Process(testRunnerCommand).! == 0) state
       else state.fail
     } else {
       printBold("Cannot find a Specs2 Jar dependency. Please make sure it is added to your sbt projects " +

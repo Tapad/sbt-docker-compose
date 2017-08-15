@@ -10,7 +10,17 @@ organization := "com.tapad"
 
 scalaVersion := "2.10.6"
 
-libraryDependencies ++= Seq("net.liftweb" %% "lift-json" % "2.5-RC5",
+crossSbtVersions := Seq("0.13.16", "1.0.0")
+
+libraryDependencies += {
+  val liftJsonVersion = CrossVersion.partialVersion(scalaVersion.value) match {
+    case Some((2, n)) if n < 12 => "2.5.4"
+    case _ => "3.0.1"
+  }
+  "net.liftweb" %% "lift-json" % liftJsonVersion
+}
+
+libraryDependencies ++= Seq(
   "org.yaml" % "snakeyaml" % "1.15",
   "org.scalatest" %% "scalatest" % "3.0.1" % "test",
   "org.mockito" % "mockito-all" % "1.9.5" % "test")
@@ -54,18 +64,16 @@ pomExtra := {
 
 scalariformSettings
 
-releaseSettings
+releaseNextVersion := { (version: String) => Version(version).map(_.bumpBugfix.asSnapshot.string).getOrElse(versionFormatError) }
 
-ReleaseKeys.nextVersion := { (version: String) => Version(version).map(_.bumpBugfix.asSnapshot.string).getOrElse(versionFormatError) }
-
-ReleaseKeys.releaseProcess := Seq(
+releaseProcess := Seq(
   checkSnapshotDependencies,
   inquireVersions,
-  runTest,
+  releaseStepCommandAndRemaining("^test"),
   setReleaseVersion,
   commitReleaseVersion,
   tagRelease,
-  ReleaseStep(action = Command.process("publishSigned", _)),
+  releaseStepCommandAndRemaining("^publishSigned"),
   setNextVersion,
   commitNextVersion,
   ReleaseStep(action = Command.process("sonatypeReleaseAll", _)),
