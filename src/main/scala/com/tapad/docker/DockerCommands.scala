@@ -1,84 +1,85 @@
 package com.tapad.docker
 
 import sbt._
+import scala.sys.process.Process
 import com.tapad.docker.DockerComposeKeys._
 
 trait DockerCommands {
   def dockerComposeUp(instanceName: String, composePath: String): Int = {
-    s"docker-compose -p $instanceName -f $composePath up -d".!
+    Process(s"docker-compose -p $instanceName -f $composePath up -d").!
   }
 
   def dockerComposeStopInstance(instanceName: String, composePath: String): Unit = {
-    s"docker-compose -p $instanceName -f $composePath stop".!
+    Process(s"docker-compose -p $instanceName -f $composePath stop").!
   }
 
   def dockerComposeRemoveContainers(instanceName: String, composePath: String): Unit = {
-    s"docker-compose -p $instanceName -f $composePath rm -v -f".!
+    Process(s"docker-compose -p $instanceName -f $composePath rm -v -f").!
   }
 
   def dockerNetworkExists(instanceName: String, networkName: String): Boolean = {
     //Docker replaces '/' with '_' in the identifier string so search for replaced version
     //Use '-q' instead of '--format' as format was only introduced in Docker v1.13.0-rc1
-    s"docker network ls -q --filter=name=${instanceName.replace('/', '_')}_$networkName".!!.trim().nonEmpty
+    Process(s"docker network ls -q --filter=name=${instanceName.replace('/', '_')}_$networkName").!!.trim().nonEmpty
   }
 
   def dockerVolumeExists(instanceName: String, volumeName: String): Boolean = {
     //Docker replaces '/' with '_' in the identifier string so search for replaced version
-    s"docker volume ls -q --filter=name=${instanceName.replace('/', '_')}_$volumeName".!!.trim().nonEmpty
+    Process(s"docker volume ls -q --filter=name=${instanceName.replace('/', '_')}_$volumeName").!!.trim().nonEmpty
   }
 
   def getDockerComposeVersion: Version = {
-    val version = "docker-compose version --short".!!
+    val version = Process("docker-compose version --short").!!
     Version(version)
   }
 
   def dockerPull(imageName: String): Unit = {
-    s"docker pull $imageName".!
+    Process(s"docker pull $imageName").!
   }
 
   def dockerMachineIp(machineName: String): String = {
-    s"docker-machine ip $machineName".!!.trim
+    Process(s"docker-machine ip $machineName").!!.trim
   }
 
   def getDockerContainerId(instanceName: String, serviceName: String): String = {
     //Docker replaces '/' with '_' in the identifier string so search for replaced version
-    s"""docker ps --all --filter=name=${instanceName.replace('/', '_')}_${serviceName}_ --format=\"{{.ID}}\"""".!!.trim().replaceAll("\"", "")
+    Process(s"""docker ps --all --filter=name=${instanceName.replace('/', '_')}_${serviceName}_ --format=\"{{.ID}}\"""").!!.trim().replaceAll("\"", "")
   }
 
   def getDockerContainerInfo(containerId: String): String = {
-    s"docker inspect --type=container $containerId".!!
+    Process(s"docker inspect --type=container $containerId").!!
   }
 
   def dockerRemoveImage(imageName: String): Unit = {
-    s"docker rmi $imageName".!!
+    Process(s"docker rmi $imageName").!!
   }
 
   def dockerRemoveNetwork(instanceName: String, networkName: String): Unit = {
-    s"docker network rm ${instanceName}_$networkName".!
+    Process(s"docker network rm ${instanceName}_$networkName").!
   }
 
   def dockerRemoveVolume(instanceName: String, volumeName: String): Unit = {
-    s"docker volume rm ${instanceName}_$volumeName".!
+    Process(s"docker volume rm ${instanceName}_$volumeName").!
   }
 
   def dockerTagImage(currentImageName: String, newImageName: String): Unit = {
-    s"docker tag $currentImageName $newImageName".!!
+    Process(s"docker tag $currentImageName $newImageName").!!
   }
 
   def dockerPushImage(imageName: String): Unit = {
-    s"docker push $imageName".!
+    Process(s"docker push $imageName").!
   }
 
   def dockerRun(command: String): Unit = {
-    s"docker run $command".!
+    Process(s"docker run $command").!
   }
 
   def getDockerPortMappings(containerId: String): String = {
-    s"docker port $containerId".!!
+    Process(s"docker port $containerId").!!
   }
 
   def isDockerForMacEnvironment: Boolean = {
-    val info = "docker info".!!
+    val info = Process("docker info").!!
     info.contains("Operating System: Alpine Linux") && info.matches("(?s).*Kernel Version:.*-moby.*")
   }
 
