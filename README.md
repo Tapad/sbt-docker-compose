@@ -22,9 +22,9 @@ Steps to Enable and Configure sbt-docker-compose
 
 1) Add the sbt-docker-compose plugin to your projects plugins.sbt file:
    ```
-   addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.26")
+   addSbtPlugin("com.tapad" % "sbt-docker-compose" % "1.0.27")
    ``` 
-   sbt-docker-compose is an auto-plugin which requires that sbt version 0.13.5 or higher be used.
+   sbt-docker-compose is an auto-plugin which requires that sbt version 0.13.5+ or sbt version 1.0.0+ be used.
    
 2) Enable the plugin on the sbt projects you would like to test:
    ```
