@@ -26,6 +26,7 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
     },
     // By default set the Compose service name to be that of the sbt Project Name
     composeServiceName := name.value.toLowerCase,
+    composeServiceVersionTask := version.value,
     composeNoBuild := false,
     composeRemoveContainersOnShutdown := true,
     composeRemoveNetworkOnShutdown := true,

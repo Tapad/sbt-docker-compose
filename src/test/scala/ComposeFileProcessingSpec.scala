@@ -381,6 +381,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     doReturn(versionNumber).when(composeMock).getSetting(version)(null)
     doReturn(noBuild).when(composeMock).getSetting(composeNoBuild)(null)
     doReturn(false).when(composeMock).getSetting(suppressColorFormatting)(null)
+    doReturn(versionNumber).when(composeMock).getComposeServiceVersion(null)
 
     (composeMock, composeFilePath)
   }

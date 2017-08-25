@@ -58,6 +58,7 @@ plugin will attempt to locate it in one of three places with the precedence orde
    ```
     composeFile := // Specify the full path to the Compose File to use to create your test instance. It defaults to docker-compose.yml in your resources folder.   
     composeServiceName := // Specify the name of the service in the Docker Compose file being tested. This setting prevents the service image from being pull down from the Docker Registry. It defaults to the sbt Project name.
+    composeServiceVersionTask :=  The version to tag locally built images with in the docker-compose file. This defaults to the 'version' SettingKey.
     composeNoBuild := // True if a Docker Compose file is to be started without building any images and only using ones that already exist in the Docker Registry. This defaults to False.
     composeRemoveContainersOnShutdown := // True if a Docker Compose should remove containers when shutting down the compose instance. This defaults to True.
     composeRemoveNetworkOnShutdown := // True if a Docker Compose should remove the network it created when shutting down the compose instance. This defaults to True.

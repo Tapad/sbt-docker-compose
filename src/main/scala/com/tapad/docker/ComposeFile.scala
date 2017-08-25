@@ -71,7 +71,7 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
       //compose file
       val (updatedImageName, imageSource) = if (!useExistingImages && serviceName == localService) {
         //If the image does not contain a tag or has the tag "latest" it will not be replaced
-        (replaceDefinedVersionTag(imageName, getSetting(version)), buildImageSource)
+        (replaceDefinedVersionTag(imageName, getComposeServiceVersion(state)), buildImageSource)
       } else if (imageName.toLowerCase.contains(useLocalBuildTag)) {
         (processImageTag(state, args, imageName), buildImageSource)
       } else if (imageName.toLowerCase.contains(skipPullTag) || containsArg(DockerComposePlugin.skipPullArg, args)) {
@@ -136,6 +136,18 @@ trait ComposeFile extends SettingsHelper with ComposeCustomTagHelpers with Print
 
       ServiceInfo(serviceName, updatedImageName, imageSource, updatedPortInfo)
     }
+  }
+
+  /**
+   * Gets the version to use for local image tagging in docker compose
+   * @param state The sbt state
+   * @return The version to use for local image tagging in docker compose
+   */
+  def getComposeServiceVersion(implicit state: State): String = {
+    val extracted = Project.extract(state)
+    val (_, version) = extracted.runTask(composeServiceVersionTask, state)
+
+    version
   }
 
   def getUnsupportedFieldErrorMsg(fieldName: String): String = {

@@ -118,6 +118,7 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
     doReturn(versionNumber).when(composeMock).getSetting(version)(null)
     doReturn(noBuild).when(composeMock).getSetting(composeNoBuild)(null)
     doReturn(containerHost).when(composeMock).getContainerHost(any[String], any[String], any[JValue])
+    doReturn("1.0.0").when(composeMock).getComposeServiceVersion(null)
 
     serviceNames.zip(containerIds).foreach {
       case (serviceName, containerId) =>
