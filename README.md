@@ -173,6 +173,12 @@ the "-tags" argument:
    ```
     dockerComposeTest -tags:<tag1,tag2>
    ```    
+   
+   If running dockerComposeTest from outside of sbt you will need to quote the input so that the parameters are properly interpreted:
+   ```
+    sbt 'dockerComposeTest -tags:<tag1,tag2>'
+   ```    
+      
 4) To attach a debugger during test case execution provide a port number to the "-debug" argument. This will suspend the
 tests from running until you attach a debugger to the specified port. For example:
    ```
