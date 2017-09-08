@@ -62,6 +62,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
   object autoImport {
     val composeFile = DockerComposeKeys.composeFile
     val composeServiceName = DockerComposeKeys.composeServiceName
+    val composeServiceVersionTask = DockerComposeKeys.composeServiceVersionTask
     val composeNoBuild = DockerComposeKeys.composeNoBuild
     val composeRemoveContainersOnShutdown = DockerComposeKeys.composeRemoveContainersOnShutdown
     val composeRemoveNetworkOnShutdown = DockerComposeKeys.composeRemoveNetworkOnShutdown
