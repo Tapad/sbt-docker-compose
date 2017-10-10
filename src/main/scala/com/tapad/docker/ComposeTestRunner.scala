@@ -17,6 +17,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    */
   def binPackageTests(implicit state: State): Unit = {
     val extracted = Project.extract(state)
+    state.globalLogging.full.info(s"Compiling and Packaging test cases using ${testCasesPackageTask.key.label} ...")
     extracted.runTask(testCasesPackageTask, state)
   }
 
@@ -56,52 +57,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    * @param instance The running Docker Compose instance to test against
    */
   def runTestPass(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
-    //Build the list of Docker Compose connection endpoints to pass as a ConfigMap to the ScalaTest Runner
-    //format: <-Dservice:containerPort=host:hostPort>
-    val testParams = instance match {
-      case Some(inst) => inst.servicesInfo.flatMap(service =>
-        service.ports.map(port =>
-          s"-D${service.serviceName}:${port.containerPort}=${service.containerHost}:${port.hostPort}")
-          :+ s"-D${service.serviceName}:containerId=${service.containerId}").mkString(" ")
-      case None => ""
-    }
-
-    val extraTestParams = runTestExecutionExtraConfigTask(state).map { case (k, v) => s"-D$k=$v" }
-
-    print("Compiling and Packaging test cases...")
-    binPackageTests
-
-    // Looks for the <-debug:port> argument and will suspend test case execution until a debugger is attached
-    val debugSettings = getArgValue(testDebugPortArg, args) match {
-      case Some(port) => s"-J-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$port"
-      case None => ""
-    }
-
-    val testTags = (getArgValue(testTagOverride, args) match {
-      case Some(tag) => tag
-      case None => getSetting(testTagsToExecute)
-    }).split(',').filter(_.nonEmpty).map(tag => s"-n $tag").mkString(" ")
-
-    val suppressColor = getSetting(suppressColorFormatting)
-    val noColorOption = if (suppressColor) "W" else ""
-    val testArgs = getSetting(testExecutionArgs).split(" ").toSeq
-    val testDependencies = getTestDependenciesClassPath
-    if (testDependencies.matches(".*org.scalatest.*")) {
-      val testParamsList = testParams.split(" ").toSeq ++ extraTestParams
-      val testRunnerCommand = (Seq("java", debugSettings) ++
-        testParamsList ++
-        Seq("-cp", testDependencies, "org.scalatest.tools.Runner", s"-o$noColorOption") ++
-        testArgs ++
-        Seq("-R", s"${getSetting(testCasesJar).replace(" ", "\\ ")}") ++
-        testTags.split(" ").toSeq ++
-        testParamsList).filter(_.nonEmpty)
-      if (Process(testRunnerCommand).! == 0) state
-      else state.fail
-    } else {
-      printBold("Cannot find a ScalaTest Jar dependency. Please make sure it is added to your sbt projects " +
-        "libraryDependencies.", suppressColor)
-      state
-    }
+    runInContainer("ScalaTest", ExecuteInput.ScalaTest)
   }
 
   /**
@@ -113,43 +69,62 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    * @param instance The running Docker Compose instance to test against
    */
   def runTestPassSpecs2(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
-    //Build the list of Docker Compose connection endpoints to pass as System Properties
-    //format: <-Dservice:containerPort=host:hostPort>
-    val testParams = instance match {
-      case Some(inst) => inst.servicesInfo.flatMap(service =>
-        service.ports.map(port =>
-          s"-D${service.serviceName}:${port.containerPort}=${service.containerHost}:${port.hostPort}")
-          :+ s"-D${service.serviceName}:containerId=${service.containerId}").mkString(" ")
-      case None => ""
-    }
+    runInContainer("Specs2", ExecuteInput.Specs2)
+  }
+
+  /**
+   * Build up a set of parameters to pass as System Properties that can be accessed from Cucumber (Cukes)
+   * Compiles and binPackages the latest Test code.
+   * Starts a test pass using the Cucumber Runner
+   * @param state The sbt state
+   * @param args The command line arguments
+   * @param instance The running Docker Compose instance to test against
+   */
+  def runTestPassCucumber(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
+    runInContainer("Cucumber", ExecuteInput.Cucumber)
+  }
+
+  protected def runInContainer(testDesc: String, run: ExecuteInput.Invoke)(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
 
     val extraTestParams = runTestExecutionExtraConfigTask(state).map { case (k, v) => s"-D$k=$v" }
 
-    print("Compiling and Packaging test cases...")
     binPackageTests
 
     // Looks for the <-debug:port> argument and will suspend test case execution until a debugger is attached
-    val debugSettings = getArgValue(testDebugPortArg, args) match {
+    val debugSettings: String = getArgValue(testDebugPortArg, args) match {
       case Some(port) => s"-J-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$port"
       case None => ""
     }
 
     val suppressColor = getSetting(suppressColorFormatting)
-    val noColorOption = if (suppressColor) "-Dspecs2.color=false" else ""
-    val testArgs = getSetting(testExecutionArgs).split(" ").toSeq
-    val testDependencies = getTestDependenciesClassPath
-    if (testDependencies.matches(".*org.specs2.*")) {
-      val testParamsList = testParams.split(" ").toSeq ++ extraTestParams
-      val testRunnerCommand = (Seq("java", debugSettings, noColorOption) ++
-        testParamsList ++
-        Seq("-cp", testDependencies, "org.specs2.runner.files") ++
-        testArgs ++
-        testParamsList).filter(_.nonEmpty)
+    val testParamsList: Seq[String] = {
+      //Build the list of Docker Compose connection endpoints to pass as System Properties
+      //format: <-Dservice:containerPort=host:hostPort>
+      val testParams = instance match {
+        case Some(inst) => inst.servicesInfo.flatMap(service =>
+          service.ports.map(port =>
+            s"-D${service.serviceName}:${port.containerPort}=${service.containerHost}:${port.hostPort}")
+            :+ s"-D${service.serviceName}:containerId=${service.containerId}").mkString(" ")
+        case None => ""
+      }
+      testParams.split(" ").toSeq ++ extraTestParams
+    }
+
+    val testDependencies: String = getTestDependenciesClassPath
+    val testInput = new ExecuteInput(this, testDependencies, testParamsList, debugSettings)
+
+    if (run.isDefinedAt(testInput)) {
+      val testRunnerCommand = run(testInput)
+
       if (Process(testRunnerCommand).! == 0) state
       else state.fail
     } else {
-      printBold("Cannot find a Specs2 Jar dependency. Please make sure it is added to your sbt projects " +
-        "libraryDependencies.", suppressColor)
+      val errMsg = if (true) {
+        s"Cannot find a $testDesc Jar dependency. Please make sure it is added to your sbt projects libraryDependencies."
+      } else {
+        ""
+      }
+      printBold(errMsg, suppressColor)
       state
     }
   }
