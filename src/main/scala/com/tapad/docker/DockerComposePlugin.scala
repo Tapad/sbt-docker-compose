@@ -77,6 +77,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val testExecutionArgs = DockerComposeKeys.testExecutionArgs
     val testCasesJar = DockerComposeKeys.testCasesJar
     val testPassUseSpecs2 = DockerComposeKeys.testPassUseSpecs2
+    val testPassUseCucumber = DockerComposeKeys.testPassUseCucumber
     val suppressColorFormatting = DockerComposeKeys.suppressColorFormatting
     val scalaTestJar = DockerComposeKeys.testDependenciesClasspath
     val variablesForSubstitution = DockerComposeKeys.variablesForSubstitution
@@ -139,7 +140,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       printDockerComposeInstances(state, args)
   }
 
-  lazy val dockerComposeTest = Command("dockerComposeTest", ("dockerComposeTest", "Executes ScalaTest test " +
+  lazy val dockerComposeTest = Command("dockerComposeTest", ("dockerComposeTest", "Executes ScalaTest, Specs2 or Cucumber test " +
     "cases against a newly started Docker Compose instance."),
     s"Supply '$skipPullArg' as a parameter to use local images instead of pulling the latest from the Docker Registry." +
       s"Supply '$skipBuildArg' as a parameter to use the current Docker image for the main project instead of building a new one." +
@@ -420,10 +421,13 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     val requiresShutdown = getMatchingRunningInstance(newState, args).isEmpty
     val (preTestState, instance) = getTestPassInstance(newState, args)
 
-    val finalState = if (getSetting(testPassUseSpecs2))
+    val finalState = if (getSetting(testPassUseCucumber))
+      runTestPassCucumber(preTestState, args, instance)
+    else if (getSetting(testPassUseSpecs2)) {
       runTestPassSpecs2(preTestState, args, instance)
-    else
+    } else {
       runTestPass(preTestState, args, instance)
+    }
 
     if (requiresShutdown)
       stopDockerCompose(finalState, Seq(instance.get.instanceName))

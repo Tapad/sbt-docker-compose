@@ -74,6 +74,7 @@ plugin will attempt to locate it in one of three places with the precedence orde
     testCasesJar := // The path to the Jar file containing the tests to execute. This defaults to the Jar file with the tests from the current sbt project.
     testCasesPackageTask := // The sbt Task to package the test cases used when running 'dockerComposeTest'. This defaults to the 'packageBin' task in the 'Test' Scope.
     testPassUseSpecs2 := // True if Specs2 is to be used to execute the test pass. This defaults to False and ScalaTest is used.
+    testPassUseCucumber := // True if cucumber is to be used to execute the test pass. This defaults to False and ScalaTest is used.
     variablesForSubstitution := // A Map[String,String] of variables to substitute in your docker-compose file. These are substituted substituted by the plugin and not using environment variables.
     variablesForSubstitutionTask := // An sbt task that returns a Map[String,String] of variables to substitute in your docker-compose file. These are substituted by the plugin and not using environment variables.
    ```
@@ -368,8 +369,16 @@ by setting the following property in build.sbt:
 Additionally, you can override the default Specs2 file runner properties as follows:
 
    ```
-    testExecutionExtraConfigTask := Map("filesrunner.verbose" -> s"true")
+    testExecutionExtraConfigTask := Map("filesrunner.verbose" -> "true")
    ```
+
+8) [**basic-with-tests-cucumber**](examples/basic-with-tests-cucumber): This project shows how to execute cucumber based test cases 
+by setting the following property in build.sbt:
+
+   ```
+    testPassUseCucumber := true
+   ```
+
 
 Currently Unsupported Docker Compose Fields
 -------------------------------------------
