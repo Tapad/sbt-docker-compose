@@ -2,6 +2,8 @@ package example
 
 import java.nio.file.{Files, Path, Paths}
 
+import scala.collection.JavaConverters._
+
 object Calculator {
 
   def main(args: Array[String]): Unit = {
@@ -28,10 +30,9 @@ object Calculator {
     * This is just added to demonstrate e.g. composing two containers w/ shared volumes
     */
   def apply(input: Path): Int = {
-    import scala.collection.JavaConverters._
-    Files.readAllLines(input).asScala.head match {
-      case PlusR(a, b) => add(a.toInt, b.toInt)
-      case MinusR(a, b) => subtract(a.toInt, b.toInt)
+    Files.readAllLines(input).asScala.headOption match {
+      case Some(PlusR(a, b)) => add(a.toInt, b.toInt)
+      case Some(MinusR(a, b)) => subtract(a.toInt, b.toInt)
       case _ => sys.error("Whacha talkin' bout, willis?")
     }
   }

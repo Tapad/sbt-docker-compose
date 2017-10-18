@@ -1,8 +1,6 @@
 version: '3'
-# see https://www.digitalocean.com/community/tutorials/how-to-share-data-between-docker-containers
-# https://docs.docker.com/compose/reference/
 services:
-  server:
+  basic-cucumber:
     image: basic-cucumber:1.0.0
     ports:
       - 8080:8080

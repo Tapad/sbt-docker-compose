@@ -415,22 +415,18 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     }
   }
 
-  def composeTestRunner(state: State, args: Seq[String]): State = {
+  def composeTestRunner(implicit state: State, args: Seq[String]): State = {
     val newState = getPersistedState(state)
 
     val requiresShutdown = getMatchingRunningInstance(newState, args).isEmpty
     val (preTestState, instance) = getTestPassInstance(newState, args)
 
-    val cucumberState = if (getSetting(testPassUseCucumber)(preTestState))
+    val finalState = if (getSetting(testPassUseCucumber))
       runTestPassCucumber(preTestState, args, instance)
-    else {
-      state
-    }
-
-    val finalState = if (getSetting(testPassUseSpecs2)(preTestState)) {
-      runTestPassSpecs2(cucumberState, args, instance)
+    else if (getSetting(testPassUseSpecs2)) {
+      runTestPassSpecs2(preTestState, args, instance)
     } else {
-      runTestPass(cucumberState, args, instance)
+      runTestPass(preTestState, args, instance)
     }
 
     if (requiresShutdown)

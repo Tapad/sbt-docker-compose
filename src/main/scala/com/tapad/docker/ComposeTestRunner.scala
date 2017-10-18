@@ -1,8 +1,7 @@
 package com.tapad.docker
 
 import com.tapad.docker.DockerComposeKeys._
-import sbt._
-import sbt.Project
+import sbt.{ Project, _ }
 
 import scala.collection.Seq
 import scala.sys.process.Process
@@ -13,6 +12,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
 
   /**
    * Compiles and binPackages latest test code
+   *
    * @param state The sbt state
    */
   def binPackageTests(implicit state: State): Unit = {
@@ -23,6 +23,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
 
   /**
    * Gets a classpath representing all managed and unmanaged dependencies in the Test and Compile Scope for this sbt project.
+   *
    * @param state The sbt state
    * @return The full set of classpath entries used by Test and Compile
    */
@@ -35,6 +36,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
 
   /**
    * Gets extra key value pairs to pass to ScalaTest in the configMap.
+   *
    * @param state The sbt state
    * @return A Map[String,String] of variables to pass into the ScalaTest Runner ConfigMap
    */
@@ -52,8 +54,9 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    * Note: For this to work properly the version of the Scala executable on your path needs to of the same version
    * that the ScalaTest Jar was compiled with. For example,  if you are using ScalaTest 2.10.X Scala must be of
    * version 2.10.X.
-   * @param state The sbt state
-   * @param args The command line arguments
+   *
+   * @param state    The sbt state
+   * @param args     The command line arguments
    * @param instance The running Docker Compose instance to test against
    */
   def runTestPass(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
@@ -64,8 +67,9 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    * Build up a set of parameters to pass as System Properties that can be accessed from Specs2
    * Compiles and binPackages the latest Test code.
    * Starts a test pass using the Specs2 Files Runner
-   * @param state The sbt state
-   * @param args The command line arguments
+   *
+   * @param state    The sbt state
+   * @param args     The command line arguments
    * @param instance The running Docker Compose instance to test against
    */
   def runTestPassSpecs2(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
@@ -76,8 +80,9 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    * Build up a set of parameters to pass as System Properties that can be accessed from Cucumber (Cukes)
    * Compiles and binPackages the latest Test code.
    * Starts a test pass using the Cucumber Runner
-   * @param state The sbt state
-   * @param args The command line arguments
+   *
+   * @param state    The sbt state
+   * @param args     The command line arguments
    * @param instance The running Docker Compose instance to test against
    */
   def runTestPassCucumber(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
@@ -119,12 +124,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
       if (Process(testRunnerCommand).! == 0) state
       else state.fail
     } else {
-      val errMsg = if (true) {
-        s"Cannot find a $testDesc Jar dependency. Please make sure it is added to your sbt projects libraryDependencies."
-      } else {
-        ""
-      }
-      printBold(errMsg, suppressColor)
+      printBold(s"Cannot find a $testDesc Jar dependency. Please make sure it is added to your sbt projects libraryDependencies.", suppressColor)
       state
     }
   }

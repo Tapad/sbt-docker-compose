@@ -1,14 +1,7 @@
-version: '3'
-# see https://www.digitalocean.com/community/tutorials/how-to-share-data-between-docker-containers
-# https://docs.docker.com/compose/reference/
-services:
-  basic1:
-    image: "basic:1.0.0"
-
-  basic2:
-    image: "basic:1.0.0"
-    depends_on:
-      - basic1
-    environment:
-      - TESTHOST=http://basic1:8080
-
+basic:
+  image: basic:1.0.0
+  environment:
+    JAVA_TOOL_OPTIONS: -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005
+  ports:
+    - "0:8080"
+    - "0:5005"

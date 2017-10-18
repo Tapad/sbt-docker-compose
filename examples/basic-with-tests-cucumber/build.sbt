@@ -1,5 +1,3 @@
-
-
 name := "basic-cucumber"
 
 version := "1.0.0"
