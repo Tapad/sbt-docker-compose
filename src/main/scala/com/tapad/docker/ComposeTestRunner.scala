@@ -97,7 +97,7 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
 
     // Looks for the <-debug:port> argument and will suspend test case execution until a debugger is attached
     val debugSettings: String = getArgValue(testDebugPortArg, args) match {
-      case Some(port) => s"-J-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$port"
+      case Some(port) => s"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=$port"
       case None => ""
     }
 
