@@ -55,13 +55,13 @@ object ExecuteInput {
         case None => input.runner.getSetting(testTagsToExecute)(input.state)
       }).split(',').filter(_.nonEmpty).map(tag => s"-n $tag").mkString(" ")
 
-      val noColorOption = if (input.suppressColor) "W" else ""
+      val outputReporterOptions = if (input.suppressColor) "-oW" else ""
 
       val jarName = input.runner.getSetting(testCasesJar)(input.state)
 
       val testRunnerCommand: Seq[String] = (Seq("java", input.debugSettings) ++
         input.testParamsList ++
-        Seq("-cp", input.testDependencyClasspath, "org.scalatest.tools.Runner", s"-o$noColorOption") ++
+        Seq("-cp", input.testDependencyClasspath, "org.scalatest.tools.Runner", outputReporterOptions) ++
         input.testArgs ++
         Seq("-R", s"${jarName.replace(" ", "\\ ")}") ++
         testTags.split(" ").toSeq ++
