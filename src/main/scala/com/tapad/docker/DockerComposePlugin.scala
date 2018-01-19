@@ -18,6 +18,13 @@ import scala.util.Try
 case class ComposeFileFormatException(message: String) extends Exception(message)
 
 /**
+ * The exception type to be thrown when there is an issue compiling the test case code
+ *
+ * @param message The error message to be displayed on the console
+ */
+case class TestCodeCompilationException(message: String) extends Exception(message)
+
+/**
  * Defines an internal to external port mapping for a Docker Compose service port
  *
  * @param hostPort The port that is externally exposed for access from the Docker host machine
@@ -421,13 +428,17 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     val requiresShutdown = getMatchingRunningInstance(newState, args).isEmpty
     val (preTestState, instance) = getTestPassInstance(newState, args)
 
-    val finalState = if (getSetting(testPassUseCucumber))
-      runTestPassCucumber(preTestState, args, instance)
-    else if (getSetting(testPassUseSpecs2)) {
-      runTestPassSpecs2(preTestState, args, instance)
-    } else {
-      runTestPass(preTestState, args, instance)
-    }
+    //Ensure that if an exception is thrown when building the test code or during the test pass that
+    //the instance that was started is cleaned up
+    val finalState = Try {
+      if (getSetting(testPassUseCucumber))
+        runTestPassCucumber(preTestState, args, instance)
+      else if (getSetting(testPassUseSpecs2)) {
+        runTestPassSpecs2(preTestState, args, instance)
+      } else {
+        runTestPass(preTestState, args, instance)
+      }
+    }.getOrElse(preTestState)
 
     if (requiresShutdown)
       stopDockerCompose(finalState, Seq(instance.get.instanceName))
