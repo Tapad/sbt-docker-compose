@@ -50,6 +50,7 @@ object ExecuteInput {
   val ScalaTest: PartialFunction[ExecuteInput, TestRunnerCommand] = {
     case input: ExecuteInput if input.matches(".*org.scalatest.*") =>
 
+      val outputArg = "-o"
       val testTags = (input.runner.getArgValue(input.runner.testTagOverride, input.args) match {
         case Some(tag) => tag
         case None => input.runner.getSetting(testTagsToExecute)(input.state)
@@ -57,12 +58,16 @@ object ExecuteInput {
 
       val noColorOption = if (input.suppressColor) "W" else ""
 
+      //If testArgs contains '-o' values then parse them out to combine with the existing '-o' setting
+      val (testArgsOutput, testArgs) = input.testArgs.partition(_.startsWith(outputArg))
+      val outputFormattingArgs = testArgsOutput.map(_.replace(outputArg, "")).headOption.getOrElse("")
+
       val jarName = input.runner.getSetting(testCasesJar)(input.state)
 
       val testRunnerCommand: Seq[String] = (Seq("java", input.debugSettings) ++
         input.testParamsList ++
-        Seq("-cp", input.testDependencyClasspath, "org.scalatest.tools.Runner", s"-o$noColorOption") ++
-        input.testArgs ++
+        Seq("-cp", input.testDependencyClasspath, "org.scalatest.tools.Runner", s"$outputArg$noColorOption$outputFormattingArgs") ++
+        testArgs ++
         Seq("-R", s"${jarName.replace(" ", "\\ ")}") ++
         testTags.split(" ").toSeq ++
         input.testParamsList).filter(_.nonEmpty)

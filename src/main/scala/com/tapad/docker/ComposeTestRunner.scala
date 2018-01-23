@@ -18,7 +18,12 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
   def binPackageTests(implicit state: State): Unit = {
     val extracted = Project.extract(state)
     state.globalLogging.full.info(s"Compiling and Packaging test cases using ${testCasesPackageTask.key.label} ...")
-    extracted.runTask(testCasesPackageTask, state)
+    try {
+      extracted.runTask(testCasesPackageTask, state)
+    } catch {
+      case e: Exception =>
+        throw TestCodeCompilationException(e.getMessage)
+    }
   }
 
   /**
