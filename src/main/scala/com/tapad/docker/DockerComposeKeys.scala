@@ -6,6 +6,7 @@ import java.io._
 object DockerComposeKeys extends DockerComposeKeysLocal
 
 trait DockerComposeKeysLocal {
+  val composeContainerPauseBeforeTestSeconds = settingKey[Int]("Delay between containers start and test execution, seconds. Default is 0 seconds - no delay")
   val composeFile = settingKey[String]("Specify the full path to the Compose File to use to create your test instance. It defaults to docker-compose.yml in your resources folder.")
   val composeServiceName = settingKey[String]("The name of the service in the Docker Compose file being tested. This setting prevents the service image from being pull down from the Docker Registry. This defaults to the Project name.")
   val composeServiceVersionTask = taskKey[String]("The version to tag locally built images with in the docker-compose file. This defaults to the 'version' SettingKey.")
