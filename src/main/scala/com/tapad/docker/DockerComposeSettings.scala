@@ -32,6 +32,7 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
     composeRemoveNetworkOnShutdown := true,
     composeRemoveTempFileOnShutdown := true,
     composeContainerStartTimeoutSeconds := 500,
+    composeContainerPauseBeforeTestSeconds := 0,
     dockerMachineName := "default",
     dockerImageCreationTask := printError("***Warning: The 'dockerImageCreationTask' has not been defined. " +
       "Please configure this setting to have Docker images built.***", suppressColorFormatting.value),

@@ -56,6 +56,7 @@ plugin will attempt to locate it in one of three places with the precedence orde
 
 5) Optional: There are a number of optional Keys that can be set as well if you want to override the default settings:
    ```
+    composeContainerPauseBeforeTestSeconds := //Delay between containers start and test execution, seconds. Default is 0 seconds - no delay
     composeFile := // Specify the full path to the Compose File to use to create your test instance. It defaults to docker-compose.yml in your resources folder.   
     composeServiceName := // Specify the name of the service in the Docker Compose file being tested. This setting prevents the service image from being pull down from the Docker Registry. It defaults to the sbt Project name.
     composeServiceVersionTask := // The version to tag locally built images with in the docker-compose file. This defaults to the 'version' SettingKey.

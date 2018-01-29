@@ -67,6 +67,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
 
   //Import these settings so that they can easily be configured from a projects build.sbt
   object autoImport {
+    val composeContainerPauseBeforeTestSeconds = DockerComposeKeys.composeContainerPauseBeforeTestSeconds
     val composeFile = DockerComposeKeys.composeFile
     val composeServiceName = DockerComposeKeys.composeServiceName
     val composeServiceVersionTask = DockerComposeKeys.composeServiceVersionTask
@@ -427,6 +428,14 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
     val requiresShutdown = getMatchingRunningInstance(newState, args).isEmpty
     val (preTestState, instance) = getTestPassInstance(newState, args)
+
+    val seconds = getSetting(composeContainerPauseBeforeTestSeconds)
+
+    if (seconds > 0) {
+      print(s"Sleeping $seconds seconds to get ready for the tests")
+      Thread.sleep(1000 * seconds)
+      print("Wake up and starting the tests")
+    }
 
     //Ensure that if an exception is thrown when building the test code or during the test pass that
     //the instance that was started is cleaned up
