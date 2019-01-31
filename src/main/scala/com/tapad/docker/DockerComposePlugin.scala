@@ -76,6 +76,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val composeRemoveNetworkOnShutdown = DockerComposeKeys.composeRemoveNetworkOnShutdown
     val composeRemoveTempFileOnShutdown = DockerComposeKeys.composeRemoveTempFileOnShutdown
     val composeContainerStartTimeoutSeconds = DockerComposeKeys.composeContainerStartTimeoutSeconds
+    val composeInstanceName = DockerComposeKeys.composeInstanceName
     val dockerMachineName = DockerComposeKeys.dockerMachineName
     val dockerImageCreationTask = DockerComposeKeys.dockerImageCreationTask
     val testDependenciesClasspath = DockerComposeKeys.testDependenciesClasspath
@@ -265,7 +266,8 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
 
     //Generate random instance name so that it won't collide with other instances running and so that it can be uniquely
     //identified from the list of running containers
-    val instanceName = generateInstanceName(state)
+    val settingInstanceName = getSetting(composeInstanceName)
+    val instanceName = if (settingInstanceName != "default") settingInstanceName else generateInstanceName(state)
 
     val newState = Try {
       val ret = dockerComposeUp(instanceName, updatedComposePath)
