@@ -54,6 +54,5 @@ trait DockerComposeSettingsLocal extends PrintFormatting {
     suppressColorFormatting := System.getProperty("sbt.log.noformat", "false") == "true",
     variablesForSubstitution := Map[String, String](),
     variablesForSubstitutionTask := Map[String, String](),
-    commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeRestartCommand, dockerComposeInstancesCommand, dockerComposeTest)
-  )
+    commands ++= Seq(dockerComposeUpCommand, dockerComposeStopCommand, dockerComposeRestartCommand, dockerComposeInstancesCommand, dockerComposeTest))
 }

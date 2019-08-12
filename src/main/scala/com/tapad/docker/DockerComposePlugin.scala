@@ -45,7 +45,7 @@ case class PortInfo(hostPort: String, containerPort: String, isDebug: Boolean)
  * @param containerHost The container Host (name or IP) of the running service
  */
 case class ServiceInfo(serviceName: String, imageName: String, imageSource: String, ports: List[PortInfo],
-    containerId: String = "", containerHost: String = "") extends ComposeCustomTagHelpers {
+  containerId: String = "", containerHost: String = "") extends ComposeCustomTagHelpers {
   val versionTag = getTagFromImage(imageName)
 }
 
@@ -563,8 +563,7 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
     instanceName: String,
     serviceName: String,
     deadline: Deadline,
-    verbose: Boolean = true
-  ): Option[String] = deadline.hasTimeLeft match {
+    verbose: Boolean = true): Option[String] = deadline.hasTimeLeft match {
     case true => {
       if (verbose)
         print(s"Waiting for container Id to be available for service '$serviceName' time remaining: ${deadline.timeLeft.toSeconds}")

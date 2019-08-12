@@ -60,8 +60,7 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
     val (composeMock, composeFilePath) = getComposeMock(
       "sort.yml",
       serviceNames = List("testserviceB", "testserviceA"),
-      containerIds = List("containerId02", "containerId01")
-    )
+      containerIds = List("containerId02", "containerId01"))
     val container1PortMappings =
       """5005/tcp -> 0.0.0.0:32803
         |2003/tcp -> 0.0.0.0:32804
@@ -91,8 +90,7 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
       ("testserviceB", "80", false),
       ("testserviceB", "8000/udp", false),
       ("testserviceB", "10000", false),
-      ("testserviceB", "5005", true)
-    )
+      ("testserviceB", "5005", true))
     val actPartialTable = tableOutputSorted.map(row => (row.serviceName, row.containerPort, row.isDebug))
     assert(actPartialTable == expPartialTable)
   }
@@ -105,8 +103,7 @@ class PrintFormattingSpec extends FunSuite with BeforeAndAfter with OneInstanceP
     containerIds: List[String] = List("containerId01"),
     dockerMachineName: String = "default",
     containerHost: String = "192.168.99.10",
-    noBuild: Boolean = false
-  ): (DockerComposePluginLocal, String) = {
+    noBuild: Boolean = false): (DockerComposePluginLocal, String) = {
 
     require(serviceNames.length == containerIds.length)
 

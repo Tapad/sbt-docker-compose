@@ -49,8 +49,7 @@ trait PrintFormatting extends SettingsHelper {
       "Image Source",
       "Container Port",
       "Container Id",
-      "IsDebug"
-    )
+      "IsDebug")
     val sortedTableEntries = rows
       .toList
       .sorted
@@ -91,9 +90,7 @@ trait PrintFormatting extends SettingsHelper {
             service.versionTag, service.imageSource,
             "<none>",
             service.containerId,
-            false
-          )
-        )
+            false))
       } else {
         service.ports.map { port =>
           OutputTableRow(
@@ -103,8 +100,7 @@ trait PrintFormatting extends SettingsHelper {
             service.imageSource,
             port.containerPort,
             service.containerId,
-            port.isDebug
-          )
+            port.isDebug)
         }
       }
     }

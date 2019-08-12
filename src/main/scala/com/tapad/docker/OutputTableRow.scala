@@ -1,14 +1,13 @@
 package com.tapad.docker
 
 case class OutputTableRow(
-    serviceName: String,
-    hostWithPort: String,
-    versionTag: String,
-    imageSource: String,
-    containerPort: String,
-    containerId: String,
-    isDebug: Boolean
-) extends Ordered[OutputTableRow] {
+  serviceName: String,
+  hostWithPort: String,
+  versionTag: String,
+  imageSource: String,
+  containerPort: String,
+  containerId: String,
+  isDebug: Boolean) extends Ordered[OutputTableRow] {
 
   def toStringList: List[String] =
     List(
@@ -18,8 +17,7 @@ case class OutputTableRow(
       imageSource,
       containerPort,
       containerId,
-      if (isDebug) "DEBUG" else ""
-    )
+      if (isDebug) "DEBUG" else "")
 
   def compare(that: OutputTableRow): Int = {
     // Sort Order

@@ -8,7 +8,7 @@ name := "sbt-docker-compose"
 
 organization := "com.tapad"
 
-scalaVersion := "2.10.6"
+scalaVersion := "2.12.8"
 
 crossSbtVersions := Seq("0.13.16", "1.0.0")
 
@@ -62,9 +62,7 @@ pomExtra := {
     </developers>
   }
 
-scalariformSettings
-
-releaseNextVersion := { (version: String) => Version(version).map(_.bumpBugfix.asSnapshot.string).getOrElse(versionFormatError) }
+releaseNextVersion := { (version: String) => Version(version).map(_.bumpBugfix.asSnapshot.string).getOrElse(versionFormatError(version)) }
 
 releaseProcess := Seq(
   checkSnapshotDependencies,

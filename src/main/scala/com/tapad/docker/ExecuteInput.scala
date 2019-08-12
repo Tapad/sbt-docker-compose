@@ -9,14 +9,13 @@ import scala.collection.Seq
  * Represents the settings/input given to produce a test command-line.
  */
 case class ExecuteInput(
-    runner: ComposeTestRunner,
-    testDependencyClasspath: String,
-    testParamsList: Seq[String],
-    debugSettings: String
-)(implicit
+  runner: ComposeTestRunner,
+  testDependencyClasspath: String,
+  testParamsList: Seq[String],
+  debugSettings: String)(implicit
   val state: State,
-    val args: Seq[String],
-    val instance: Option[RunningInstanceInfo]) {
+  val args: Seq[String],
+  val instance: Option[RunningInstanceInfo]) {
   def matches(regex: String) = testDependencyClasspath.matches(regex)
 
   def testArgs = runner.getSetting(DockerComposeKeys.testExecutionArgs).split(" ").toSeq

@@ -370,8 +370,7 @@ class ComposeFileProcessingSpec extends FunSuite with BeforeAndAfter with OneIns
     composeFileName: String,
     serviceName: String = "testservice",
     versionNumber: String = "1.0.0",
-    noBuild: Boolean = false
-  ): (ComposeFile, String) = {
+    noBuild: Boolean = false): (ComposeFile, String) = {
     val composeMock = spy(new DockerComposePluginLocal)
 
     val composeFilePath = Paths.get(getClass.getResource(composeFileName).toURI).toString
