@@ -81,6 +81,7 @@ trait DockerCommands {
   def isDockerForMacEnvironment: Boolean = {
     val info = Process("docker info").!!
     info.contains("Operating System: Docker for Mac") ||
+      info.contains("Operating System: Docker Desktop") ||
       (info.contains("Operating System: Alpine Linux") && info.matches("(?s).*Kernel Version:.*-moby.*"))
   }
 
