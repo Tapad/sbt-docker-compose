@@ -569,13 +569,15 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
       if (verbose)
         print(s"Waiting for container Id to be available for service '$serviceName' time remaining: ${deadline.timeLeft.toSeconds}")
 
+      val containerIdLegacy = getDockerContainerIdLegacy(instanceName, serviceName)
       val containerId = getDockerContainerId(instanceName, serviceName)
+      val finalContainerId = if (containerIdLegacy.isEmpty) containerId else containerIdLegacy
 
-      if (containerId.isEmpty) {
+      if (finalContainerId.isEmpty) {
         Thread.sleep(2000)
         tryGetContainerId(state, instanceName, serviceName, deadline)
       } else {
-        Some(containerId)
+        Some(finalContainerId)
       }
     }
     case false => None
