@@ -115,4 +115,21 @@ object ExecuteInput {
 
       testRunnerCommand
   }
+
+  /**
+   * A function which will execute ZIO tests given an [[ExecuteInput]]
+   *
+   * @see https://zio.dev/reference/test/running-tests
+   */
+  val Zio: PartialFunction[ExecuteInput, TestRunnerCommand] = {
+    case input: ExecuteInput if input.matches(".*zio-test.*") =>
+      val testParamsList = input.testParamsList
+      val testRunnerCommand = (Seq("java", input.debugSettings) ++
+        input.testParamsList ++
+        Seq("-cp", input.testDependencyClasspath, "com.enelx.fdr.bom.integration.BomApiSpec") ++
+        input.testArgs ++
+        testParamsList).filter(_.nonEmpty)
+
+      testRunnerCommand
+  }
 }

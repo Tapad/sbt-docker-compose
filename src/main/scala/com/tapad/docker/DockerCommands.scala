@@ -43,7 +43,7 @@ trait DockerCommands {
 
   def getDockerContainerId(instanceName: String, serviceName: String): String = {
     //Docker replaces '/' with '_' in the identifier string so search for replaced version
-    Process(s"""docker ps --all --filter=name=${instanceName.replace('/', '_')}_${serviceName}_ --format=\"{{.ID}}\"""").!!.trim().replaceAll("\"", "")
+    Process(s"""docker ps --all --filter=name=${instanceName.replace('/', '-')}-${serviceName}- --format=\"{{.ID}}\"""").!!.trim().replaceAll("\"", "")
   }
 
   def getDockerContainerInfo(containerId: String): String = {

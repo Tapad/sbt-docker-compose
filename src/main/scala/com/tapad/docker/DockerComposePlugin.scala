@@ -86,6 +86,7 @@ object DockerComposePlugin extends DockerComposePluginLocal {
     val testCasesJar = DockerComposeKeys.testCasesJar
     val testPassUseSpecs2 = DockerComposeKeys.testPassUseSpecs2
     val testPassUseCucumber = DockerComposeKeys.testPassUseCucumber
+    val testPassUseZio = DockerComposeKeys.testPassUseZio
     val suppressColorFormatting = DockerComposeKeys.suppressColorFormatting
     val scalaTestJar = DockerComposeKeys.testDependenciesClasspath
     val variablesForSubstitution = DockerComposeKeys.variablesForSubstitution
@@ -444,6 +445,8 @@ class DockerComposePluginLocal extends AutoPlugin with ComposeFile with DockerCo
         runTestPassCucumber(preTestState, args, instance)
       else if (getSetting(testPassUseSpecs2)) {
         runTestPassSpecs2(preTestState, args, instance)
+      } else if (getSetting(testPassUseZio)) {
+        runTestPassZio(preTestState, args, instance)
       } else {
         runTestPass(preTestState, args, instance)
       }

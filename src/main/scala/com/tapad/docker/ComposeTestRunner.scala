@@ -1,10 +1,6 @@
 package com.tapad.docker
 
 import com.tapad.docker.DockerComposeKeys._
-import sbt.{ Project, _ }
-
-import scala.collection.Seq
-import scala.sys.process.Process
 
 trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
   val testDebugPortArg = "-debug"
@@ -92,6 +88,19 @@ trait ComposeTestRunner extends SettingsHelper with PrintFormatting {
    */
   def runTestPassCucumber(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
     runInContainer("Cucumber", ExecuteInput.Cucumber)
+  }
+
+  /**
+   * Build up a set of parameters to pass as System Properties that can be accessed from ZIO test
+   * Compiles and binPackages the latest Test code.
+   * Starts a test pass using the Zio Runner
+   *
+   * @param state    The sbt state
+   * @param args     The command line arguments
+   * @param instance The running Docker Compose instance to test against
+   */
+  def runTestPassZio(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {
+    runInContainer("Zio", ExecuteInput.Zio)
   }
 
   protected def runInContainer(testDesc: String, run: ExecuteInput.Invoke)(implicit state: State, args: Seq[String], instance: Option[RunningInstanceInfo]): State = {

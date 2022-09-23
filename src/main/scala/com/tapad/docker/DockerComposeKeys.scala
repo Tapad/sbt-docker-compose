@@ -1,6 +1,5 @@
 package com.tapad.docker
 
-import sbt._
 import java.io._
 
 object DockerComposeKeys extends DockerComposeKeysLocal
@@ -26,6 +25,7 @@ trait DockerComposeKeysLocal {
   val testDependenciesClasspath = taskKey[String]("The path to all managed and unmanaged Test and Compile dependencies. This path needs to include the ScalaTest Jar for the tests to execute. This defaults to all managedClasspath and unmanagedClasspath in the Test and fullClasspath in the Compile Scope.")
   val testPassUseSpecs2 = settingKey[Boolean]("True if Specs2 is to be used to execute the test pass. This defaults to False and ScalaTest is used.")
   val testPassUseCucumber = settingKey[Boolean]("True if Cucumber is to be used to execute the test pass. This defaults to False and ScalaTest is used.")
+  val testPassUseZio = settingKey[Boolean]("True if Zio is to be used to execute the test pass. This defaults to False and ScalaTest is used.")
   val runningInstances = AttributeKey[List[RunningInstanceInfo]]("runningInstances", "For Internal Use: Contains information on the set of running Docker Compose instances.")
   val variablesForSubstitution = settingKey[Map[String, String]]("A Map[String,String] of variables to substitute in your docker-compose file. These are substituted by the plugin and not using environment variables.")
   val variablesForSubstitutionTask = taskKey[Map[String, String]]("An sbt task that returns a Map[String,String] of variables to substitute in your docker-compose file. These are substituted by the plugin and not using environment variables.")
